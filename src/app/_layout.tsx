@@ -71,6 +71,14 @@ function RootLayoutNav() {
           }}
         />
         <Stack.Screen
+          name='splash-screen/index'
+          options={{
+            title: 'Hello',
+            gestureEnabled: false,
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
           name='(dashboard)'
           options={{
             headerShown: false,

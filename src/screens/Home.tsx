@@ -38,7 +38,7 @@ const Home = () => {
       isError={fetchOneUserQuery.isError}
       onResetError={fetchOneUserQuery.refetch}
     >
-      <Box className='bg-primary-500 p-5'>
+      <Box className='bg-primary-950 p-5'>
         <Text className='text-typography-0'>This is the Box</Text>
       </Box>
       <Skeleton height={64} loading={fetchOneUserQuery.isLoading} width={64}>

@@ -2708,6 +2708,11 @@
   dependencies:
     nanoid "^3.3.1"
 
+"@hookform/resolvers@^3.9.1":
+  version "3.9.1"
+  resolved "https://registry.yarnpkg.com/@hookform/resolvers/-/resolvers-3.9.1.tgz#a23883c40bfd449cb6c6ab5a0fa0729184c950ff"
+  integrity sha512-ud2HqmGBM0P0IABqoskKWI6PEf6ZDDBZkFqe2Vnl+mTHCEHzr3ISjjZyCwTjC/qpL25JC9aIDkloQejvMeq0ug==
+
 "@humanwhocodes/config-array@^0.11.13":
   version "0.11.13"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.13.tgz#075dc9684f40a531d9b26b0822153c1e832ee297"
@@ -10560,6 +10565,11 @@ lru-cache@^6.0.0:
   integrity sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==
   dependencies:
     yallist "^4.0.0"
+
+lucide-react-native@^0.469.0:
+  version "0.469.0"
+  resolved "https://registry.yarnpkg.com/lucide-react-native/-/lucide-react-native-0.469.0.tgz#ff03fc4ab6e211716f53509820d32aae7f448a5e"
+  integrity sha512-r3FRoWGymkSoFzZ2JeDHyHzs3IdS9EFbG/uTKMZCR5VtrYq81yhXGu768aqHrMBXYiJeSHGSd7ogzJDPoUdYCg==
 
 make-dir@^2.0.0, make-dir@^2.1.0:
   version "2.1.0"

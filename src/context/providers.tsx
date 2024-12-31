@@ -1,5 +1,12 @@
 import React, { ReactNode, createContext, useState } from 'react';
 
+import { useColorScheme } from 'react-native';
+
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -9,17 +16,6 @@ import { GluestackUIProvider } from '@/src/components/ui/gluestack-ui-provider';
 
 import { SessionProvider } from './ctx';
 import { store } from '../store';
-
-// Constants
-const DEFAULT_THEME = 'light' as const;
-
-// Types
-type ColorMode = 'dark' | 'light';
-
-interface ThemeContextType {
-  colorMode: ColorMode;
-  toggleColorMode: () => void;
-}
 
 // Query Client Configuration
 const queryClientConfig = {
@@ -35,12 +31,6 @@ const queryClientConfig = {
 
 export const queryClient = new QueryClient(queryClientConfig);
 
-// Context
-export const ThemeContext = createContext<ThemeContextType>({
-  colorMode: DEFAULT_THEME,
-  toggleColorMode: () => null,
-});
-
 // Styled Components
 const GestureWrapper = ({ children }: { children: ReactNode }) => (
   <GestureHandlerRootView style={{ flex: 1 }}>
@@ -53,20 +43,11 @@ interface ProvidersWrapperProps {
 }
 
 const ProvidersWrapper = ({ children }: ProvidersWrapperProps) => {
-  const [colorMode, setColorMode] = useState<ColorMode>(DEFAULT_THEME);
-
-  const toggleColorMode = () => {
-    setColorMode(prevMode => (prevMode === 'light' ? 'dark' : 'light'));
-  };
-
-  const themeContextValue = {
-    colorMode,
-    toggleColorMode,
-  };
+  const colorScheme = useColorScheme();
 
   return (
-    <ThemeContext.Provider value={themeContextValue}>
-      <GluestackUIProvider mode={colorMode}>
+    <GluestackUIProvider mode={(colorScheme ?? 'light') as 'light' | 'dark'}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SafeAreaProvider>
           <GestureWrapper>
             <SessionProvider>
@@ -76,8 +57,8 @@ const ProvidersWrapper = ({ children }: ProvidersWrapperProps) => {
             </SessionProvider>
           </GestureWrapper>
         </SafeAreaProvider>
-      </GluestackUIProvider>
-    </ThemeContext.Provider>
+      </ThemeProvider>
+    </GluestackUIProvider>
   );
 };
 
