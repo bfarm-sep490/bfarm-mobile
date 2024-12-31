@@ -1,9 +1,13 @@
-import { useFonts } from 'expo-font';
-import { SplashScreen, Stack } from 'expo-router';
+import '../../global.css';
+
 import { useEffect } from 'react';
+
 import NetInfo from '@react-native-community/netinfo';
 import ProvidersWrapper from 'context/providers';
+import { useFonts } from 'expo-font';
+import { SplashScreen, Stack } from 'expo-router';
 import { setIsConnectedToInternet } from 'store/slices/appSlice';
+
 import { store } from '../store';
 import '../translations';
 

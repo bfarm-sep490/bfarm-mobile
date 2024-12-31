@@ -1,9 +1,10 @@
-import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import TestAppWrapper from '@/../__mocks__/TestAppWrapper';
+import { render } from '@testing-library/react-native';
 
 import SkeletonLoader from './Skeleton';
+
+import TestAppWrapper from '@/../__mocks__/TestAppWrapper';
 
 describe('SkeletonLoader', () => {
   beforeAll(() => {

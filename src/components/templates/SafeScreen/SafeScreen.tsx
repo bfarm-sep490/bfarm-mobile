@@ -1,11 +1,13 @@
-import type { SafeAreaViewProps } from 'react-native-safe-area-context';
+import colors from 'constants/Colors';
 
 import { StatusBar, useColorScheme, StyleSheet } from 'react-native';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
-import colors from 'constants/Colors';
 
 import { DefaultError } from '@/src/components/molecules';
 import { ErrorBoundary } from '@/src/components/organisms';
+
+import type { SafeAreaViewProps } from 'react-native-safe-area-context';
 
 // Fixed Props type definition
 type Props = SafeAreaViewProps & {

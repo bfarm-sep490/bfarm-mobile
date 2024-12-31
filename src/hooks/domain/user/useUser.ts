@@ -1,8 +1,8 @@
-import type { User } from './schema';
-
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { UserServices } from './userService';
+
+import type { User } from './schema';
 
 const enum UserQueryKey {
   fetchOne = 'fetchOneUser',

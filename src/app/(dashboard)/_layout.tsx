@@ -1,6 +1,7 @@
-import { Redirect, Stack } from 'expo-router';
 import { Session, useSession } from 'context/ctx';
-import { Text } from 'components/UI/Themed';
+import { Redirect, Stack } from 'expo-router';
+
+import { Text } from '@/src/components/ui/Themed';
 
 export default function AppLayout() {
   const { isLoading, session }: Session = useSession();

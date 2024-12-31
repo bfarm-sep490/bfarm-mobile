@@ -1,4 +1,5 @@
 const { resolveConfig } = require('detox/internals');
+
 const appConfig = require('../../app.config');
 
 const platform = device.getPlatform();

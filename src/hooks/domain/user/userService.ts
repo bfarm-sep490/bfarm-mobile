@@ -1,4 +1,5 @@
 import { instance } from '@/src/services/instance';
+
 import { userSchema } from './schema';
 
 export const UserServices = {

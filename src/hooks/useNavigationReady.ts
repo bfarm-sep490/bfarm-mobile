@@ -1,5 +1,6 @@
-import { useRootNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
+
+import { useRootNavigation } from 'expo-router';
 
 export const useNavigationReady = () => {
   const [isNavigationReady, setNavigationReady] = useState(false);

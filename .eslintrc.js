@@ -22,16 +22,46 @@ module.exports = {
     'import/order': [
       'error',
       {
-        groups: [['external', 'builtin', 'internal', 'type']],
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          ['parent', 'sibling'],
+          'index',
+          'type',
+          'object',
+        ],
         pathGroups: [
+          {
+            pattern: 'react',
+            group: 'external',
+            position: 'before',
+          },
           {
             pattern: 'react-native',
             group: 'external',
             position: 'before',
           },
+          {
+            pattern: '@gluestack-ui/**',
+            group: 'external',
+            position: 'after',
+          },
+          {
+            pattern: '@/**',
+            group: 'internal',
+            position: 'after',
+          },
         ],
+        pathGroupsExcludedImportTypes: ['react', 'react-native'],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
       },
     ],
+    // Rest of your rules remain the same
     'padded-blocks': 'off',
     'no-underscore-dangle': 'off',
     'max-len': [1, 1000, 4],

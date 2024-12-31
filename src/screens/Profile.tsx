@@ -1,6 +1,9 @@
 import { Button, StyleSheet } from 'react-native';
-import { View, Text } from 'components/UI/Themed';
+
 import { useTranslation } from 'react-i18next';
+
+import { View, Text } from '@/src/components/ui/Themed';
+
 import { useSession } from '../context/ctx';
 
 const Profile = () => {

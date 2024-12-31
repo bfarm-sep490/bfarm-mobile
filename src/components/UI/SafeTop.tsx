@@ -1,6 +1,8 @@
-import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import colors from 'constants/Colors';
+
+import { View } from 'react-native';
+
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface IProps {
   bgColor?: string;

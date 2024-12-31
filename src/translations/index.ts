@@ -1,14 +1,15 @@
-import i18next from 'i18next';
 import { getLocales } from 'expo-localization';
+import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
+
+import enError from './locales/en/error.json';
 import enHome from './locales/en/home.json';
 import enProfile from './locales/en/profile.json';
 import enSignIn from './locales/en/sign-in.json';
-import enError from './locales/en/error.json';
+import viError from './locales/vi/error.json';
 import viHome from './locales/vi/home.json';
 import viProfile from './locales/vi/profile.json';
 import viSignIn from './locales/vi/sign-in.json';
-import viError from './locales/vi/error.json';
 import { reduxStorage } from '../store/storage';
 
 // the translations

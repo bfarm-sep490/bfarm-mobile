@@ -1,0 +1,10 @@
+{
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": "global.css"
+  },
+  "app": {
+    "entry": "e2e/utils/openApp.ts",
+    "components": "src/components/ui"
+  }
+}

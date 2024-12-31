@@ -1,9 +1,10 @@
 import type { ErrorInfo } from 'react';
-import type { ErrorBoundaryPropsWithFallback } from 'react-error-boundary';
 
 import { ErrorBoundary as DefaultErrorBoundary } from 'react-error-boundary';
 
 import { DefaultError } from '@/src/components/molecules';
+
+import type { ErrorBoundaryPropsWithFallback } from 'react-error-boundary';
 
 type Optional<T, K extends keyof T> = Omit<T, K> & Pick<Partial<T>, K>;
 

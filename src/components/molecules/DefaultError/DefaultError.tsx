@@ -1,7 +1,9 @@
+import { StyleSheet, TouchableOpacity } from 'react-native';
+
 import { useErrorBoundary } from 'react-error-boundary';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, View } from '../../UI/Themed';
+
+import { Text, View } from '../../ui/Themed';
 
 type Props = {
   onReset?: () => void;

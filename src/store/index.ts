@@ -1,4 +1,5 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query/react';
 import {
   TypedUseSelectorHook,
   useDispatch as useDispatchBase,
@@ -14,9 +15,9 @@ import {
   REGISTER,
   REHYDRATE,
 } from 'redux-persist';
-import { setupListeners } from '@reduxjs/toolkit/query/react';
-import { reduxStorage } from './storage';
+
 import appSlice from './slices/appSlice';
+import { reduxStorage } from './storage';
 
 const rootReducer = combineReducers({
   app: appSlice,

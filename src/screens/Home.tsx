@@ -1,13 +1,19 @@
+import { useState } from 'react';
+
 import { Button, StyleSheet, TouchableOpacity } from 'react-native';
+
 import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { View, Text } from 'components/UI/Themed';
-import { useState } from 'react';
-import { useAppDispatch } from '../store';
-import { setAppLanguage } from '../store/slices/appSlice';
+
+import { Box } from '@/src/components/ui/box';
+import { Text } from '@/src/components/ui/text';
+import { View } from '@/src/components/ui/Themed';
+
+import { Skeleton } from '../components/atoms';
 import { SafeScreen } from '../components/templates';
 import { useUser } from '../hooks/domain';
-import { Skeleton } from '../components/atoms';
+import { useAppDispatch } from '../store';
+import { setAppLanguage } from '../store/slices/appSlice';
 
 const Home = () => {
   const { t, i18n } = useTranslation();
@@ -32,6 +38,9 @@ const Home = () => {
       isError={fetchOneUserQuery.isError}
       onResetError={fetchOneUserQuery.refetch}
     >
+      <Box className='bg-primary-500 p-5'>
+        <Text className='text-typography-0'>This is the Box</Text>
+      </Box>
       <Skeleton height={64} loading={fetchOneUserQuery.isLoading} width={64}>
         <TouchableOpacity
           onPress={() => setCurrentId(Math.ceil(Math.random() * 9 + 1))}
