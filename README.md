@@ -25,7 +25,7 @@ src/
 ### Prerequisites
 Ensure you have the following installed:
 - Node.js (>=16.x)
-- Yarn (>=1.22.x)
+- bun (>=1.x.x)
 - Expo CLI
 - Android Studio or Xcode for native builds
 
@@ -37,14 +37,14 @@ Ensure you have the following installed:
    ```
 2. Install dependencies:
    ```bash
-   yarn install
+   bun install
    ```
 3. Configure environment variables:
    Create a `.env` file at the root and define your variables.
 
 4. Start the development server:
    ```bash
-   yarn start
+   bun start
    ```
 
 ## API Query Usage
@@ -90,16 +90,16 @@ Here are some useful scripts defined in the `package.json`:
 
 | Command                          | Description                               |
 |----------------------------------|-------------------------------------------|
-| `yarn start`                     | Start the Expo development server        |
-| `yarn android`                   | Run the app on an Android device/emulator|
-| `yarn ios`                       | Run the app on an iOS simulator          |
-| `yarn web`                       | Run the app in a web browser             |
-| `yarn lint`                      | Run ESLint to lint code                  |
-| `yarn typecheck`                 | Type-check the project using TypeScript  |
-| `yarn test`                      | Run unit tests using Jest                |
-| `yarn prebuild`                  | Prepare the project for native builds    |
-| `yarn android:release`           | Build a release version for Android      |
-| `yarn ios:release`               | Build a release version for iOS          |
+| `bun start`                     | Start the Expo development server        |
+| `bun android`                   | Run the app on an Android device/emulator|
+| `bun ios`                       | Run the app on an iOS simulator          |
+| `bun web`                       | Run the app in a web browser             |
+| `bun lint`                      | Run ESLint to lint code                  |
+| `bun typecheck`                 | Type-check the project using TypeScript  |
+| `bun test`                      | Run unit tests using Jest                |
+| `bun prebuild`                  | Prepare the project for native builds    |
+| `bun android:release`           | Build a release version for Android      |
+| `bun ios:release`               | Build a release version for iOS          |
 
 ## Technologies Used
 ### Core
