@@ -139,7 +139,7 @@
     "lint-staged": "^15.1.0",
     "prettier": "^3.4.2",
     "react-test-renderer": "18.2.0",
-    "sharp-cli": "^4.2.0",
+    "sharp-cli": "^5.1.0",
     "typescript": "~5.3.3"
   },
   "eslintConfig": {
