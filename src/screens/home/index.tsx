@@ -532,7 +532,7 @@ const MainContent = () => {
   );
 };
 
-const Home = () => {
+export const Home = () => {
   return (
     <SafeAreaView className='h-full w-full'>
       <DashboardLayout title='Dashboard' isSidebarVisible={true}>
@@ -541,5 +541,3 @@ const Home = () => {
     </SafeAreaView>
   );
 };
-
-export default Home;
