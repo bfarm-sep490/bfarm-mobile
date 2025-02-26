@@ -140,7 +140,7 @@ const LoginWithLeftBackground = () => {
           <Heading className='md:text-center' size='3xl'>
             Log in
           </Heading>
-          <Text>Login to start using gluestack</Text>
+          <Text>BfarmX</Text>
         </VStack>
       </VStack>
       <VStack className='w-full'>
