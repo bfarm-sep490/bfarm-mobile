@@ -8,6 +8,10 @@ import {
   profileActiveIcon,
   profileIcon,
 } from '@/assets/svg';
+import {
+  harvesting_icon_bw,
+  harvesting_icon_colored,
+} from '@/assets/svg/harvesting-tasks';
 
 export default function TabLayout() {
   const { t } = useTranslation();
@@ -65,6 +69,19 @@ export default function TabLayout() {
               height={24}
               width={24}
               xml={focused ? profileActiveIcon : profileIcon}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name='harvesting_tasks/index'
+        options={{
+          title: t('harvesting_tasks:title'),
+          tabBarIcon: ({ focused }) => (
+            <SvgXml
+              height={24}
+              width={24}
+              xml={focused ? harvesting_icon_colored : harvesting_icon_bw}
             />
           ),
         }}
