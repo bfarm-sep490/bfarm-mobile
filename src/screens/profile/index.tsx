@@ -368,7 +368,7 @@ const MainContent = () => {
         <VStack className='h-full w-full pb-8' space='2xl'>
           <Box className='relative h-[380px] w-full md:h-[478px]'>
             {/* <Image
-              source={require('assets/profile-screens/profile/image2.png')}
+              source={require('@/assets/profile-screens/profile/image2.png')}
               height={'100%'}
               width={'100%'}
               alt='Banner Image'
@@ -386,7 +386,7 @@ const MainContent = () => {
                   alt='Profile Image'
                   height={'100%'}
                   width={'100%'}
-                  source={require('assets/profile-screens/profile/image.png')}
+                  source={require('@/assets/profile-screens/profile/image.png')}
                 /> */}
                 <AvatarBadge />
               </Avatar>
@@ -460,7 +460,7 @@ const MainContent = () => {
               <HStack space='2xl' className='items-center'>
                 <Box className='h-10 w-10 md:h-20 md:w-20'>
                   {/* <Image
-                    source={require('assets/profile-screens/profile/image1.png')}
+                    source={require('@/assets/profile-screens/profile/image1.png')}
                     height={'100%'}
                     width={'100%'}
                     alt='Promo Image'
@@ -581,7 +581,7 @@ const ModalComponent = ({
       <ModalContent>
         <Box className={'h-[215px] w-full'}>
           {/* <Image
-            source={require('assets/profile-screens/profile/image2.png')}
+            source={require('@/assets/profile-screens/profile/image2.png')}
             height={'100%'}
             width={'100%'}
             alt='Banner Image'
@@ -605,7 +605,7 @@ const ModalComponent = ({
         <Center className='absolute top-16 w-full'>
           <Avatar size='2xl'>
             {/* <AvatarImage
-              source={require('assets/profile-screens/profile/image.png')}
+              source={require('@/assets/profile-screens/profile/image.png')}
             /> */}
             <AvatarBadge className='items-center justify-center bg-background-500'>
               <Icon as={SettingsIcon} />

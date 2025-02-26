@@ -1,7 +1,7 @@
-import { HStack, Image } from 'components/ui';
-import { SafeAreaView } from 'components/ui/safe-area-view';
-import { ScrollView } from 'components/ui/scroll-view';
-import { VStack } from 'components/ui/vstack';
+import { HStack, Image } from '@/components/ui';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { ScrollView } from '@/components/ui/scroll-view';
+import { VStack } from '@/components/ui/vstack';
 
 type AuthLayoutProps = {
   children: React.ReactNode;
@@ -22,7 +22,7 @@ export const AuthLayout = (props: AuthLayoutProps) => {
             <Image
               height={100}
               width={100}
-              source={require('assets/images/splash.png')}
+              source={require('@/assets/images/splash.png')}
               className='h-full w-full object-cover'
               alt='Radial Gradient'
             />

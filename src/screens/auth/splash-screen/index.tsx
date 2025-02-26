@@ -1,8 +1,9 @@
-import { Button, ButtonText } from 'components/ui/button';
-import { AddIcon, Icon } from 'components/ui/icon';
-import { VStack } from 'components/ui/vstack';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from 'nativewind';
+
+import { Button, ButtonText } from '@/components/ui/button';
+import { AddIcon, Icon } from '@/components/ui/icon';
+import { VStack } from '@/components/ui/vstack';
 
 import { AuthLayout } from '../layout';
 

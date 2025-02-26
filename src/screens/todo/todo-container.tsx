@@ -5,10 +5,10 @@ import {
   CheckboxIcon,
   CheckboxIndicator,
   CheckboxLabel,
-} from 'components/ui/checkbox';
-import { HStack } from 'components/ui/hstack';
-import { CheckIcon, CloseIcon, Icon } from 'components/ui/icon';
-import { Pressable } from 'components/ui/pressable';
+} from '@/components/ui/checkbox';
+import { HStack } from '@/components/ui/hstack';
+import { CheckIcon, CloseIcon, Icon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
 
 export interface Todo {
   id: string;

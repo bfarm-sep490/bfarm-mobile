@@ -1,18 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { Avatar, AvatarFallbackText, AvatarImage } from 'components/ui/avatar';
-import { Box } from 'components/ui/box';
-import { Button, ButtonText } from 'components/ui/button';
-import { Divider } from 'components/ui/divider';
-import { Grid, GridItem } from 'components/ui/grid';
-import { Heading } from 'components/ui/heading';
-import { HStack } from 'components/ui/hstack';
-import { ChevronLeftIcon, Icon, MenuIcon } from 'components/ui/icon';
-import { Pressable } from 'components/ui/pressable';
-import { SafeAreaView } from 'components/ui/safe-area-view';
-import { ScrollView } from 'components/ui/scroll-view';
-import { Text } from 'components/ui/text';
-import { VStack } from 'components/ui/vstack';
 import { useRouter } from 'expo-router';
 import {
   CalendarIcon,
@@ -25,6 +12,24 @@ import {
 
 import { cn } from '@gluestack-ui/nativewind-utils/cn';
 import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
+
+import {
+  Avatar,
+  AvatarFallbackText,
+  AvatarImage,
+} from '@/components/ui/avatar';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Divider } from '@/components/ui/divider';
+import { Grid, GridItem } from '@/components/ui/grid';
+import { Heading } from '@/components/ui/heading';
+import { HStack } from '@/components/ui/hstack';
+import { ChevronLeftIcon, Icon, MenuIcon } from '@/components/ui/icon';
+import { Pressable } from '@/components/ui/pressable';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { ScrollView } from '@/components/ui/scroll-view';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 
 type MobileHeaderProps = {
   title: string;
@@ -77,27 +82,27 @@ interface ColleaguesCardData {
 
 const HeadingCards: CardData[] = [
   {
-    bannerUri: require('assets/images/splash.png'),
+    bannerUri: require('@/assets/images/splash.png'),
     title: 'Update your profile',
     description: 'Add your details',
   },
   {
-    bannerUri: require('assets/images/splash.png'),
+    bannerUri: require('@/assets/images/splash.png'),
     title: 'Your skills',
     description: 'Add your skills here',
   },
   {
-    bannerUri: require('assets/images/splash.png'),
+    bannerUri: require('@/assets/images/splash.png'),
     title: 'Your goals',
     description: 'Set a target to accomplish',
   },
   {
-    bannerUri: require('assets/images/splash.png'),
+    bannerUri: require('@/assets/images/splash.png'),
     title: 'Your goals',
     description: 'Set a target to accomplish',
   },
   {
-    bannerUri: require('assets/images/splash.png'),
+    bannerUri: require('@/assets/images/splash.png'),
     title: 'Your goals',
     description: 'Set a target to accomplish',
   },
@@ -152,22 +157,22 @@ const LeavesCards: LeavesCardData[] = [
 ];
 const ColleaguesCards: ColleaguesCardData[] = [
   {
-    image: require('assets/images/splash.png'),
+    image: require('@/assets/images/splash.png'),
     title: 'Emily Zho',
     position: 'UI/UX Designer',
   },
   {
-    image: require('assets/images/splash.png'),
+    image: require('@/assets/images/splash.png'),
     title: 'Marilyn Monroe',
     position: 'SDE II',
   },
   {
-    image: require('assets/images/splash.png'),
+    image: require('@/assets/images/splash.png'),
     title: 'James Kant',
     position: 'SDE III',
   },
   {
-    image: require('assets/images/splash.png'),
+    image: require('@/assets/images/splash.png'),
     title: 'Richard Faynmen',
     position: 'CEO Marketing',
   },

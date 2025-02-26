@@ -29,10 +29,10 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    'sfpd-regular': require('assets/fonts/SF-Pro-Display-Regular.ttf'),
-    'sfpd-medium': require('assets/fonts/SF-Pro-Display-Medium.ttf'),
-    'sfpd-semibold': require('assets/fonts/SF-Pro-Display-Semibold.ttf'),
-    'sfpd-bold': require('assets/fonts/SF-Pro-Display-Bold.ttf'),
+    'sfpd-regular': require('@/assets/fonts/SF-Pro-Display-Regular.ttf'),
+    'sfpd-medium': require('@/assets/fonts/SF-Pro-Display-Medium.ttf'),
+    'sfpd-semibold': require('@/assets/fonts/SF-Pro-Display-Semibold.ttf'),
+    'sfpd-bold': require('@/assets/fonts/SF-Pro-Display-Bold.ttf'),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
