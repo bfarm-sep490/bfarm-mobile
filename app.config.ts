@@ -36,6 +36,14 @@ const config: ExpoConfig = {
     favicon: './src/assets/images/favicon.png',
   },
   plugins: [
+    [
+      'expo-camera',
+      {
+        cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera',
+        microphonePermission: 'Allow $(PRODUCT_NAME) to access your microphone',
+        recordAudioAndroid: true,
+      },
+    ],
     'expo-font',
     'expo-router',
     'expo-localization',
