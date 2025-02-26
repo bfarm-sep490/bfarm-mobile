@@ -1,4 +1,4 @@
-import TodoScreen from 'screens/todo';
+import TodoScreen from '@/screens/todo';
 
 const todo = () => {
   return <TodoScreen />;

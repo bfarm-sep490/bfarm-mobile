@@ -5,7 +5,7 @@ import { Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Bell, ChevronLeft, Settings } from 'lucide-react-native';
 
-import { HStack, Text } from '@/src/components/ui';
+import { HStack, Text } from '@/components/ui';
 
 interface MobileHeaderProps {
   title: string;

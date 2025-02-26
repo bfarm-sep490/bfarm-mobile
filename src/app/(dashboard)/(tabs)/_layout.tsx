@@ -1,12 +1,13 @@
+import { Tabs } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { SvgXml } from 'react-native-svg';
+
 import {
   homeActiveIcon,
   homeIcon,
   profileActiveIcon,
   profileIcon,
-} from 'assets/svg';
-import { Tabs } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { SvgXml } from 'react-native-svg';
+} from '@/assets/svg';
 
 export default function TabLayout() {
   const { t } = useTranslation();

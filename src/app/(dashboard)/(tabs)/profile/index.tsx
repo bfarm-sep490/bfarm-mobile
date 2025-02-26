@@ -1,4 +1,4 @@
-import { Profile } from '@/src/screens';
+import { Profile } from '@/screens/profile';
 
 const profile = () => {
   return <Profile />;

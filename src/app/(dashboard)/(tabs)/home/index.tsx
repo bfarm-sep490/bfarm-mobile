@@ -1,4 +1,4 @@
-import { Home } from '@/src/screens';
+import { Home } from '@/screens/home';
 
 const index = () => {
   return <Home />;

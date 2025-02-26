@@ -16,7 +16,7 @@ import {
   AlertDialogCloseButton,
   AlertDialogBody,
   AlertDialogFooter,
-} from '@/src/components/ui';
+} from '@/components/ui';
 
 import { useSession } from '../context/ctx';
 

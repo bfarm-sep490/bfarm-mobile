@@ -1,10 +1,10 @@
-import colors from 'constants/Colors';
-
 import {
   Text as DefaultText,
   useColorScheme,
   View as DefaultView,
 } from 'react-native';
+
+import colors from '@/constants/Colors';
 
 type ThemeProps = {
   lightColor?: string;

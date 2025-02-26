@@ -1,4 +1,4 @@
-import About from 'screens/About';
+import About from '@/screens/About';
 
 const index = () => {
   return <About />;

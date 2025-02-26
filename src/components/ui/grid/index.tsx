@@ -16,7 +16,7 @@ import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 import {
   useBreakpointValue,
   getBreakPointValue,
-} from '@/src/components/ui/utils/use-break-point-value';
+} from '@/components/ui/utils/use-break-point-value';
 
 import { gridStyle, gridItemStyle } from './styles';
 

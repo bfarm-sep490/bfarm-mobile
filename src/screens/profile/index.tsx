@@ -3,53 +3,6 @@ import React, { useRef, useState } from 'react';
 import { Keyboard, Platform } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Avatar,
-  AvatarBadge,
-  AvatarFallbackText,
-  AvatarImage,
-} from 'components/ui/avatar';
-import { Box } from 'components/ui/box';
-import { Button, ButtonIcon, ButtonText } from 'components/ui/button';
-import { Center } from 'components/ui/center';
-import { Divider } from 'components/ui/divider';
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-  FormControlLabel,
-  FormControlLabelText,
-} from 'components/ui/form-control';
-import { Heading } from 'components/ui/heading';
-import { HStack } from 'components/ui/hstack';
-import { Icon } from 'components/ui/icon';
-import { Input, InputField } from 'components/ui/input';
-import {
-  Modal,
-  ModalBackdrop,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-} from 'components/ui/modal';
-import { Pressable } from 'components/ui/pressable';
-import { SafeAreaView } from 'components/ui/safe-area-view';
-import { ScrollView } from 'components/ui/scroll-view';
-import {
-  Select,
-  SelectBackdrop,
-  SelectContent,
-  SelectDragIndicator,
-  SelectDragIndicatorWrapper,
-  SelectIcon,
-  SelectInput,
-  SelectItem,
-  SelectPortal,
-  SelectTrigger,
-} from 'components/ui/select';
-import { Text } from 'components/ui/text';
-import { VStack } from 'components/ui/vstack';
 import { useRouter } from 'expo-router';
 import {
   AlertCircle,
@@ -72,8 +25,54 @@ import { z } from 'zod';
 
 import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
 
-import LogoutAlertDialog from '@/src/components/logout-alert-dialog';
-import { useSession } from '@/src/context/ctx';
+import LogoutAlertDialog from '@/components/logout-alert-dialog';
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallbackText,
+  AvatarImage,
+} from '@/components/ui/avatar';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Center } from '@/components/ui/center';
+import { Divider } from '@/components/ui/divider';
+import {
+  FormControl,
+  FormControlError,
+  FormControlErrorIcon,
+  FormControlErrorText,
+  FormControlLabel,
+  FormControlLabelText,
+} from '@/components/ui/form-control';
+import { Heading } from '@/components/ui/heading';
+import { HStack } from '@/components/ui/hstack';
+import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
+import {
+  Modal,
+  ModalBackdrop,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+} from '@/components/ui/modal';
+import { Pressable } from '@/components/ui/pressable';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { ScrollView } from '@/components/ui/scroll-view';
+import {
+  Select,
+  SelectBackdrop,
+  SelectContent,
+  SelectDragIndicator,
+  SelectDragIndicatorWrapper,
+  SelectIcon,
+  SelectInput,
+  SelectItem,
+  SelectPortal,
+  SelectTrigger,
+} from '@/components/ui/select';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 
 import MobileHeader from './mobile-header';
 

@@ -2,7 +2,7 @@ import type { ErrorInfo } from 'react';
 
 import { ErrorBoundary as DefaultErrorBoundary } from 'react-error-boundary';
 
-import { DefaultError } from '@/src/components/molecules';
+import { DefaultError } from '@/components/molecules';
 
 import type { ErrorBoundaryPropsWithFallback } from 'react-error-boundary';
 

@@ -3,13 +3,18 @@ import React, { useState } from 'react';
 import { Keyboard } from 'react-native';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, ButtonText, ButtonIcon } from 'components/ui/button';
+import { useRouter } from 'expo-router';
+import { AlertTriangle } from 'lucide-react-native';
+import { useForm, Controller } from 'react-hook-form';
+import * as z from 'zod';
+
+import { Button, ButtonText } from '@/components/ui/button';
 import {
   Checkbox,
   CheckboxIcon,
   CheckboxIndicator,
   CheckboxLabel,
-} from 'components/ui/checkbox';
+} from '@/components/ui/checkbox';
 import {
   FormControl,
   FormControlError,
@@ -17,28 +22,23 @@ import {
   FormControlErrorText,
   FormControlLabel,
   FormControlLabelText,
-} from 'components/ui/form-control';
-import { Heading } from 'components/ui/heading';
-import { HStack } from 'components/ui/hstack';
+} from '@/components/ui/form-control';
+import { Heading } from '@/components/ui/heading';
+import { HStack } from '@/components/ui/hstack';
 import {
   ArrowLeftIcon,
   CheckIcon,
   EyeIcon,
   EyeOffIcon,
   Icon,
-} from 'components/ui/icon';
-import { Input, InputField, InputIcon, InputSlot } from 'components/ui/input';
-import { Link, LinkText } from 'components/ui/link';
-import { Pressable } from 'components/ui/pressable';
-import { Text } from 'components/ui/text';
-import { Toast, ToastTitle, useToast } from 'components/ui/toast';
-import { VStack } from 'components/ui/vstack';
-import { useRouter } from 'expo-router';
-import { AlertTriangle } from 'lucide-react-native';
-import { useForm, Controller } from 'react-hook-form';
-import * as z from 'zod';
-
-import { Session, useSession } from '@/src/context/ctx';
+} from '@/components/ui/icon';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { Link, LinkText } from '@/components/ui/link';
+import { Pressable } from '@/components/ui/pressable';
+import { Text } from '@/components/ui/text';
+import { Toast, ToastTitle, useToast } from '@/components/ui/toast';
+import { VStack } from '@/components/ui/vstack';
+import { Session, useSession } from '@/context/ctx';
 
 import { AuthLayout } from '../layout';
 

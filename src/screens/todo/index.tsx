@@ -1,13 +1,13 @@
-import { defaultTodos } from 'constants/todo';
-
 import React, { useState } from 'react';
 
-import { FormControl } from 'components/ui/form-control';
-import { AddIcon } from 'components/ui/icon';
-import { Input, InputField, InputIcon } from 'components/ui/input';
-import { Pressable } from 'components/ui/pressable';
-import { VStack } from 'components/ui/vstack';
 import { nanoid } from 'nanoid/non-secure';
+
+import { FormControl } from '@/components/ui/form-control';
+import { AddIcon } from '@/components/ui/icon';
+import { Input, InputField, InputIcon } from '@/components/ui/input';
+import { Pressable } from '@/components/ui/pressable';
+import { VStack } from '@/components/ui/vstack';
+import { defaultTodos } from '@/constants/todo';
 
 import TodoContainer, { Todo } from './todo-container';
 

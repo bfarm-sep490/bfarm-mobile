@@ -1,11 +1,10 @@
-import colors from 'constants/Colors';
-
 import { StatusBar, useColorScheme, StyleSheet } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DefaultError } from '@/src/components/molecules';
-import { ErrorBoundary } from '@/src/components/organisms';
+import { DefaultError } from '@/components/molecules';
+import { ErrorBoundary } from '@/components/organisms';
+import colors from '@/constants/Colors';
 
 import type { SafeAreaViewProps } from 'react-native-safe-area-context';
 

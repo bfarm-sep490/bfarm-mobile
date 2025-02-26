@@ -1,4 +1,4 @@
-import NewsFeed from 'screens/news-feed';
+import NewsFeed from '@/screens/news-feed';
 
 const news = () => {
   return <NewsFeed />;

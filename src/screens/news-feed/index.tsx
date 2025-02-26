@@ -1,25 +1,5 @@
 import { useState } from 'react';
 
-import { Platform } from 'react-native';
-
-import { Avatar, AvatarFallbackText, AvatarImage } from 'components/ui/avatar';
-import { Box } from 'components/ui/box';
-import { Button, ButtonIcon, ButtonText } from 'components/ui/button';
-import { Heading } from 'components/ui/heading';
-import { HStack } from 'components/ui/hstack';
-import {
-  ChevronLeftIcon,
-  DownloadIcon,
-  Icon,
-  MenuIcon,
-  SearchIcon,
-} from 'components/ui/icon';
-import { Input, InputField, InputIcon, InputSlot } from 'components/ui/input';
-import { Pressable } from 'components/ui/pressable';
-import { SafeAreaView } from 'components/ui/safe-area-view';
-import { ScrollView } from 'components/ui/scroll-view';
-import { Text } from 'components/ui/text';
-import { VStack } from 'components/ui/vstack';
 import { useRouter } from 'expo-router';
 import {
   GlobeIcon,
@@ -29,10 +9,30 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 
-import { cn } from '@gluestack-ui/nativewind-utils/cn';
 import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
 
-import { Image } from '@/src/components/ui/image';
+import {
+  Avatar,
+  AvatarFallbackText,
+  AvatarImage,
+} from '@/components/ui/avatar';
+import { Box } from '@/components/ui/box';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Heading } from '@/components/ui/heading';
+import { HStack } from '@/components/ui/hstack';
+import {
+  ChevronLeftIcon,
+  DownloadIcon,
+  Icon,
+  MenuIcon,
+  SearchIcon,
+} from '@/components/ui/icon';
+import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
+import { Pressable } from '@/components/ui/pressable';
+import { SafeAreaView } from '@/components/ui/safe-area-view';
+import { ScrollView } from '@/components/ui/scroll-view';
+import { Text } from '@/components/ui/text';
+import { VStack } from '@/components/ui/vstack';
 
 type MobileHeaderProps = {
   title: string;

@@ -5,9 +5,9 @@ import { Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
-import { Box } from '@/src/components/ui/box';
-import { Text } from '@/src/components/ui/text';
-import { View } from '@/src/components/ui/Themed';
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
+import { View } from '@/components/ui/Themed';
 
 import { Skeleton } from '../components/atoms';
 import { SafeScreen } from '../components/templates';
