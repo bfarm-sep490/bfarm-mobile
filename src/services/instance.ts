@@ -9,4 +9,18 @@ export const instance = ky.extend({
     Accept: 'application/json',
   },
   prefixUrl,
+  hooks: {
+    beforeRequest: [
+      request => {
+        if (!request.headers.get('Skip-Auth')) {
+          const token = localStorage.getItem('jwt_token');
+          if (token) {
+            request.headers.set('Authorization', `Bearer ${token}`);
+          }
+        } else {
+          request.headers.delete('Skip-Auth');
+        }
+      },
+    ],
+  },
 });

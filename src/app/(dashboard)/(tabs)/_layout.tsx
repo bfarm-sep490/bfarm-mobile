@@ -44,7 +44,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name='todo/index'
+        name='problem/index'
         options={{
           title: t('profile:title'),
           tabBarIcon: ({ focused }) => (
