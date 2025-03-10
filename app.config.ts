@@ -3,6 +3,7 @@ import { ExpoConfig } from 'expo/config';
 const config: ExpoConfig = {
   name: 'bfarm-mobile',
   slug: 'bfarm-mobile',
+  owner: 'lee-inc',
   version: '1.0.0',
   orientation: 'portrait',
   icon: './src/assets/images/icon.png',
@@ -16,12 +17,12 @@ const config: ExpoConfig = {
   assetBundlePatterns: ['**/*'],
   extra: {
     eas: {
-      projectId: '61107862-a218-4135-bc3d-159d054eff83',
+      projectId: '51bd1635-4238-4edc-9e36-f7f61161f594',
     },
   },
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.sabuhiteymurov.expobase',
+    bundleIdentifier: 'com.bfarmx.app',
   },
   android: {
     versionCode: 1,
@@ -29,7 +30,7 @@ const config: ExpoConfig = {
       foregroundImage: './src/assets/images/adaptive-icon.png',
       backgroundColor: '#ffffff',
     },
-    package: 'com.sabuhiteymurov.expobase',
+    package: 'com.bfarmx.app',
   },
   web: {
     bundler: 'metro',
