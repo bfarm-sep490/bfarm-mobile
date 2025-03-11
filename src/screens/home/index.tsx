@@ -7,6 +7,7 @@ import {
   HeartIcon,
   HomeIcon,
   InboxIcon,
+  User2,
   type LucideIcon,
 } from 'lucide-react-native';
 
@@ -30,6 +31,7 @@ import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useSession } from '@/context/ctx';
 
 type MobileHeaderProps = {
   title: string;
@@ -261,22 +263,26 @@ function MobileHeader(props: MobileHeaderProps) {
   const router = useRouter();
   return (
     <HStack
-      className='border-border-50 items-center border-b bg-background-0 px-4 py-6'
+      className='flex items-center justify-between bg-background-0 px-4 py-6 shadow-2xl'
       space='md'
     >
+      <Heading size='xl' className='font-roboto'>
+        Welcome {props.title}
+      </Heading>
       <Pressable
+        className='rounded-full bg-background-200 p-2'
         onPress={() => {
-          router.back();
+          router.push('/about');
         }}
       >
-        <Icon as={ChevronLeftIcon} />
+        <Icon as={User2} />
       </Pressable>
-      <Text className='text-xl'>{props.title}</Text>
     </HStack>
   );
 }
 
 const MainContent = () => {
+  const { user } = useSession();
   return (
     <Box className='flex-1'>
       <ScrollView
@@ -288,9 +294,9 @@ const MainContent = () => {
         className='mb-20 flex-1 md:mb-2'
       >
         <VStack className='w-full p-4 pb-0 md:px-10 md:pt-6' space='2xl'>
-          <Heading size='2xl' className='font-roboto'>
-            Welcome Cói
-          </Heading>
+          {/* <Heading size='2xl' className='font-roboto'>
+            Welcome {user?.name ?? 'Cói'}
+          </Heading> */}
 
           <Grid
             className='gap-5'
@@ -538,9 +544,10 @@ const MainContent = () => {
 };
 
 export const Home = () => {
+  const { user } = useSession();
   return (
     <SafeAreaView className='h-full w-full'>
-      <DashboardLayout title='Dashboard' isSidebarVisible={true}>
+      <DashboardLayout title={user?.name} isSidebarVisible={true}>
         <MainContent />
       </DashboardLayout>
     </SafeAreaView>

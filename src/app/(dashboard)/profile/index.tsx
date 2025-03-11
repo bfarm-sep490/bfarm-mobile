@@ -1,7 +1,7 @@
 import { Profile } from '@/screens/profile';
 
-const profile = () => {
+const index = () => {
   return <Profile />;
 };
 
-export default profile;
+export default index;

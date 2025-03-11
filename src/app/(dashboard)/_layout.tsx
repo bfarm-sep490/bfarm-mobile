@@ -27,6 +27,13 @@ export default function AppLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name='profile/index'
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

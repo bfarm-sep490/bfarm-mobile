@@ -28,8 +28,7 @@ const persistConfig = {
   version: 1,
   storage: reduxStorage,
   timeout: 0,
-  whitelist: ['app'], // these reducers will persist data
-  // blacklist: ['exampleReducer'], // these reducers will not persist data
+  whitelist: ['app'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -47,7 +46,6 @@ export const store = configureStore({
 export const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
-
 export type AppDispatch = typeof store.dispatch;
 
 export const useAppDispatch: () => AppDispatch = useDispatchBase;

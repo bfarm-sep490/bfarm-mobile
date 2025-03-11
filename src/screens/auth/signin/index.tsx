@@ -33,33 +33,14 @@ import {
   Icon,
 } from '@/components/ui/icon';
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { Link, LinkText } from '@/components/ui/link';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
 import { Toast, ToastTitle, useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
 import { Session, useSession } from '@/context/ctx';
+import { AuthService, safelyDecodeJwt } from '@/services/api/auth/authService';
 
 import { AuthLayout } from '../layout';
-
-const USERS = [
-  {
-    email: 'gabrial@gmail.com',
-    password: 'Gabrial@123',
-  },
-  {
-    email: 'test@gmail.com',
-    password: 'test',
-  },
-  {
-    email: 'tom@gmail.com',
-    password: 'Tom@123',
-  },
-  {
-    email: 'thomas@gmail.com',
-    password: 'Thomas@1234',
-  },
-];
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email(),
@@ -69,7 +50,7 @@ const loginSchema = z.object({
 
 type LoginSchemaType = z.infer<typeof loginSchema>;
 
-const LoginWithLeftBackground = () => {
+const Login = () => {
   const { signIn }: Session = useSession();
   const {
     control,
@@ -80,75 +61,92 @@ const LoginWithLeftBackground = () => {
     resolver: zodResolver(loginSchema),
   });
   const toast = useToast();
-  const [validated, setValidated] = useState({
-    emailValid: true,
-    passwordValid: true,
-  });
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = (data: LoginSchemaType) => {
-    signIn('token');
-    router.replace('(dashboard)/(tabs)/home');
-    const user = USERS.find(element => element.email === data.email);
-    if (user) {
-      if (user.password !== data.password)
-        setValidated({ emailValid: true, passwordValid: false });
-      else {
-        setValidated({ emailValid: true, passwordValid: true });
+  const onSubmit = async (data: LoginSchemaType) => {
+    setIsLoading(true);
+    try {
+      const response = await AuthService.login({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (response.status === 200) {
+        const { accessToken } = response.data;
+        const decodedToken = safelyDecodeJwt(accessToken);
+
+        const userData = {
+          name:
+            decodedToken?.[
+              'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'
+            ] || 'Unknown',
+          email:
+            decodedToken?.[
+              'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'
+            ] || data.email,
+          id:
+            decodedToken?.[
+              'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+            ] || '0',
+          role: decodedToken?.[
+            'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+          ],
+        };
+
+        signIn(accessToken, userData);
+
         toast.show({
           placement: 'bottom right',
-          render: ({ id }) => {
-            return (
-              <Toast nativeID={id} variant='outline' action='success'>
-                <ToastTitle>Logged in successfully!</ToastTitle>
-              </Toast>
-            );
-          },
+          render: ({ id }) => (
+            <Toast nativeID={id} variant='outline' action='success'>
+              <ToastTitle>Logged in successfully!</ToastTitle>
+            </Toast>
+          ),
         });
+
         reset();
+        router.replace('(dashboard)/(tabs)/home');
       }
-    } else {
-      setValidated({ emailValid: false, passwordValid: true });
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.show({
+        placement: 'bottom right',
+        render: ({ id }) => (
+          <Toast nativeID={id} variant='outline' action='error'>
+            <ToastTitle>Login failed. Check your credentials.</ToastTitle>
+          </Toast>
+        ),
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleState = () => {
-    setShowPassword(showState => {
-      return !showState;
-    });
+    setShowPassword(showState => !showState);
   };
+
   const handleKeyPress = () => {
     Keyboard.dismiss();
     handleSubmit(onSubmit)();
   };
-  const router = useRouter();
+
   return (
     <VStack className='w-full max-w-[440px]' space='md'>
-      <VStack className='md:items-center' space='md'>
-        <Pressable
-          onPress={() => {
-            router.back();
-          }}
-        >
-          <Icon
-            as={ArrowLeftIcon}
-            className='text-background-800 md:hidden'
-            size='xl'
-          />
+      <VStack space='md'>
+        <Pressable onPress={() => router.back()}>
+          <Icon as={ArrowLeftIcon} className='text-background-800' size='xl' />
         </Pressable>
         <VStack>
-          <Heading className='md:text-center' size='3xl'>
-            Log in
-          </Heading>
+          <Heading size='3xl'>Log in</Heading>
           <Text>BfarmX</Text>
         </VStack>
       </VStack>
       <VStack className='w-full'>
         <VStack space='xl' className='w-full'>
-          <FormControl
-            isInvalid={!!errors?.email || !validated.emailValid}
-            className='w-full'
-          >
+          <FormControl isInvalid={!!errors?.email} className='w-full'>
             <FormControlLabel>
               <FormControlLabelText>Email</FormControlLabelText>
             </FormControlLabel>
@@ -156,16 +154,6 @@ const LoginWithLeftBackground = () => {
               defaultValue=''
               name='email'
               control={control}
-              rules={{
-                validate: async value => {
-                  try {
-                    await loginSchema.parseAsync({ email: value });
-                    return true;
-                  } catch (error: any) {
-                    return error.message;
-                  }
-                },
-              }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input>
                   <InputField
@@ -182,16 +170,11 @@ const LoginWithLeftBackground = () => {
             <FormControlError>
               <FormControlErrorIcon as={AlertTriangle} />
               <FormControlErrorText>
-                {errors?.email?.message ||
-                  (!validated.emailValid && 'Email ID not found')}
+                {errors?.email?.message}
               </FormControlErrorText>
             </FormControlError>
           </FormControl>
-          {/* Label Message */}
-          <FormControl
-            isInvalid={!!errors.password || !validated.passwordValid}
-            className='w-full'
-          >
+          <FormControl isInvalid={!!errors.password} className='w-full'>
             <FormControlLabel>
               <FormControlLabelText>Password</FormControlLabelText>
             </FormControlLabel>
@@ -199,16 +182,6 @@ const LoginWithLeftBackground = () => {
               defaultValue=''
               name='password'
               control={control}
-              rules={{
-                validate: async value => {
-                  try {
-                    await loginSchema.parseAsync({ password: value });
-                    return true;
-                  } catch (error: any) {
-                    return error.message;
-                  }
-                },
-              }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input>
                   <InputField
@@ -229,8 +202,7 @@ const LoginWithLeftBackground = () => {
             <FormControlError>
               <FormControlErrorIcon as={AlertTriangle} />
               <FormControlErrorText>
-                {errors?.password?.message ||
-                  (!validated.passwordValid && 'Password was incorrect')}
+                {errors?.password?.message}
               </FormControlErrorText>
             </FormControlError>
           </FormControl>
@@ -254,39 +226,19 @@ const LoginWithLeftBackground = () => {
                 </Checkbox>
               )}
             />
-            <Link href='/auth/forgot-password'>
-              <LinkText className='text-sm font-medium text-primary-700 group-hover/link:text-primary-600'>
-                Forgot Password?
-              </LinkText>
-            </Link>
           </HStack>
         </VStack>
         <VStack className='my-7 w-full' space='lg'>
-          <Button className='w-full' onPress={handleSubmit(onSubmit)}>
-            <ButtonText className='font-medium'>Log in</ButtonText>
-          </Button>
           <Button
-            variant='outline'
-            action='secondary'
-            className='w-full gap-1'
-            onPress={() => {}}
+            className='w-full'
+            onPress={handleSubmit(onSubmit)}
+            isDisabled={isLoading}
           >
             <ButtonText className='font-medium'>
-              Continue with Google
+              {isLoading ? 'Logging in...' : 'Log in'}
             </ButtonText>
           </Button>
         </VStack>
-        <HStack className='self-center' space='sm'>
-          <Text size='md'>Don't have an account?</Text>
-          <Link href='/auth/signup'>
-            <LinkText
-              className='font-medium text-primary-700 group-hover/link:text-primary-600 group-hover/pressed:text-primary-700'
-              size='md'
-            >
-              Sign up
-            </LinkText>
-          </Link>
-        </HStack>
       </VStack>
     </VStack>
   );
@@ -295,7 +247,7 @@ const LoginWithLeftBackground = () => {
 const SignIn = () => {
   return (
     <AuthLayout>
-      <LoginWithLeftBackground />
+      <Login />
     </AuthLayout>
   );
 };

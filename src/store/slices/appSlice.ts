@@ -18,19 +18,19 @@ export const appSlice = createSlice({
   reducers: {
     setIsConnectedToInternet: (
       state: Draft<typeof initialState>,
-      action: PayloadAction<typeof initialState.isConnectedToInternet>,
+      action: PayloadAction<boolean>,
     ) => {
       state.isConnectedToInternet = action.payload;
     },
     setAppLanguage: (
       state: Draft<typeof initialState>,
-      action: PayloadAction<typeof initialState.language>,
+      action: PayloadAction<string | null>,
     ) => {
       state.language = action.payload;
     },
     setUser: (
       state: Draft<typeof initialState>,
-      action: PayloadAction<typeof initialState.user>,
+      action: PayloadAction<{ name: string; age: number } | null>,
     ) => {
       state.user = action.payload;
     },
