@@ -182,7 +182,7 @@ const LoginWithLeftBackground = () => {
             <FormControlError>
               <FormControlErrorIcon as={AlertTriangle} />
               <FormControlErrorText>
-                {errors?.email?.message ||
+                {errors?.email?.message ??
                   (!validated.emailValid && 'Email ID not found')}
               </FormControlErrorText>
             </FormControlError>
@@ -229,7 +229,7 @@ const LoginWithLeftBackground = () => {
             <FormControlError>
               <FormControlErrorIcon as={AlertTriangle} />
               <FormControlErrorText>
-                {errors?.password?.message ||
+                {errors?.password?.message ??
                   (!validated.passwordValid && 'Password was incorrect')}
               </FormControlErrorText>
             </FormControlError>

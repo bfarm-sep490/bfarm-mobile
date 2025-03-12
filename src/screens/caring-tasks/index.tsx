@@ -1,13 +1,11 @@
-import React, { Key, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Modal, Text, Image, SafeAreaView, Alert } from 'react-native';
+import { Text, Image, Alert } from 'react-native';
 
-import axios from 'axios';
 import { router, useLocalSearchParams } from 'expo-router';
 import Moment from 'moment';
 import { Controller, useForm } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
-import RNPickerSelect from 'react-native-picker-select';
 import Carousel from 'react-native-reanimated-carousel';
 import { ICaringTask, IReportCaringTask } from 'src/interfaces';
 
@@ -46,7 +44,7 @@ export const CaringDetail = () => {
   const [data, setData] = useState<ICaringTask | null>(null);
   useEffect(() => {
     const fetchData = async () => {
-      const { data, message, status } = await getDetailCaringTasksById(
+      const { data } = await getDetailCaringTasksById(
         (id as unknown as number) || 1,
       );
       setData(data);
@@ -183,11 +181,7 @@ export const CaringDetail = () => {
 };
 
 export const ReportCaringTask = () => {
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<IReportCaringTask>({
+  const { control, handleSubmit } = useForm<IReportCaringTask>({
     defaultValues: {
       result_content: '',
       list_of_images: [],
@@ -202,7 +196,7 @@ export const ReportCaringTask = () => {
           Alert.alert('Lỗi', 'Lỗi tải ảnh: ' + response.errorMessage);
         } else {
           if (response.assets && response.assets.length > 0) {
-            const { message, status, data } = await uploadCaringTaskImage(
+            const { status, data } = await uploadCaringTaskImage(
               response.assets,
             );
             if (status === 200 && data) {
@@ -219,7 +213,7 @@ export const ReportCaringTask = () => {
     return <Text>Loading...</Text>;
   }
   const onSubmit = async (report: IReportCaringTask) => {
-    const { status, data, message } = await putReportCaringTasksById(1, {
+    const { status, data } = await putReportCaringTasksById(1, {
       result_content: report.result_content,
       list_of_images: images,
     });

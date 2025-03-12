@@ -1,5 +1,4 @@
-import { DetailProblemScreen, ProblemsScreen } from '@/screens/problems';
-import TodoScreen from '@/screens/todo';
+import { ProblemsScreen } from '@/screens/problems';
 
 const problem = () => {
   return <ProblemsScreen />;

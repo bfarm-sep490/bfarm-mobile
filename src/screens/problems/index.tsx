@@ -2,12 +2,11 @@ import React, { useEffect, useState } from 'react';
 
 import { Alert } from 'react-native';
 
-import axios from 'axios';
 import { Link, useLocalSearchParams, router } from 'expo-router';
 import Moment from 'moment';
 import { useForm, Controller, Form } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
-import { Asset, launchImageLibrary } from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import RNPickerSelect from 'react-native-picker-select';
 import Carousel from 'react-native-reanimated-carousel';
 import { ICreateProblem, IProblem, ISelectPlan } from 'src/interfaces';

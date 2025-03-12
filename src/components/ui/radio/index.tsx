@@ -1,4 +1,3 @@
-'use client';
 import React from 'react';
 
 import { Pressable, View, Platform, Text } from 'react-native';

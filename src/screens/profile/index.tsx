@@ -8,11 +8,9 @@ import {
   AlertCircle,
   AlertCircleIcon,
   ChevronDownIcon,
-  ChevronLeftIcon,
   ChevronRightIcon,
   EditIcon,
   GripVerticalIcon,
-  HeartIcon,
   MenuIcon,
   PhoneIcon,
   SettingsIcon,
@@ -20,7 +18,6 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import { Controller, useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
 import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
@@ -30,7 +27,6 @@ import {
   Avatar,
   AvatarBadge,
   AvatarFallbackText,
-  AvatarImage,
 } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -75,10 +71,6 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
 import MobileHeader from './mobile-header';
-
-type MobileHeaderProps = {
-  title: string;
-};
 
 type HeaderProps = {
   title: string;
