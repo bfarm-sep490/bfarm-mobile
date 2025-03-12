@@ -1,11 +1,5 @@
 import { Asset } from 'react-native-image-picker';
-import {
-  ICreateProblem,
-  IHarvestingTask,
-  IPackagingTask,
-  IProblem,
-  IReportHarvestingTask,
-} from 'src/interfaces';
+import { ICreateProblem, IProblem } from 'src/interfaces';
 
 import { IResponse, instance } from '../instance';
 
