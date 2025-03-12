@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import { Text, Image, Alert } from 'react-native';
 
+import dayjs from 'dayjs';
 import { router, useLocalSearchParams } from 'expo-router';
-import Moment from 'moment';
 import { Controller, useForm } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Carousel from 'react-native-reanimated-carousel';
@@ -36,7 +36,7 @@ const exmaple_plan = [
 ];
 
 export const CaringDetail = () => {
-  Moment.locale('vi');
+  dayjs.locale('vi');
   const searchParams = useLocalSearchParams();
   const id = Array.isArray(searchParams.id)
     ? searchParams.id[0]
@@ -115,7 +115,7 @@ export const CaringDetail = () => {
                 </Text>
                 <Text className='line-clamp-2'>
                   <Text className='font-bold'>Thời gian thực hiện: </Text>{' '}
-                  {Moment(data?.complete_date).format('hh:mm DD/MM/YYYY')}
+                  {dayjs(data?.complete_date).format('hh:mm DD/MM/YYYY')}
                 </Text>
               </>
             </VStack>
@@ -134,10 +134,10 @@ export const CaringDetail = () => {
             </VStack>
             <VStack className='line-clamp-2 justify-end' space='md'>
               <Text className='text-sm'>
-                {Moment(data?.start_date).format('hh:mm DD/MM/YYYY') ||
+                {dayjs(data?.start_date).format('hh:mm DD/MM/YYYY') ||
                   'Không có thời gian'}{' '}
                 {' - '}
-                {Moment(data?.end_date).format('hh:mm DD/MM/YYYY') ||
+                {dayjs(data?.end_date).format('hh:mm DD/MM/YYYY') ||
                   'Không có thời gian'}
               </Text>
               <Text className='line-clamp-2'>

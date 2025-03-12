@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 
 import { Alert } from 'react-native';
 
+import dayjs from 'dayjs';
 import { Link, useLocalSearchParams, router } from 'expo-router';
-import Moment from 'moment';
 import { useForm, Controller, Form } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -178,7 +178,7 @@ export const ProblemsScreen = () => {
                       </VStack>
                       <VStack className='ml-4' space='md'>
                         <Text className='text-sm'>
-                          {Moment(item.date).format('hh:mm DD/MM/YYYY') ||
+                          {dayjs(item.date).format('hh:mm DD/MM/YYYY') ||
                             'Không có'}
                         </Text>
                         <Text className='line-clamp-2'>
@@ -215,7 +215,7 @@ export const DetailProblemScreen = () => {
     };
     fetchData();
   }, []);
-  Moment.locale('vi');
+  dayjs.locale('vi');
   return (
     <VStack
       className='mb-20 h-full w-full max-w-[1500px] self-center p-4 pb-0 md:mb-2 md:px-10 md:pb-0 md:pt-6'
@@ -277,7 +277,7 @@ export const DetailProblemScreen = () => {
             <VStack className='line-clamp-2 justify-end' space='md'>
               <Text className='text-sm'>
                 <Text className='font-bold'>Thời gian: </Text>
-                {Moment(data?.date).format('hh:mm DD/MM/YYYY') ||
+                {dayjs(data?.date).format('hh:mm DD/MM/YYYY') ||
                   'Không có thời gian'}
               </Text>
               <Text className='line-clamp-2'>
