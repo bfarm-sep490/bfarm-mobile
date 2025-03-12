@@ -1,6 +1,6 @@
 import ky from 'ky';
 
-const prefixUrl = `${process.env.EXPO_PUBLIC_API_URL ?? ''}/`;
+const prefixUrl = 'https://api.outfit4rent.online/api/';
 
 export const instance = ky.extend({
   headers: {
@@ -8,3 +8,9 @@ export const instance = ky.extend({
   },
   prefixUrl,
 });
+
+export interface IResponse {
+  message: string;
+  status: number;
+  data: any;
+}
