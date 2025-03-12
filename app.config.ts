@@ -62,12 +62,6 @@ const config: ExpoConfig = {
         },
       },
     ],
-    [
-      '@config-plugins/detox',
-      {
-        subdomains: '*',
-      },
-    ],
   ],
   experiments: {
     tsconfigPaths: true,

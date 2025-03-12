@@ -45,7 +45,6 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "nativewind-env.d.ts",
-    "src/e2e/jest.setup.ts"
+    "nativewind-env.d.ts"
   ]
 }

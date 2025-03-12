@@ -1,7 +1,6 @@
 {
   "app": {
-    "components": "src/components/ui",
-    "entry": "e2e/utils/openApp.ts"
+    "components": "src/components/ui"
   },
   "tailwind": {
     "config": "tailwind.config.js",

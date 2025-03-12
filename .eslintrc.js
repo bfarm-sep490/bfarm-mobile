@@ -4,7 +4,7 @@ module.exports = {
     'universe/shared/typescript-analysis',
     'plugin:prettier/recommended',
   ],
-  plugins: ['prettier', 'detox'],
+  plugins: ['prettier'],
   ignorePatterns: ['.eslintrc.js'],
   rules: {
     'prettier/prettier': [
