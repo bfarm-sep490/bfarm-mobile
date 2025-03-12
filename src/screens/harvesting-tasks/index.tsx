@@ -1,15 +1,13 @@
-import React, { Key, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Modal, Text, Image, SafeAreaView, Alert } from 'react-native';
+import { Text, Image, Alert } from 'react-native';
 
-import axios from 'axios';
 import { router, useLocalSearchParams } from 'expo-router';
 import Moment from 'moment';
 import { Controller, useForm } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNPickerSelect from 'react-native-picker-select';
 import Carousel from 'react-native-reanimated-carousel';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { IHarvestingTask, IReportHarvestingTask } from 'src/interfaces';
 
 import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
@@ -214,7 +212,7 @@ export const ReportHarvestingTask = () => {
           Alert.alert('Lỗi', 'Lỗi tải ảnh: ' + response.errorMessage);
         } else {
           if (response.assets && response.assets.length > 0) {
-            const { message, status, data } = await uploadHarvestingTaskImage(
+            const { status, data } = await uploadHarvestingTaskImage(
               response.assets,
             );
             if (status === 200 && data) {
