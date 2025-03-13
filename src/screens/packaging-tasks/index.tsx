@@ -3,8 +3,8 @@ import React, { Key, useEffect, useState } from 'react';
 import { Text, Image, Alert } from 'react-native';
 
 import axios from 'axios';
+import dayjs from 'dayjs';
 import { router, useLocalSearchParams } from 'expo-router';
-import Moment from 'moment';
 import { Controller, useForm } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNPickerSelect from 'react-native-picker-select';
@@ -38,7 +38,7 @@ const exmaple_plan = [
 ];
 
 export const PackagingDetail = () => {
-  Moment.locale('vi');
+  dayjs.locale('vi');
 
   const searchParams = useLocalSearchParams();
   const id = Array.isArray(searchParams.id)
@@ -127,7 +127,7 @@ export const PackagingDetail = () => {
                 </Text>
                 <Text className='line-clamp-2'>
                   <Text className='font-bold'>Thời gian thực hiện: </Text>{' '}
-                  {Moment(data?.complete_date).format('hh:mm DD/MM/YYYY')}
+                  {dayjs(data?.complete_date).format('hh:mm DD/MM/YYYY')}
                 </Text>
               </>
             </VStack>
@@ -148,10 +148,10 @@ export const PackagingDetail = () => {
               <Text className='text-sm'>
                 <Text className='font-bold'>Thời gian thực hiện: </Text>
                 <Text className='text-sm'>
-                  {Moment(data?.start_date).format('hh:mm DD/MM/YYYY') ||
+                  {dayjs(data?.start_date).format('hh:mm DD/MM/YYYY') ||
                     'Không có thời gian'}{' '}
                   {' - '}
-                  {Moment(data?.end_date).format('hh:mm DD/MM/YYYY') ||
+                  {dayjs(data?.end_date).format('hh:mm DD/MM/YYYY') ||
                     'Không có thời gian'}
                 </Text>
               </Text>
