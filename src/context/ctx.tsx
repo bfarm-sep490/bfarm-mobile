@@ -1,10 +1,13 @@
 import { createContext, useContext } from 'react';
 
+import { Plan } from '@/services/api/plans/planSchema';
+
 import { useStorageState } from '../hooks/useStorageState';
 
 interface UserData {
   name: string;
   email: string;
+  id: number;
 }
 
 export interface Session {
@@ -13,6 +16,8 @@ export interface Session {
   session?: string | null;
   user?: UserData | null;
   isLoading: boolean;
+  currentPlan?: Plan | null;
+  setCurrentPlan: (plan: Plan | null) => void;
 }
 
 const AuthContext = createContext<Session | null>(null);
@@ -26,6 +31,8 @@ export function useSession() {
 export function SessionProvider(props: any) {
   const [[isLoadingSession, session], setSession] = useStorageState('session');
   const [[isLoadingUser, user], setUser] = useStorageState('user');
+  const [[isLoadingPlan, currentPlan], setCurrentPlan] =
+    useStorageState('currentPlan');
 
   return (
     <AuthContext.Provider
@@ -37,10 +44,15 @@ export function SessionProvider(props: any) {
         signOut: () => {
           setSession(null);
           setUser(null);
+          setCurrentPlan(null);
         },
         session,
         user: user ? JSON.parse(user) : null,
-        isLoading: isLoadingSession || isLoadingUser,
+        isLoading: isLoadingSession || isLoadingUser || isLoadingPlan,
+        currentPlan: currentPlan ? JSON.parse(currentPlan) : null,
+        setCurrentPlan: (plan: Plan | null) => {
+          setCurrentPlan(plan ? JSON.stringify(plan) : null);
+        },
       }}
     >
       {props.children}

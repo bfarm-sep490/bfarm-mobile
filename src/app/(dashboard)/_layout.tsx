@@ -32,6 +32,7 @@ export default function AppLayout() {
         options={{
           headerShown: false,
           gestureEnabled: false,
+          animation: 'fade',
         }}
       />
     </Stack>

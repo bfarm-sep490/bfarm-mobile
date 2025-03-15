@@ -56,19 +56,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name='profile/index'
-        options={{
-          title: t('profile:title'),
-          tabBarIcon: ({ focused }) => (
-            <SvgXml
-              height={24}
-              width={24}
-              xml={focused ? profileActiveIcon : profileIcon}
-            />
-          ),
-        }}
-      /> */}
     </Tabs>
   );
 }

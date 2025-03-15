@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
-import { useRootNavigation } from 'expo-router';
+import { useNavigationContainerRef } from 'expo-router';
 
 export const useNavigationReady = () => {
   const [isNavigationReady, setNavigationReady] = useState(false);
-  const rootNavigation = useRootNavigation();
+  const rootNavigation = useNavigationContainerRef();
 
   useEffect(() => {
     const unsubscribe = rootNavigation?.addListener('state', event => {

@@ -1,6 +1,6 @@
 import ky from 'ky';
 
-const prefixUrl = 'https://api.outfit4rent.online/api/';
+const prefixUrl = `${process.env.EXPO_PUBLIC_API_URL ?? 'https://api.outfit4rent.online'}/api`;
 
 export const instance = ky.extend({
   headers: {
