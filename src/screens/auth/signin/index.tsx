@@ -38,6 +38,7 @@ import { Text } from '@/components/ui/text';
 import { Toast, ToastTitle, useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
 import { Session, useSession } from '@/context/ctx';
+import { useNotification } from '@/context/notifications';
 import { AuthService, safelyDecodeJwt } from '@/services/api/auth/authService';
 
 import { AuthLayout } from '../layout';
@@ -51,6 +52,7 @@ const loginSchema = z.object({
 type LoginSchemaType = z.infer<typeof loginSchema>;
 
 const Login = () => {
+  const { deviceToken } = useNotification();
   const { signIn }: Session = useSession();
   const {
     control,
@@ -94,7 +96,12 @@ const Login = () => {
             'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
           ],
         };
-
+        if (userData.id && deviceToken) {
+          const response_device = await AuthService.sendToken(
+            userData.id,
+            deviceToken,
+          );
+        }
         signIn(accessToken, userData);
 
         toast.show({

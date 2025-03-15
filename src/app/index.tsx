@@ -1,9 +1,11 @@
+import React from 'react';
+
 import { Redirect } from 'expo-router';
 
-const index = () => {
-  // For some reason, root layout doesn't redirect to the dashboard
-  // Instead we do manually here
+import { NotificationProvider } from '@/context/notifications';
+
+const Index = () => {
   return <Redirect href='home' />;
 };
 
-export default index;
+export default Index;

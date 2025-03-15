@@ -20,6 +20,16 @@ export const AuthService = {
       .json<LoginResponse>();
     return response;
   },
+
+  sendToken: async (
+    farmer_id: number,
+    token: string,
+  ): Promise<LoginResponse> => {
+    const response = await instance
+      .post('auth/' + farmer_id + 'device-token', { json: { token } })
+      .json<LoginResponse>();
+    return response;
+  },
 };
 
 export function safelyDecodeJwt(token: string) {

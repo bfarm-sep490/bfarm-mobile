@@ -19,6 +19,7 @@ import {
 } from '@/components/ui';
 
 import { useSession } from '../context/ctx';
+import { useNotification } from '@/context/notifications';
 
 const LogoutAlertDialog = ({
   openLogoutAlertDialog,
@@ -26,8 +27,10 @@ const LogoutAlertDialog = ({
 }: any) => {
   const { signOut }: any = useSession();
   const { t } = useTranslation();
+  const { deviceToken, removeToken} = useNotification();
   const handleClose = () => {
     signOut();
+
     setOpenLogoutAlertDialog(false);
   };
 
