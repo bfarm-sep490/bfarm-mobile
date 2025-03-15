@@ -38,11 +38,10 @@ const config: ExpoConfig = {
   },
   plugins: [
     [
-      'expo-camera',
+      'expo-image-picker',
       {
-        cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera',
-        microphonePermission: 'Allow $(PRODUCT_NAME) to access your microphone',
-        recordAudioAndroid: true,
+        photosPermission:
+          'The app accesses your photos to let you share them with your friends.',
       },
     ],
     'expo-font',

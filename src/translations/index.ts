@@ -4,27 +4,43 @@ import { initReactI18next } from 'react-i18next';
 
 import { reduxStorage } from '../store/storage';
 import enError from './locales/en/error.json';
+import enFarmerTask from './locales/en/farmer-task.json';
 import enHome from './locales/en/home.json';
+import enNotification from './locales/en/notification.json';
+import enProblem from './locales/en/problem.json';
 import enProfile from './locales/en/profile.json';
 import enSignIn from './locales/en/sign-in.json';
+import enTodo from './locales/en/todo.json';
 import viError from './locales/vi/error.json';
+import viFarmerTask from './locales/vi/farmer-task.json';
 import viHome from './locales/vi/home.json';
+import viNotification from './locales/vi/notification.json';
+import viProblem from './locales/vi/problem.json';
 import viProfile from './locales/vi/profile.json';
 import viSignIn from './locales/vi/sign-in.json';
+import viTodo from './locales/vi/todo.json';
 
 // the translations
 const resources: any = {
   en: {
     home: enHome,
     profile: enProfile,
+    farmerTask: enFarmerTask,
     signIn: enSignIn,
     error: enError,
+    notification: enNotification,
+    problem: enProblem,
+    todo: enTodo,
   },
   vi: {
     home: viHome,
     profile: viProfile,
+    farmerTask: viFarmerTask,
     signIn: viSignIn,
     error: viError,
+    notification: viNotification,
+    problem: viProblem,
+    todo: viTodo,
   },
 } as const;
 // This is for situations where the user can change the language in the app.

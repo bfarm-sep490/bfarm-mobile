@@ -90,11 +90,7 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
   return (
     <VStack space='sm'>
       {!error && !isNoPlansError && (
-        <Button
-          variant='outline'
-          onPress={() => setShowActionsheet(true)}
-          className='border-border-300 border bg-background-50'
-        >
+        <Button variant='outline' onPress={() => setShowActionsheet(true)}>
           <HStack className='w-full items-center justify-between'>
             <ButtonText>
               {isLoading

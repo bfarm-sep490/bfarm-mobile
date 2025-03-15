@@ -441,7 +441,7 @@ const MainContent = () => {
         }}
         className='mb-20 flex-1 md:mb-2'
       >
-        <VStack className='w-full p-4 pb-0 md:px-6 md:pt-6' space='lg'>
+        <VStack className='w-full p-4 pb-0' space='lg'>
           {!currentPlan ? (
             <NoPlansView />
           ) : (
