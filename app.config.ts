@@ -20,6 +20,9 @@ const config: ExpoConfig = {
       projectId: '51bd1635-4238-4edc-9e36-f7f61161f594',
     },
   },
+  updates: {
+    url: 'https://u.expo.dev/51bd1635-4238-4edc-9e36-f7f61161f594',
+  },
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.bfarmx.app',
