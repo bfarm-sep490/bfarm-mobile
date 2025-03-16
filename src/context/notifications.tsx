@@ -53,7 +53,6 @@ export const useNotification = () => useContext(NotificationContext);
 const showForegroundNotification = async (remoteMessage: any) => {
   try {
     if (remoteMessage?.notification) {
-      console.log('📩 Displaying foreground notification:', remoteMessage);
       await Notifications.presentNotificationAsync({
         sound: 'default',
         title: remoteMessage.notification.title || 'New Notification',
@@ -124,19 +123,14 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const removeFCMToken = async (): Promise<void> => {
     try {
-      // Delete the token from Firebase
       if (deviceToken) {
         await messaging().deleteToken();
-        console.log('🗑️ FCM Token deleted from Firebase');
       }
 
-      // Clear from local storage
       await AsyncStorage.removeItem('fcmToken');
 
-      // Update state
       setDeviceToken(null);
 
-      // Unsubscribe from all Firebase listeners
       unsubscribeRefs.current.onMessage();
       unsubscribeRefs.current.onOpen();
       unsubscribeRefs.current.tokenRefresh();
@@ -144,7 +138,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       console.log('🔌 Unsubscribed from all Firebase listeners');
       console.log('🗑️ FCM Token removed from storage and state');
 
-      // Setup subscriptions again with empty listeners
       setupFirebaseListeners();
     } catch (error) {
       console.error('Error removing FCM token:', error);
@@ -153,12 +146,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const setupFirebaseListeners = () => {
-    // Unsubscribe from any existing listeners before setting up new ones
     unsubscribeRefs.current.onMessage();
     unsubscribeRefs.current.onOpen();
     unsubscribeRefs.current.tokenRefresh();
 
-    // Set up new listeners
     unsubscribeRefs.current.onMessage = messaging().onMessage(
       async remoteMessage => {
         console.log('📩 Received foreground notification:', remoteMessage);
@@ -208,11 +199,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       try {
         const storedToken = await AsyncStorage.getItem('fcmToken');
         if (storedToken) {
-          console.log('🔄 Found token in storage:', storedToken);
           setDeviceToken(storedToken);
           const currentToken = await messaging().getToken();
           if (currentToken !== storedToken) {
-            console.log('🔄 Token changed, updating...');
             setDeviceToken(currentToken);
             await AsyncStorage.setItem('fcmToken', currentToken);
           }
@@ -220,7 +209,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
           await getFCMToken();
         }
       } catch (error) {
-        console.error('Error retrieving stored token:', error);
         await getFCMToken();
       }
     } catch (error) {
@@ -233,7 +221,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     setupFirebaseListeners();
 
     return () => {
-      // Clean up all listeners when component unmounts
       unsubscribeRefs.current.onMessage();
       unsubscribeRefs.current.onOpen();
       unsubscribeRefs.current.tokenRefresh();
