@@ -110,7 +110,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     try {
       const fcmToken = await messaging().getToken();
       if (fcmToken) {
-        console.log('✅ FCM Token:', fcmToken);
         setDeviceToken(fcmToken);
         await AsyncStorage.setItem('fcmToken', fcmToken);
         return fcmToken;
@@ -135,9 +134,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       unsubscribeRefs.current.onOpen();
       unsubscribeRefs.current.tokenRefresh();
 
-      console.log('🔌 Unsubscribed from all Firebase listeners');
-      console.log('🗑️ FCM Token removed from storage and state');
-
       setupFirebaseListeners();
     } catch (error) {
       console.error('Error removing FCM token:', error);
@@ -152,34 +148,24 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
     unsubscribeRefs.current.onMessage = messaging().onMessage(
       async remoteMessage => {
-        console.log('📩 Received foreground notification:', remoteMessage);
         await showForegroundNotification(remoteMessage);
       },
     );
 
     unsubscribeRefs.current.onOpen = messaging().onNotificationOpenedApp(
-      remoteMessage => {
-        console.log('📬 App opened from notification:', remoteMessage);
-      },
+      remoteMessage => {},
     );
 
     messaging()
       .getInitialNotification()
       .then(remoteMessage => {
         if (remoteMessage) {
-          console.log(
-            '📬 App opened from quit state by notification:',
-            remoteMessage,
-          );
         }
       });
 
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('📥 Received background notification:', remoteMessage);
-    });
+    messaging().setBackgroundMessageHandler(async remoteMessage => {});
 
     unsubscribeRefs.current.tokenRefresh = messaging().onTokenRefresh(token => {
-      console.log('🔄 FCM token refreshed:', token);
       setDeviceToken(token);
       AsyncStorage.setItem('fcmToken', token).catch(error => {
         console.error('Error saving refreshed token:', error);
@@ -193,7 +179,6 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       setPermissionGranted(hasPermission);
 
       if (!hasPermission) {
-        console.warn('Notification permissions not granted');
         return;
       }
       try {
