@@ -1,10 +1,6 @@
 import { instance } from '@/services/instance';
 
-import {
-  planSchema,
-  planResponseSchema,
-  singlePlanResponseSchema,
-} from './planSchema';
+import { planResponseSchema, singlePlanResponseSchema } from './planSchema';
 
 // Define the params type for filtering plans
 export type PlanParams = {

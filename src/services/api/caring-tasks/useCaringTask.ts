@@ -1,6 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { CaringTaskParams, CaringTaskServices } from './caringTaskService';
+import {
+  CaringTaskParams,
+  CaringTaskServices,
+  TaskReportData,
+} from './caringTaskService';
 
 import type { CaringTask } from './caringTaskSchema';
 
@@ -8,8 +12,6 @@ const enum CaringTaskQueryKey {
   fetchAll = 'fetchAllCaringTasks',
   fetchOne = 'fetchOneCaringTask',
   fetchByParams = 'fetchByParamsCaringTasks',
-  fetchByFarmer = 'fetchByFarmerCaringTasks',
-  fetchByPlan = 'fetchByPlanCaringTasks',
 }
 
 export const useCaringTask = () => {
@@ -20,12 +22,18 @@ export const useCaringTask = () => {
       queryKey: queryKeys,
     });
 
+  /**
+   * Hook để lấy danh sách tất cả công việc chăm sóc
+   */
   const useFetchAllQuery = () =>
     useQuery({
       queryFn: () => CaringTaskServices.fetchAll(),
       queryKey: [CaringTaskQueryKey.fetchAll],
     });
 
+  /**
+   * Hook để lấy thông tin chi tiết của một công việc chăm sóc theo ID
+   */
   const useFetchOneQuery = (taskId: CaringTask['id']) =>
     useQuery({
       enabled: taskId > 0,
@@ -33,20 +41,9 @@ export const useCaringTask = () => {
       queryKey: [CaringTaskQueryKey.fetchOne, taskId],
     });
 
-  const useFetchByFarmerQuery = (farmerId: number) =>
-    useQuery({
-      enabled: farmerId > 0,
-      queryFn: () => CaringTaskServices.fetchByFarmer(farmerId),
-      queryKey: [CaringTaskQueryKey.fetchByFarmer, farmerId],
-    });
-
-  const useFetchByPlanQuery = (planId: number) =>
-    useQuery({
-      enabled: planId > 0,
-      queryFn: () => CaringTaskServices.fetchByPlan(planId),
-      queryKey: [CaringTaskQueryKey.fetchByPlan, planId],
-    });
-
+  /**
+   * Hook để lấy danh sách công việc chăm sóc theo các tham số
+   */
   const useFetchByParamsQuery = (params: CaringTaskParams, enabled = true) =>
     useQuery({
       enabled,
@@ -54,65 +51,28 @@ export const useCaringTask = () => {
       queryKey: [CaringTaskQueryKey.fetchByParams, params],
     });
 
-  const useCreateMutation = () =>
+  /**
+   * Hook để cập nhật báo cáo công việc
+   */
+  const useUpdateTaskReportMutation = () =>
     useMutation({
-      mutationFn: (data: any) => CaringTaskServices.create(data),
-      onSuccess: () => {
-        invalidateQuery([CaringTaskQueryKey.fetchAll]);
-      },
-    });
-
-  const useUpdateMutation = () =>
-    useMutation({
-      mutationFn: ({ id, data }: { id: number; data: any }) =>
-        CaringTaskServices.update(id, data),
-      onSuccess: (_, variables) => {
-        invalidateQuery([
-          CaringTaskQueryKey.fetchAll,
-          CaringTaskQueryKey.fetchOne,
-          CaringTaskQueryKey.fetchByFarmer,
-          CaringTaskQueryKey.fetchByPlan,
-        ]);
-        client.invalidateQueries({
-          queryKey: [CaringTaskQueryKey.fetchOne, variables.id],
-        });
-      },
-    });
-
-  const useCompleteMutation = () =>
-    useMutation({
-      mutationFn: ({
-        id,
-        resultContent,
-        images,
-      }: {
-        id: number;
-        resultContent: string;
-        images?: string[];
-      }) => CaringTaskServices.complete(id, resultContent, images),
-      onSuccess: (_, variables) => {
-        invalidateQuery([
-          CaringTaskQueryKey.fetchAll,
-          CaringTaskQueryKey.fetchOne,
-          CaringTaskQueryKey.fetchByFarmer,
-          CaringTaskQueryKey.fetchByPlan,
-        ]);
-        client.invalidateQueries({
-          queryKey: [CaringTaskQueryKey.fetchOne, variables.id],
-        });
-      },
-    });
-
-  const useDeleteMutation = () =>
-    useMutation({
-      mutationFn: (id: number) => CaringTaskServices.delete(id),
+      mutationFn: ({ id, data }: { id: number; data: TaskReportData }) =>
+        CaringTaskServices.updateTaskReport(id, data),
       onSuccess: () => {
         invalidateQuery([
           CaringTaskQueryKey.fetchAll,
-          CaringTaskQueryKey.fetchByFarmer,
-          CaringTaskQueryKey.fetchByPlan,
+          CaringTaskQueryKey.fetchOne,
+          CaringTaskQueryKey.fetchByParams,
         ]);
       },
+    });
+
+  /**
+   * Hook để upload hình ảnh cho công việc chăm sóc
+   */
+  const useUploadImagesMutation = () =>
+    useMutation({
+      mutationFn: (images: File[]) => CaringTaskServices.uploadImages(images),
     });
 
   return {
@@ -120,11 +80,7 @@ export const useCaringTask = () => {
     useFetchAllQuery,
     useFetchOneQuery,
     useFetchByParamsQuery,
-    useFetchByFarmerQuery,
-    useFetchByPlanQuery,
-    useCreateMutation,
-    useUpdateMutation,
-    useCompleteMutation,
-    useDeleteMutation,
+    useUpdateTaskReportMutation,
+    useUploadImagesMutation,
   };
 };

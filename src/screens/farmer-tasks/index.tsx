@@ -21,6 +21,7 @@ import {
   Box,
   Settings,
   Info,
+  UserIcon,
 } from 'lucide-react-native';
 
 import { Box as BoxUI } from '@/components/ui/box';
@@ -34,164 +35,15 @@ import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { ScrollView } from '@/components/ui/scroll-view';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useSession } from '@/context/ctx';
+import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
+import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
+import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 
-// Mock data for UI demonstration
-const mockCaringTasks = [
-  {
-    id: 4,
-    plan_id: 2,
-    farmer_information: [
-      {
-        farmer_id: 3,
-        status: 'Completed',
-      },
-    ],
-    problem_id: 4,
-    task_name: 'Lắp hệ thống tưới tự động',
-    description:
-      'Thiết lập hệ thống tưới nhỏ giọt giúp cây nhận đủ nước mà không gây lãng phí.',
-    result_content: null,
-    task_type: 'Setup',
-    start_date: '2025-02-15T00:00:00',
-    end_date: '2025-02-18T00:00:00',
-    complete_date: '2025-02-20T00:00:00',
-    status: 'Completed',
-    create_at: '2025-03-15T17:18:36',
-    create_by: 'thangbinhbeo',
-    update_at: null,
-    update_by: null,
-    care_images: [
-      {
-        id: 5,
-        task_id: 4,
-        url: 'https://danviet.ex-cdn.com/files/f1/296231569849192448/2022/5/13/edit-z3411936151630efaace430e503df8e6a548a064ff5839-1652436512592542646364-1652440184006468269746.jpeg',
-      },
-    ],
-    care_pesticides: [],
-    care_fertilizers: [],
-    care_items: [
-      {
-        id: 7,
-        item_id: 4,
-        task_id: 4,
-        quantity: 1,
-        unit: 'Cái',
-      },
-    ],
-  },
-];
-
-const mockHarvestingTasks = [
-  {
-    id: 1,
-    plan_id: 2,
-    farmer_id: null,
-    farmer_name: null,
-    task_name: 'Thu hoạch rau cải',
-    description: 'Thu hoạch rau cải trước khi trời quá nắng',
-    result_content: 'Đã hủy vì cây không đạt chất lượng kiểm định',
-    start_date: '2025-03-10T17:18:36',
-    end_date: '2025-03-12T17:18:36',
-    complete_date: '2025-03-15T17:18:36',
-    harvested_quantity: 50,
-    harvested_unit: null,
-    is_available: false,
-    status: 'Cancel',
-    priority: 0,
-    created_at: '2025-03-10T17:18:36',
-    updated_at: null,
-    harvest_images: [
-      {
-        id: 1,
-        task_id: 1,
-        url: 'https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2022/1/4/991490/Thu-Hoach-Rau-Cai-Th.jpg',
-      },
-    ],
-    harvesting_items: [
-      {
-        item_id: 5,
-        task_id: 1,
-        quantity: 2,
-        unit: 'Cái',
-      },
-      {
-        item_id: 6,
-        task_id: 1,
-        quantity: 1,
-        unit: 'Cái',
-      },
-    ],
-  },
-];
-
-const mockPackagingTasks = [
-  {
-    id: 2,
-    plan_id: 2,
-    farmer_id: null,
-    farmer_name: null,
-    task_name: 'Đóng gói cà phê',
-    packed_unit: null,
-    packed_quantity: 500,
-    description: 'Đóng gói cà phê bột vào túi 1kg',
-    result_content: 'Đã đóng gói được 500 túi',
-    start_date: '2025-03-12T17:18:36',
-    end_date: '2025-03-16T17:18:36',
-    status: 'Complete',
-    complete_date: '2025-03-18T17:18:36',
-    created_at: '2025-03-11T17:18:36',
-    updated_at: '2025-03-15T17:18:36',
-    priority: 0,
-    packaging_images: [
-      {
-        id: 2,
-        task_id: 2,
-        url: 'https://maygoi.vn/wp-content/uploads/2019/03/maxresdefault-1.jpg',
-      },
-    ],
-    packaging_items: [
-      {
-        item_id: 9,
-        task_id: 2,
-        quantity: 4,
-        unit: 'unit',
-      },
-    ],
-  },
-];
-
-// Add more mock data for demo
-const additionalTasks = [
-  {
-    id: 5,
-    plan_id: 2,
-    task_name: 'Phun thuốc diệt cỏ',
-    task_type: 'Spraying',
-    description: 'Phun thuốc diệt cỏ tại khu vực trồng lúa',
-    status: 'Pending',
-    start_date: '2025-03-20T17:18:36',
-    end_date: '2025-03-22T17:18:36',
-    care_images: [],
-    care_items: [],
-  },
-  {
-    id: 6,
-    plan_id: 2,
-    task_name: 'Bón phân NPK',
-    task_type: 'Fertilizing',
-    description: 'Bón phân NPK cho cây lúa giai đoạn đẻ nhánh',
-    status: 'Pending',
-    start_date: '2025-03-25T17:18:36',
-    end_date: '2025-03-26T17:18:36',
-    care_images: [],
-    care_items: [],
-  },
-];
-
-// Helper function to get icon based on task type
-const getTaskTypeIcon = (taskType: any) => {
+const getTaskTypeIcon = (taskType: string) => {
   switch (taskType) {
     case 'Spraying':
       return Shovel;
@@ -205,36 +57,26 @@ const getTaskTypeIcon = (taskType: any) => {
       return Settings;
     case 'Fertilizing':
       return PackageOpen;
+    case 'Inspecting':
+      return Search;
     default:
       return Leaf;
   }
 };
 
-// Helper function to get task status color
-const getStatusColor = (status: any) => {
+const getStatusColor = (status: string) => {
   switch (status) {
     case 'Complete':
-      return {
-        bg: 'bg-success-100',
-        text: 'text-success-700',
-        icon: CheckCircle2,
-      };
     case 'Completed':
       return {
         bg: 'bg-success-100',
         text: 'text-success-700',
         icon: CheckCircle2,
       };
-    case 'Cancel':
+    case 'InComplete':
       return { bg: 'bg-danger-100', text: 'text-danger-700', icon: XCircle };
     case 'Ongoing':
       return { bg: 'bg-primary-100', text: 'text-primary-700', icon: Clock };
-    case 'Pending':
-      return {
-        bg: 'bg-warning-100',
-        text: 'text-warning-700',
-        icon: AlertCircle,
-      };
     default:
       return {
         bg: 'bg-typography-100',
@@ -244,17 +86,27 @@ const getStatusColor = (status: any) => {
   }
 };
 
-// Task card component
 const TaskCard = ({
   task,
   taskType = 'caring',
+  currentFarmerId,
 }: {
   task: any;
   taskType?: string;
+  currentFarmerId?: number;
 }) => {
   const router = useRouter();
   const statusStyle = getStatusColor(task.status);
-  const TaskIcon = getTaskTypeIcon(task.task_type);
+  const TaskIcon = getTaskTypeIcon(task.task_type || '');
+
+  // Get only active farmers
+  const activeFarmers =
+    task.farmer_information?.filter((f: any) => f.status === 'Active') || [];
+
+  // Find current farmer status if available
+  const currentFarmerInfo = currentFarmerId
+    ? task.farmer_information?.find((f: any) => f.farmer_id === currentFarmerId)
+    : undefined;
 
   // Determine image source based on task type
   let imageUrl = '';
@@ -303,6 +155,59 @@ const TaskCard = ({
             </BoxUI>
           </HStack>
 
+          {/* Farmer assignment information */}
+          <BoxUI className='rounded-lg border border-typography-200 p-2'>
+            <HStack space='xs' className='items-center'>
+              <Text className='text-xs font-medium text-typography-600'>
+                {activeFarmers.length > 0
+                  ? activeFarmers.map((farmer: any, index: number) => (
+                      <HStack
+                        key={farmer.farmer_id}
+                        space='xs'
+                        className='items-center'
+                      >
+                        <Icon
+                          as={UserIcon}
+                          size='xs'
+                          className='text-typography-500'
+                        />
+                        <Text className='text-xs text-typography-600'>
+                          {farmer.farmer_name ||
+                            `Nông dân #${farmer.farmer_id}`}
+                        </Text>
+                      </HStack>
+                    ))
+                  : 'Chưa có ai được giao nhiệm vụ này'}
+              </Text>
+            </HStack>
+          </BoxUI>
+
+          {/* Current farmer status if available */}
+          {currentFarmerInfo && (
+            <BoxUI
+              className={`rounded-lg p-2 ${currentFarmerInfo.status === 'Active' ? 'bg-success-100' : 'bg-typography-100'}`}
+            >
+              <HStack space='xs' className='items-center'>
+                <Icon
+                  as={
+                    currentFarmerInfo.status === 'Active' ? CheckCircle2 : Info
+                  }
+                  size='xs'
+                  className={
+                    currentFarmerInfo.status === 'Active'
+                      ? 'text-success-700'
+                      : 'text-typography-700'
+                  }
+                />
+                <Text
+                  className={`text-xs ${currentFarmerInfo.status === 'Active' ? 'text-success-700' : 'text-typography-700'}`}
+                >
+                  Trạng thái của bạn: {currentFarmerInfo.status}
+                </Text>
+              </HStack>
+            </BoxUI>
+          )}
+
           {/* Task description */}
           <Text className='text-sm text-typography-700'>
             {task.description}
@@ -345,6 +250,31 @@ const TaskCard = ({
               </HStack>
             )}
 
+            {/* Show additional task-specific info */}
+            {taskType === 'harvesting' && task.harvested_quantity && (
+              <HStack space='sm' className='items-center'>
+                <Icon as={Scissors} size='xs' className='text-typography-500' />
+                <Text className='text-xs text-typography-500'>
+                  Số lượng thu hoạch: {task.harvested_quantity}
+                  {task.harvested_unit ? ` ${task.harvested_unit}` : ''}
+                </Text>
+              </HStack>
+            )}
+
+            {taskType === 'packaging' && task.packed_quantity && (
+              <HStack space='sm' className='items-center'>
+                <Icon
+                  as={PackageOpen}
+                  size='xs'
+                  className='text-typography-500'
+                />
+                <Text className='text-xs text-typography-500'>
+                  Số lượng đóng gói: {task.packed_quantity}
+                  {task.packed_unit ? ` ${task.packed_unit}` : ''}
+                </Text>
+              </HStack>
+            )}
+
             {/* Show result if available */}
             {task.result_content && (
               <BoxUI className='mt-2 rounded-lg bg-typography-50 p-2'>
@@ -369,8 +299,8 @@ const TaskCard = ({
             </Button>
 
             {task.status !== 'Complete' &&
-              task.status !== 'Completed' &&
-              task.status !== 'Cancel' && (
+              (!currentFarmerInfo ||
+                currentFarmerInfo.status !== 'Completed') && (
                 <Button
                   className='flex-1'
                   variant='solid'
@@ -394,19 +324,19 @@ const FilterTabs = ({
   activeTab,
   setActiveTab,
 }: {
-  activeTab: 'all' | 'pending' | 'ongoing' | 'completed';
+  activeTab: 'all' | 'ongoing' | 'completed' | 'incomplete';
   setActiveTab: React.Dispatch<
-    React.SetStateAction<'all' | 'pending' | 'ongoing' | 'completed'>
+    React.SetStateAction<'all' | 'ongoing' | 'completed' | 'incomplete'>
   >;
 }) => {
   const tabs: {
-    id: 'all' | 'pending' | 'ongoing' | 'completed';
+    id: 'all' | 'ongoing' | 'completed' | 'incomplete';
     label: string;
   }[] = [
     { id: 'all', label: 'Tất cả' },
-    { id: 'pending', label: 'Chờ xử lý' },
     { id: 'ongoing', label: 'Đang thực hiện' },
     { id: 'completed', label: 'Hoàn thành' },
+    { id: 'incomplete', label: 'Chưa hoàn thành' },
   ];
 
   return (
@@ -485,13 +415,66 @@ const CategoryFilter = ({
 export const FarmerTasksScreen = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
-    'all' | 'pending' | 'ongoing' | 'completed'
+    'all' | 'ongoing' | 'completed' | 'incomplete'
   >('all');
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Combine all tasks for the demo
-  const allCaringTasks = [...mockCaringTasks, ...additionalTasks];
+  // Get current user and plan from session
+  const { currentPlan, user } = useSession();
+  const currentFarmerId = user?.id;
+  const currentPlanId = currentPlan?.id;
+
+  // Use API hooks
+  const { useFetchByParamsQuery: useFetchCaringTasks } = useCaringTask();
+  const { useFetchByParamsQuery: useFetchHarvestingTasks } =
+    useHarvestingTask();
+  const { useFetchByParamsQuery: useFetchPackagingTasks } = usePackagingTask();
+
+  // Create params for API calls - only using planId now
+  const caringParams = {
+    plan_id: currentPlanId,
+  };
+
+  const harvestingParams = {
+    plan_id: currentPlanId,
+  };
+
+  const packagingParams = {
+    plan_id: currentPlanId,
+  };
+
+  // Fetch tasks using React Query
+  const caringQuery = useFetchCaringTasks(
+    caringParams,
+    !!currentPlanId &&
+      (activeCategory === 'all' || activeCategory === 'caring'),
+  );
+
+  const harvestingQuery = useFetchHarvestingTasks(
+    harvestingParams,
+    !!currentPlanId &&
+      (activeCategory === 'all' || activeCategory === 'harvesting'),
+  );
+
+  const packagingQuery = useFetchPackagingTasks(
+    packagingParams,
+    !!currentPlanId &&
+      (activeCategory === 'all' || activeCategory === 'packaging'),
+  );
+
+  // Check if any query is loading
+  const isLoading =
+    (caringQuery.isLoading &&
+      (activeCategory === 'all' || activeCategory === 'caring')) ||
+    (harvestingQuery.isLoading &&
+      (activeCategory === 'all' || activeCategory === 'harvesting')) ||
+    (packagingQuery.isLoading &&
+      (activeCategory === 'all' || activeCategory === 'packaging'));
+
+  // Check if any query has error
+  const hasError =
+    caringQuery.isError || harvestingQuery.isError || packagingQuery.isError;
 
   // Filter tasks based on active tab and category
   const getFilteredTasks = () => {
@@ -499,38 +482,39 @@ export const FarmerTasksScreen = () => {
 
     // Filter by category
     if (activeCategory === 'all' || activeCategory === 'caring') {
+      const caringTasks = caringQuery.data?.data || [];
       filteredTasks = [
         ...filteredTasks,
-        ...allCaringTasks.map(t => ({ ...t, taskType: 'caring' })),
+        ...caringTasks.map(t => ({ ...t, taskType: 'caring' })),
       ];
     }
 
     if (activeCategory === 'all' || activeCategory === 'harvesting') {
+      const harvestingTasks = harvestingQuery.data?.data || [];
       filteredTasks = [
         ...filteredTasks,
-        ...mockHarvestingTasks.map(t => ({ ...t, taskType: 'harvesting' })),
+        ...harvestingTasks.map(t => ({ ...t, taskType: 'harvesting' })),
       ];
     }
 
     if (activeCategory === 'all' || activeCategory === 'packaging') {
+      const packagingTasks = packagingQuery.data?.data || [];
       filteredTasks = [
         ...filteredTasks,
-        ...mockPackagingTasks.map(t => ({ ...t, taskType: 'packaging' })),
+        ...packagingTasks.map(t => ({ ...t, taskType: 'packaging' })),
       ];
     }
 
     // Filter by status
     if (activeTab !== 'all') {
-      const statusMap = {
-        pending: ['Pending'],
+      const statusMap: Record<string, string[]> = {
         ongoing: ['Ongoing'],
         completed: ['Complete', 'Completed'],
+        incomplete: ['InComplete'],
       };
 
       filteredTasks = filteredTasks.filter(task =>
-        statusMap[activeTab as 'pending' | 'ongoing' | 'completed']?.includes(
-          task.status,
-        ),
+        statusMap[activeTab]?.includes(task.status),
       );
     }
 
@@ -547,6 +531,19 @@ export const FarmerTasksScreen = () => {
   };
 
   const filteredTasks = getFilteredTasks();
+
+  // Handle refresh
+  const handleRefresh = () => {
+    if (activeCategory === 'all' || activeCategory === 'caring') {
+      caringQuery.refetch();
+    }
+    if (activeCategory === 'all' || activeCategory === 'harvesting') {
+      harvestingQuery.refetch();
+    }
+    if (activeCategory === 'all' || activeCategory === 'packaging') {
+      packagingQuery.refetch();
+    }
+  };
 
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
@@ -602,15 +599,33 @@ export const FarmerTasksScreen = () => {
 
       {/* Task list */}
       <ScrollView className='flex-1 px-4'>
-        {filteredTasks.length > 0 ? (
-          filteredTasks.map(task => (
-            <TaskCard
-              key={`${task.taskType}-${task.id}`}
-              task={task}
-              taskType={task.taskType || 'caring'}
-            />
-          ))
-        ) : (
+        {/* Loading state */}
+        {isLoading && (
+          <VStack className='items-center justify-center py-10'>
+            <Spinner size='large' color='$primary600' />
+            <Text className='mt-4 text-center text-typography-500'>
+              Đang tải dữ liệu...
+            </Text>
+          </VStack>
+        )}
+
+        {/* Error state */}
+        {hasError && !isLoading && (
+          <VStack className='items-center justify-center py-10'>
+            <BoxUI className='bg-danger-100 mb-4 rounded-full p-4'>
+              <Icon as={AlertCircle} size='xl' className='text-danger-600' />
+            </BoxUI>
+            <Text className='text-center text-typography-500'>
+              Có lỗi xảy ra khi tải dữ liệu
+            </Text>
+            <Button className='mt-4' onPress={handleRefresh}>
+              <ButtonText>Thử lại</ButtonText>
+            </Button>
+          </VStack>
+        )}
+
+        {/* Empty state */}
+        {!isLoading && !hasError && filteredTasks.length === 0 && (
           <VStack className='items-center justify-center py-10'>
             <BoxUI className='mb-4 rounded-full bg-typography-100 p-4'>
               <Icon as={ListFilter} size='xl' className='text-typography-400' />
@@ -634,6 +649,19 @@ export const FarmerTasksScreen = () => {
             </Button>
           </VStack>
         )}
+
+        {/* Task list */}
+        {!isLoading &&
+          !hasError &&
+          filteredTasks.length > 0 &&
+          filteredTasks.map(task => (
+            <TaskCard
+              key={`${task.taskType}-${task.id}`}
+              task={task}
+              taskType={task.taskType || 'caring'}
+              currentFarmerId={currentFarmerId}
+            />
+          ))}
 
         {/* Add some space at the bottom */}
         <BoxUI className='h-20' />

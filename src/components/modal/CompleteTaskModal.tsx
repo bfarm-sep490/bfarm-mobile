@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 
-import { Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Platform } from 'react-native';
 
 import * as ImagePicker from 'expo-image-picker';
 import { XCircle, Camera, ImageIcon, X } from 'lucide-react-native';
 
-import { Avatar } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
-import { Button, ButtonText, ButtonIcon } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -23,6 +22,7 @@ import {
 } from '@/components/ui/modal';
 import { Pressable } from '@/components/ui/pressable';
 import { ScrollView } from '@/components/ui/scroll-view';
+import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 
@@ -68,6 +68,12 @@ export interface CompleteTaskModalProps {
   confirmText?: string;
 
   /**
+   * The type of task (caring, harvesting, packaging)
+   * @default "caring"
+   */
+  taskType?: 'caring' | 'harvesting' | 'packaging';
+
+  /**
    * Set to true if you want to allow multiple images
    * @default false
    */
@@ -94,10 +100,7 @@ export interface CompleteTaskModalProps {
   /**
    * Function to call when the confirm button is pressed
    */
-  onConfirm: (data: {
-    resultContent: string;
-    images: ImagePicker.ImagePickerAsset[];
-  }) => void;
+  onConfirm: (data: { resultContent: string; images: string[] }) => void;
 }
 
 /**
@@ -113,6 +116,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   placeholder = 'Nhập kết quả...',
   cancelText = 'Hủy',
   confirmText = 'Xác nhận',
+  taskType = 'caring',
   allowMultipleImages = false,
   showCameraButton = true,
   showGalleryButton = true,
@@ -123,21 +127,42 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   const [selectedImages, setSelectedImages] = useState<
     ImagePicker.ImagePickerAsset[]
   >([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Reset state when modal is closed
   const handleClose = () => {
     setResultContent('');
     setSelectedImages([]);
+    setIsUploading(false);
     onClose();
   };
 
   // Handle submission
-  const handleConfirm = () => {
-    onConfirm({
-      resultContent,
-      images: selectedImages,
-    });
-    handleClose();
+  const handleConfirm = async () => {
+    try {
+      setIsUploading(true);
+
+      // Chỉ lấy uri của hình ảnh
+      const imageUrls = selectedImages.map(image => image.uri);
+
+      // Log data trước khi gửi
+      console.log('===== SUBMITTING TASK DATA =====');
+      console.log('Task Type:', taskType);
+      console.log('Result Content:', resultContent);
+      console.log('Image URLs:', imageUrls);
+      console.log('==============================');
+
+      // Call the onConfirm handler with result and image URLs
+      onConfirm({
+        resultContent,
+        images: imageUrls,
+      });
+    } catch (error) {
+      console.error('Error in handleConfirm:', error);
+    } finally {
+      setIsUploading(false);
+      handleClose();
+    }
   };
 
   // Request camera permission and take photo
@@ -293,7 +318,12 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button variant='outline' size='sm' onPress={handleClose}>
+          <Button
+            variant='outline'
+            size='sm'
+            onPress={handleClose}
+            isDisabled={isUploading}
+          >
             <ButtonText>{cancelText}</ButtonText>
           </Button>
           <Button
@@ -301,8 +331,16 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             variant='solid'
             className='ml-3'
             onPress={handleConfirm}
+            isDisabled={isUploading}
           >
-            <ButtonText>{confirmText}</ButtonText>
+            {isUploading ? (
+              <HStack space='sm'>
+                <Spinner size='small' color='white' />
+                <ButtonText>Đang tải...</ButtonText>
+              </HStack>
+            ) : (
+              <ButtonText>{confirmText}</ButtonText>
+            )}
           </Button>
         </ModalFooter>
       </ModalContent>

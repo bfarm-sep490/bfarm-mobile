@@ -20,8 +20,6 @@ import {
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
-
 import LogoutAlertDialog from '@/components/logout-alert-dialog';
 import {
   Avatar,
@@ -225,13 +223,6 @@ const Sidebar = () => {
 };
 
 const DashboardLayout = (props: any) => {
-  const [isSidebarVisible, setIsSidebarVisible] = useState(
-    props.isSidebarVisible,
-  );
-  function toggleSidebar() {
-    setIsSidebarVisible(!isSidebarVisible);
-  }
-
   return (
     <VStack className='h-full w-full bg-background-0'>
       <Box className='md:hidden'>
@@ -245,41 +236,14 @@ const DashboardLayout = (props: any) => {
           title={props.title}
         />
       </Box>
-      <Box className='hidden md:flex'>
-        <WebHeader toggleSidebar={toggleSidebar} title={props.title} />
-      </Box>
       <VStack className='h-full w-full'>
         <HStack className='h-full w-full'>
-          <Box className='hidden h-full md:flex'>
-            {isSidebarVisible && <Sidebar />}
-          </Box>
           <VStack className='w-full flex-1'>{props.children}</VStack>
         </HStack>
       </VStack>
     </VStack>
   );
 };
-
-function WebHeader(props: HeaderProps) {
-  return (
-    <HStack className='border-border-300 items-center justify-between border-b bg-background-0 pb-3 pr-10 pt-4'>
-      <HStack className='items-center'>
-        <Pressable
-          onPress={() => {
-            props.toggleSidebar();
-          }}
-        >
-          <Icon as={MenuIcon} size='lg' className='mx-5' />
-        </Pressable>
-        <Text className='text-2xl'>{props.title}</Text>
-      </HStack>
-
-      <Avatar className='h-9 w-9'>
-        <AvatarFallbackText className='font-light'>A</AvatarFallbackText>
-      </Avatar>
-    </HStack>
-  );
-}
 
 type userSchemaDetails = z.infer<typeof userSchema>;
 
@@ -353,7 +317,7 @@ const MainContent = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: isWeb ? 0 : 160,
+          paddingBottom: 160,
           flexGrow: 1,
         }}
       >
@@ -1021,7 +985,7 @@ const LogoutButton = ({ setOpenLogoutAlertDialog }: any) => {
 export const Profile = () => {
   return (
     <SafeAreaView className='h-full w-full'>
-      <DashboardLayout title='Profile' isSidebarVisible={true}>
+      <DashboardLayout title='Profile'>
         <MainContent />
       </DashboardLayout>
     </SafeAreaView>

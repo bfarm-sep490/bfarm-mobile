@@ -1,48 +1,51 @@
 import { instance } from '@/services/instance';
 
 import {
-  caringTaskListResponseSchema,
-  caringTaskDetailResponseSchema,
+  harvestingTaskListResponseSchema,
+  harvestingTaskDetailResponseSchema,
   taskReportUpdateResponseSchema,
   imageUploadResponseSchema,
-} from './caringTaskSchema';
+} from './harvestingTaskSchema';
 
-export type CaringTaskParams = {
+export type HarvestingTaskParams = {
   plan_id?: number;
   farmer_id?: number;
   status?: string;
-  task_type?: string;
   [key: string]: any;
 };
 
 export type TaskReportData = {
-  result_content: string;
+  status: string;
+  result_content?: string;
+  list_of_image_urls?: string[];
+  harvested_quantity: number;
+  product_expired_date?: string;
+  fail_quantity?: number;
   report_by: string;
-  status?: string;
-  list_of_image_urls: string[];
 };
 
-export const CaringTaskServices = {
+export const HarvestingTaskServices = {
   /**
-   * Lấy danh sách tất cả công việc chăm sóc
+   * Lấy danh sách tất cả công việc thu hoạch
    */
   fetchAll: async () => {
-    const response = await instance.get('caring-tasks').json();
-    return caringTaskListResponseSchema.parse(response);
+    const response = await instance.get('harvesting-tasks').json();
+    return harvestingTaskListResponseSchema.parse(response);
   },
 
   /**
-   * Lấy thông tin chi tiết của một công việc chăm sóc theo ID
+   * Lấy thông tin chi tiết của một công việc thu hoạch theo ID
    */
   fetchOne: async (id: number) => {
-    const response = await instance.get(`caring-tasks/${id}`).json();
-    return caringTaskDetailResponseSchema.parse(response);
+    const response = await instance.get(`harvesting-tasks/${id}`).json();
+    return harvestingTaskDetailResponseSchema.parse(response);
   },
 
   /**
-   * Lấy danh sách công việc chăm sóc theo các tham số
+   * Lấy danh sách công việc thu hoạch theo các tham số
    */
-  fetchByParams: async (params: CaringTaskParams) => {
+  fetchByParams: async (params: HarvestingTaskParams) => {
+    // Chuyển đổi params thành chuỗi query
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -51,24 +54,26 @@ export const CaringTaskServices = {
     });
 
     const queryString = searchParams.toString();
-    const url = queryString ? `caring-tasks?${queryString}` : 'caring-tasks';
+    const url = queryString
+      ? `harvesting-tasks?${queryString}`
+      : 'harvesting-tasks';
 
     const response = await instance.get(url).json();
-    return caringTaskListResponseSchema.parse(response);
+    return harvestingTaskListResponseSchema.parse(response);
   },
 
   /**
-   * Cập nhật báo cáo công việc
+   * Cập nhật báo cáo công việc thu hoạch
    */
   updateTaskReport: async (id: number, data: TaskReportData) => {
     const response = await instance
-      .put(`caring-tasks/${id}/task-report`, { json: data })
+      .put(`harvesting-tasks/${id}/task-report`, { json: data })
       .json();
     return taskReportUpdateResponseSchema.parse(response);
   },
 
   /**
-   * Upload hình ảnh cho công việc chăm sóc
+   * Upload hình ảnh cho công việc thu hoạch
    */
   uploadImages: async (images: File[]) => {
     const formData = new FormData();
@@ -77,7 +82,7 @@ export const CaringTaskServices = {
     });
 
     const response = await instance
-      .post('caring-tasks/images/upload', {
+      .post('harvesting-tasks/images/upload', {
         body: formData,
         headers: {
           // Remove Content-Type header so that the browser can set it with proper boundary
