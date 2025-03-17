@@ -96,12 +96,6 @@ const Login = () => {
             'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
           ],
         };
-        if (userData.id && deviceToken) {
-          const response_device = await AuthService.sendToken(
-            userData.id,
-            deviceToken,
-          );
-        }
         signIn(accessToken, userData);
 
         toast.show({

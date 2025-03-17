@@ -26,7 +26,7 @@ export const AuthService = {
     token: string,
   ): Promise<LoginResponse> => {
     const response = await instance
-      .post('auth/' + farmer_id + 'device-token', { json: { token } })
+      .post('auth/' + farmer_id + '/device-token', { json: { token } })
       .json<LoginResponse>();
     return response;
   },

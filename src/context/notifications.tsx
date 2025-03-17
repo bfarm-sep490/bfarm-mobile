@@ -111,6 +111,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       const fcmToken = await messaging().getToken();
       if (fcmToken) {
         setDeviceToken(fcmToken);
+        console.log('FCM Token:', fcmToken);
         await AsyncStorage.setItem('fcmToken', fcmToken);
         return fcmToken;
       }
