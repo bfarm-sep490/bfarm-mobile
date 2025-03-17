@@ -51,7 +51,6 @@ interface QuickActionCardProps {
   bgColor?: string;
 }
 
-// Small Weather Component for Header
 const HeaderWeather = () => (
   <HStack
     className='items-center justify-between rounded-lg bg-primary-700 p-2'
@@ -146,13 +145,10 @@ function MobileHeader(props: MobileHeaderProps) {
         </Pressable>
       </HStack>
 
-      {/* Weather Info Bar Below Main Header */}
       <Box className='rounded-b-xl bg-primary-600 px-5 pb-4'>
         <HStack space='md'>
-          {/* Left weather info */}
           <HeaderWeather />
 
-          {/* Day/Night indicator */}
           <HStack
             className='flex-1 items-center justify-center rounded-lg bg-primary-700 px-3 py-2'
             space='xs'
@@ -192,7 +188,6 @@ const NoPlansView = () => {
 };
 
 const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
-  // Calculate days remaining
   const startDate = dayjs(currentPlan.start_date);
   const endDate = dayjs(currentPlan.end_date);
   const today = dayjs();
@@ -200,7 +195,6 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
   const daysPassed = today.diff(startDate, 'day');
   const daysRemaining = endDate.diff(today, 'day');
 
-  // Calculate progress percentage (capped at 100%)
   const progressPercent = Math.min(
     100,
     Math.max(0, (daysPassed / totalDays) * 100),
@@ -226,7 +220,7 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
       {/* Content */}
       <Box className='p-4'>
         <VStack space='md'>
-          <HStack className='justify-between'>
+          <HStack className='items-center justify-between'>
             <Text className='text-lg font-semibold'>
               {currentPlan.plan_name}
             </Text>

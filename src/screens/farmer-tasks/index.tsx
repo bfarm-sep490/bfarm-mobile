@@ -22,6 +22,9 @@ import {
   Settings,
   Info,
   UserIcon,
+  Heart,
+  PawPrint,
+  Sprout,
 } from 'lucide-react-native';
 
 import { Box as BoxUI } from '@/components/ui/box';
@@ -99,16 +102,13 @@ const TaskCard = ({
   const statusStyle = getStatusColor(task.status);
   const TaskIcon = getTaskTypeIcon(task.task_type || '');
 
-  // Get only active farmers
   const activeFarmers =
     task.farmer_information?.filter((f: any) => f.status === 'Active') || [];
 
-  // Find current farmer status if available
   const currentFarmerInfo = currentFarmerId
     ? task.farmer_information?.find((f: any) => f.farmer_id === currentFarmerId)
     : undefined;
 
-  // Determine image source based on task type
   let imageUrl = '';
   if (taskType === 'caring' && task.care_images?.length > 0) {
     imageUrl = task.care_images[0].url;
@@ -124,14 +124,18 @@ const TaskCard = ({
         <VStack space='md'>
           {/* Task header with name and status */}
           <HStack className='items-center justify-between'>
-            <HStack space='sm' className='items-center'>
+            <HStack space='sm' className='flex-1 items-center pr-2'>
               <BoxUI
                 className={`rounded-lg p-2 ${task.task_type ? 'bg-primary-100' : 'bg-typography-100'}`}
               >
                 <Icon as={TaskIcon} size='sm' className='text-primary-700' />
               </BoxUI>
-              <VStack>
-                <Text className='text-base font-semibold'>
+              <VStack className='flex-1'>
+                <Text
+                  className='text-base font-semibold'
+                  numberOfLines={1}
+                  ellipsizeMode='tail'
+                >
                   {task.task_name}
                 </Text>
                 <Text className='text-xs text-typography-500'>
@@ -378,7 +382,7 @@ const CategoryFilter = ({
 }) => {
   const categories = [
     { id: 'all', label: 'Tất cả', icon: Leaf },
-    { id: 'caring', label: 'Chăm sóc', icon: Scissors },
+    { id: 'caring', label: 'Chăm sóc', icon: Sprout },
     { id: 'harvesting', label: 'Thu hoạch', icon: Scissors },
     { id: 'packaging', label: 'Đóng gói', icon: PackageOpen },
   ];
@@ -413,7 +417,6 @@ const CategoryFilter = ({
 
 // Main task screen component
 export const FarmerTasksScreen = () => {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<
     'all' | 'ongoing' | 'completed' | 'incomplete'
   >('all');
@@ -551,17 +554,14 @@ export const FarmerTasksScreen = () => {
       <BoxUI className='px-4 py-4'>
         <HStack className='items-center justify-between'>
           <HStack space='md' className='items-center'>
-            <Heading size='md' className=''>
-              Quản lý nhiệm vụ
-            </Heading>
+            <Heading size='lg'>Quản lý nhiệm vụ</Heading>
           </HStack>
           <Pressable
-            className='rounded-full bg-primary-700 p-2'
             onPress={() => {
               /* Open filter modal */
             }}
           >
-            <Icon as={Filter} size='sm' color='white' />
+            <Icon as={Filter} size='lg' className='text-primary-700' />
           </Pressable>
         </HStack>
       </BoxUI>
@@ -663,7 +663,6 @@ export const FarmerTasksScreen = () => {
             />
           ))}
 
-        {/* Add some space at the bottom */}
         <BoxUI className='h-20' />
       </ScrollView>
     </SafeAreaView>

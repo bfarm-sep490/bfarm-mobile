@@ -32,15 +32,6 @@ export default function AppLayout() {
         options={{
           headerShown: false,
           gestureEnabled: false,
-          animation: 'fade',
-        }}
-      />
-      <Stack.Screen
-        name='farmer-tasks/[id]/index'
-        options={{
-          headerShown: false,
-          gestureEnabled: false,
-          animation: 'fade',
         }}
       />
     </Stack>

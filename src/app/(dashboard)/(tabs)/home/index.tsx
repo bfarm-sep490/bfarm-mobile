@@ -1,7 +1,7 @@
 import { Home } from '@/screens/home';
 
-const index = () => {
+const home = () => {
   return <Home />;
 };
 
-export default index;
+export default home;

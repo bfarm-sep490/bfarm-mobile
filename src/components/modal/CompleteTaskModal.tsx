@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet } from 'react-native';
 
 import * as ImagePicker from 'expo-image-picker';
 import { XCircle, Camera, ImageIcon, X } from 'lucide-react-native';

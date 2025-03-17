@@ -1,7 +1,7 @@
 import Notification from '@/screens/notification';
 
-const index = () => {
+const notification = () => {
   return <Notification />;
 };
 
-export default index;
+export default notification;

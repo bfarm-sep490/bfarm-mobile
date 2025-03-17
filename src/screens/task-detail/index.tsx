@@ -69,7 +69,6 @@ const getTaskTypeIcon = (taskType: string) => {
   }
 };
 
-// Helper function to get task status color
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'Complete':
@@ -92,7 +91,6 @@ const getStatusColor = (status: string) => {
   }
 };
 
-// Item Card Component
 const ItemCard = ({
   item,
   type = 'tool',
@@ -143,9 +141,7 @@ const ItemCard = ({
   );
 };
 
-// Farmer Card Component
 const FarmerCard = ({ farmers }: { farmers: any[] }) => {
-  // Filter active farmers
   const activeFarmers = farmers?.filter(f => f.status === 'Active') || [];
 
   return (
@@ -196,14 +192,12 @@ export const TaskDetailScreen = () => {
   const taskType = params.type || 'caring';
 
   const [showCompleteModal, setShowCompleteModal] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get session data
-  const { currentPlan, user } = useSession();
+  const { user } = useSession();
   const currentFarmerId = user?.id;
 
-  // Use the appropriate hook based on task type
   const {
     useFetchOneQuery: useFetchCaringTask,
     useUpdateTaskReportMutation: useUpdateCaringTask,
@@ -217,7 +211,6 @@ export const TaskDetailScreen = () => {
     useUpdateTaskReportMutation: useUpdatePackagingTask,
   } = usePackagingTask();
 
-  // Fetch task data
   const caringTaskQuery = useFetchCaringTask(
     taskType === 'caring' ? Number(params.id) : 0,
   );
@@ -228,7 +221,6 @@ export const TaskDetailScreen = () => {
     taskType === 'packaging' ? Number(params.id) : 0,
   );
 
-  // Get the appropriate mutation
   const updateTaskMutation =
     taskType === 'caring'
       ? useUpdateCaringTask()
@@ -236,7 +228,6 @@ export const TaskDetailScreen = () => {
         ? useUpdateHarvestingTask()
         : useUpdatePackagingTask();
 
-  // Determine which query to use based on task type
   const queryMap = {
     caring: caringTaskQuery,
     harvesting: harvestingTaskQuery,
@@ -252,19 +243,16 @@ export const TaskDetailScreen = () => {
   const task: any =
     taskData?.data && taskData.data.length > 0 ? taskData.data[0] : null;
 
-  // Check if current farmer is assigned to this task
   const currentFarmerInfo = task?.farmer_information?.find(
     (info: any) => info.farmer_id === currentFarmerId,
   );
 
-  // Get task details
   const TaskIcon =
     task && 'task_type' in task ? getTaskTypeIcon(task.task_type || '') : Leaf;
   const statusStyle = task
     ? getStatusColor(task.status)
     : { bg: '', text: '', icon: AlertCircle };
 
-  // Get images and items based on task type
   let images: any[] = [];
   if (task) {
     if (taskType === 'caring' && task.care_images) {
@@ -276,7 +264,6 @@ export const TaskDetailScreen = () => {
     }
   }
 
-  // Get items based on task type
   let items: any[] = [];
   if (task) {
     if (taskType === 'caring' && task.care_items) {
@@ -288,7 +275,6 @@ export const TaskDetailScreen = () => {
     }
   }
 
-  // Handle task completion based on task type
   const handleCompleteTask = async (data: {
     resultContent: string;
     images: string[];
@@ -297,16 +283,6 @@ export const TaskDetailScreen = () => {
 
     try {
       setIsSubmitting(true);
-
-      console.log('===== TASK COMPLETION DATA =====');
-      console.log('Task ID:', task.id);
-      console.log('Task Type:', taskType);
-      console.log('Result Content:', data.resultContent);
-      console.log('Images:', data.images);
-      console.log('Report By:', user?.name || 'Unknown');
-      console.log('==============================');
-
-      // Create the appropriate request data based on task type
       if (taskType === 'caring') {
         await updateTaskMutation.mutateAsync({
           id: task.id,
@@ -364,11 +340,11 @@ export const TaskDetailScreen = () => {
       <SafeAreaView className='flex-1 bg-background-0'>
         <BoxUI className='px-4 py-4'>
           <HStack className='items-center justify-between'>
-            <HStack space='md' className='items-center'>
+            <HStack space='md' className='flex-1 items-center'>
               <Pressable onPress={() => router.back()}>
                 <Icon as={ArrowLeft} />
               </Pressable>
-              <Heading size='md'>Chi tiết nhiệm vụ</Heading>
+              <Heading size='md'>{task?.task_name}</Heading>
             </HStack>
           </HStack>
         </BoxUI>
@@ -385,11 +361,11 @@ export const TaskDetailScreen = () => {
       <SafeAreaView className='flex-1 bg-background-0'>
         <BoxUI className='px-4 py-4'>
           <HStack className='items-center justify-between'>
-            <HStack space='md' className='items-center'>
+            <HStack space='md' className='flex-1 items-center'>
               <Pressable onPress={() => router.back()}>
                 <Icon as={ArrowLeft} />
               </Pressable>
-              <Heading size='md'>Chi tiết nhiệm vụ</Heading>
+              <Heading size='md'>{task?.task_name}</Heading>
             </HStack>
           </HStack>
         </BoxUI>
@@ -409,17 +385,17 @@ export const TaskDetailScreen = () => {
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
       {/* Header */}
-      <BoxUI className='px-4 py-4'>
-        <HStack className='items-center justify-between'>
-          <HStack space='md' className='items-center'>
+      <BoxUI className='p-4'>
+        <HStack className='items-center'>
+          <HStack space='md' className='flex-1 items-center justify-between'>
             <Pressable onPress={() => router.back()}>
               <Icon as={ArrowLeft} />
             </Pressable>
-            <Heading size='md'>Chi tiết nhiệm vụ</Heading>
+            <Heading size='md'>{task?.task_name}</Heading>
+            <Pressable onPress={() => {}}>
+              <Icon as={MoreVertical} size='sm' className='text-primary-900' />
+            </Pressable>
           </HStack>
-          <Pressable onPress={() => setShowOptions(true)}>
-            <Icon as={MoreVertical} size='sm' className='text-primary-900' />
-          </Pressable>
         </HStack>
       </BoxUI>
 
@@ -442,11 +418,10 @@ export const TaskDetailScreen = () => {
                     />
                   </BoxUI>
                   <VStack>
-                    <Text className='text-lg font-bold'>{task.task_name}</Text>
-                    <Text className='text-xs text-typography-500'>
+                    <Heading size='sm' className='text-typography-500'>
                       {task.task_type ||
                         (taskType === 'harvesting' ? 'Thu hoạch' : 'Đóng gói')}
-                    </Text>
+                    </Heading>
                   </VStack>
                 </HStack>
                 <BoxUI className={`rounded-full px-3 py-1 ${statusStyle.bg}`}>
@@ -704,11 +679,8 @@ export const TaskDetailScreen = () => {
             </Card>
           )}
 
-        {/* Add some space at the bottom */}
         <BoxUI className='h-10' />
       </ScrollView>
-
-      {/* Complete task modal using our reusable component */}
       <CompleteTaskModal
         isOpen={showCompleteModal}
         onClose={() => setShowCompleteModal(false)}
@@ -719,8 +691,6 @@ export const TaskDetailScreen = () => {
         maxImages={3}
         onConfirm={handleCompleteTask}
       />
-
-      {/* Options modal would go here */}
     </SafeAreaView>
   );
 };

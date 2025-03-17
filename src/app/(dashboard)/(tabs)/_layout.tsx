@@ -21,6 +21,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={() => ({
         headerShown: false,
+        tabBarActiveTintColor: 'green',
       })}
     >
       <Tabs.Screen
@@ -60,6 +61,12 @@ export default function TabLayout() {
               xml={focused ? taskActiveIcon : taskIcon}
             />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name='farmer-tasks/[id]/index'
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
