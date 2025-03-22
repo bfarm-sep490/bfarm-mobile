@@ -61,6 +61,23 @@ export const createProblem = async (report: ICreateProblem) => {
     };
   }
 };
+export const planByFarmerId = async (farmerId: number) => {
+  try {
+    const response = await instance.get('plans/farmer/' + farmerId);
+    const data: IResponse = await response.json();
+    return {
+      message: data?.message,
+      status: data?.status,
+      data: data?.data,
+    };
+  } catch (error) {
+    return {
+      message: error,
+      status: 500,
+      data: null,
+    };
+  }
+};
 export const uploadProblemImage = async (images: Asset[]) => {
   try {
     const formData = new FormData();

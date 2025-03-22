@@ -61,29 +61,12 @@ import {
   createProblem,
   getProblemsByFarmerId,
   getProblemsById,
+  planByFarmerId,
   uploadProblemImage,
 } from '@/services/problems';
 
 import { PlanSelector } from '../home/plan-selector';
 
-const exmaple_plan: ISelectPlan[] = [
-  {
-    id: 1,
-    plan_name: 'Plan A',
-  },
-  {
-    id: 2,
-    plan_name: 'Plan B',
-  },
-  {
-    id: 3,
-    plan_name: 'Plan C',
-  },
-  {
-    id: 4,
-    plan_name: 'Plan D',
-  },
-];
 const FilterTabs = ({
   activeTab,
   setActiveTab,
@@ -172,30 +155,6 @@ const ProblemFilter = ({
   );
 };
 
-const problems = [
-  {
-    id: 1,
-    problem_name: 'Hỏng máy bơm',
-    problem_type: 'Technical',
-    date: '2021-09-10T10:00:00',
-    status: 'Pending',
-    farmer_id: 1,
-    farmer_name: 'Nguyễn Văn A',
-    description: 'Máy bơ',
-    result_content: 'Đã sửa chữa máy bơm',
-  },
-  {
-    id: 2,
-    problem_name: 'Thiếu nước',
-    problem_type: 'Watering',
-    date: '2021-09-10T10:00:00',
-    status: 'Resolved',
-    farmer_id: 1,
-    farmer_name: 'Nguyễn Văn A',
-    description: 'Máy bơ',
-    result_content: 'Đã sửa chữa máy bơm',
-  },
-];
 type ProblemCardProps = {
   problem: any;
 };
@@ -208,14 +167,14 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
             <Heading size='md'>{problem.problem_name}</Heading>
             <StatusProblem status={problem.status} />
           </HStack>
-          <VStack className='ml-2' space='md'>
+          <VStack className='ml-2 w-full' space='md'>
             <Text className='mt-4 text-sm'>
               <Icon as={Calendar} size='xs' className='text-typography-500' />{' '}
               {dayjs(problem.date).format('hh:mm DD/MM/YYYY') || 'Không có'}
             </Text>
             <HStack className='ml-2 flex-row justify-between'>
               <Text className='line-clamp-2 text-sm'>
-                Vấn đề: {problem.problem_type}
+                Kế hoạch: {problem.problem_type}
               </Text>
               <Button
                 className='h-8 w-24'
@@ -224,17 +183,6 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
                 <ButtonText>Chi tiết</ButtonText>
               </Button>
             </HStack>
-            <BoxUI className='h-40 w-full overflow-hidden rounded-lg'>
-              <Image
-                source={{
-                  uri:
-                    problem.url ??
-                    'https://image.vietstock.vn/2025/03/14/vietstock_s_pi-thu-hoi-hop-truoc-gio-dong-kyc-co-the-mat-sach-so-pi-da-dao_20250314142817.png',
-                }}
-                style={{ width: '100%', height: '100%' }}
-                resizeMode='cover'
-              />
-            </BoxUI>
           </VStack>
         </VStack>
       </BoxUI>
@@ -244,6 +192,7 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
 
 export const ProblemsScreen = () => {
   const [data, setData] = useState<IProblem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<number | null>(null);
   const [date, setDate] = useState<Date | null>(null);
@@ -251,9 +200,25 @@ export const ProblemsScreen = () => {
   const [activeTab, setActiveTab] = useState<'All' | 'Resolved' | 'Pending'>(
     'All',
   );
-  const [activeCategory, setActiveCategory] = useState('All');
   const { user } = useSession();
-
+  useEffect(() => {
+    const fetchProblems = async () => {
+      const problems = await getProblemsByFarmerId(user?.id ?? 0);
+      console.log(problems);
+      setData(problems?.data || ([] as IProblem[]));
+      setLoading(false);
+    };
+    fetchProblems();
+  }, [user?.id]);
+  if (loading)
+    return (
+      <VStack className='items-center justify-center py-10'>
+        <Spinner size='large' color='$primary600' />
+        <Text className='mt-4 text-center text-typography-500'>
+          Đang tải dữ liệu...
+        </Text>
+      </VStack>
+    );
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
       <BoxUI className='px-4 py-4'>
@@ -298,7 +263,10 @@ export const ProblemsScreen = () => {
           }}
           showsVerticalScrollIndicator={false}
         >
-          {problems?.map((item, index) => {
+          {data === null || data.length === 0 ? (
+            <Text className='text-center'>Không có dữ liệu</Text>
+          ) : null}
+          {data?.map((item, index) => {
             return (
               <VStack>
                 <ProblemCard key={index} problem={item} />
@@ -313,14 +281,17 @@ export const ProblemsScreen = () => {
 };
 
 export const CreateScreen = () => {
+  const { user } = useSession();
+  const [plan, setPlan] = useState<ISelectPlan[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<ICreateProblem>({
     defaultValues: {
+      farmer_id: user?.id ?? 0,
       problem_name: '',
-      problem_type: '',
       plan_id: 0,
       description: '',
     },
@@ -354,11 +325,33 @@ export const CreateScreen = () => {
       },
     );
   };
-  if (!control) {
-    return <Text>Loading...</Text>;
+  useEffect(() => {
+    const fetchPlan = async () => {
+      const { status, data } = await planByFarmerId(user?.id ?? 0);
+      if (status === 200 && data) {
+        setIsLoading(false);
+        setPlan(
+          data.map((item: any) => ({
+            id: item.id,
+            plan_name: item.plan_name,
+          })),
+        );
+      }
+    };
+    fetchPlan();
+  }, []);
+  if (!control && isLoading) {
+    return (
+      <VStack className='items-center justify-center py-10'>
+        <Spinner size='large' color='$primary600' />
+        <Text className='mt-4 text-center text-typography-500'>
+          Đang tải dữ liệu...
+        </Text>
+      </VStack>
+    );
   }
   const onSubmit = async (report: ICreateProblem) => {
-    const income_data = { ...report, problem_images: images } as ICreateProblem;
+    const income_data = { ...report, list_of_images: images } as ICreateProblem;
     const { status, data, message } = await createProblem(income_data);
 
     if (status && data) {
@@ -377,16 +370,19 @@ export const CreateScreen = () => {
   };
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
-      <BoxUI className='px-4 py-4'>
-        <HStack className='items-center justify-between'>
-          <HStack space='md' className='items-center'>
-            <Heading size='lg'>Tạo vấn đề</Heading>
+      <Box className='p-4'>
+        <HStack className='items-center'>
+          <HStack space='md' className='flex-1 items-center justify-between'>
+            <Pressable onPress={() => router.back()}>
+              <Icon as={ArrowLeft} />
+            </Pressable>
+            <Heading size='md'>{'Tạo vấn đề'}</Heading>
+            <Pressable onPress={() => {}}>
+              <Icon as={MoreVertical} size='sm' className='text-primary-900' />
+            </Pressable>
           </HStack>
-          <Pressable onPress={() => {}}>
-            <Icon as={Filter} size='lg' className='text-primary-700' />
-          </Pressable>
         </HStack>
-      </BoxUI>
+      </Box>
       <ScrollView className='h-full w-full flex-1'>
         <VStack className='w-full items-center justify-center'>
           <VStack className='w-5/6 gap-1' space='2xl'>
@@ -488,7 +484,7 @@ export const CreateScreen = () => {
                           textAlignVertical: 'center',
                         }}
                         onValueChange={onChange}
-                        items={exmaple_plan.map(item => ({
+                        items={(plan || []).map(item => ({
                           label: item.plan_name,
                           value: item.id,
                         }))}
@@ -563,13 +559,35 @@ const FarmerCard = ({ farmer }: { farmer: any }) => {
 export const ProblemDetailScreen = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  const problem = problems.find(problem => problem.id === Number(id));
+  const [problem, setProblem] = useState<IProblem | null>(null);
+
   const { user } = useSession();
   const currentFarmerId = user?.id;
   const [isLoading, setIsLoading] = useState(true);
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState<string[]>([]);
 
+  useEffect(() => {
+    const fetchProblem = async () => {
+      const { status, data } = await getProblemsById(Number(id));
+      if (status === 200 && data) {
+        setProblem(data);
+        setImages(data?.problem_images?.map(image => image.url) ?? []);
+        setIsLoading(false);
+      }
+    };
+    fetchProblem();
+  }, [id]);
   if (isLoading) {
+    return (
+      <VStack className='items-center justify-center py-10'>
+        <Spinner size='large' color='$primary600' />
+        <Text className='mt-4 text-center text-typography-500'>
+          Đang tải dữ liệu...
+        </Text>
+      </VStack>
+    );
+  }
+  if (!isLoading) {
     return (
       <SafeAreaView className='flex-1 bg-background-0'>
         {/* Header */}
@@ -579,7 +597,9 @@ export const ProblemDetailScreen = () => {
               <Pressable onPress={() => router.back()}>
                 <Icon as={ArrowLeft} />
               </Pressable>
-              <Heading size='md'>{problem?.problem_name}</Heading>
+              <Heading size='md'>
+                Chi tiết vấn đề #{problem?.id?.toString()}
+              </Heading>
               <Pressable onPress={() => {}}>
                 <Icon
                   as={MoreVertical}
@@ -601,10 +621,9 @@ export const ProblemDetailScreen = () => {
                 <HStack className='items-center justify-between'>
                   <HStack space='sm' className='items-center'>
                     <VStack>
-                      <Heading
-                        size='sm'
-                        className='text-typography-500'
-                      ></Heading>
+                      <Heading size='sm' className='text-typography-500'>
+                        {problem?.problem_name}
+                      </Heading>
                     </VStack>
                   </HStack>
                   <Box className={'rounded-full px-3 py-1'}>
@@ -624,7 +643,10 @@ export const ProblemDetailScreen = () => {
                   <Text className='text-sm text-typography-700'>
                     {problem?.description}
                   </Text>
-
+                  <Text className='font-semibold'>Vấn đề</Text>
+                  <Text className='text-sm text-typography-700'>
+                    {problem?.plan_name}
+                  </Text>
                   {problem?.result_content && (
                     <>
                       <Text className='mt-2 font-semibold'>Kết quả</Text>
@@ -677,7 +699,7 @@ export const ProblemDetailScreen = () => {
                                 className='h-48 w-48 overflow-hidden rounded-xl'
                               >
                                 <Image
-                                  source={{ uri: image?.url }}
+                                  source={{ uri: image }}
                                   style={{ width: '100%', height: '100%' }}
                                   resizeMode='cover'
                                 />
