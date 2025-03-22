@@ -11,6 +11,7 @@ interface UserData {
 }
 
 export interface Session {
+  id: number;
   signIn: (tokens: string, user: UserData) => void;
   signOut: () => void;
   session?: string | null;
