@@ -28,12 +28,12 @@ export const planWithFarmerId = z.object({
 export const plansWithFarmerIdResponseSchema = z.object({
   status: z.number(),
   message: z.string(),
-  data: z.array(planWithFarmerId),
+  data: z.array(planWithFarmerId).optional().nullable(),
 });
 export const problemsResponseSchema = z.object({
   status: z.number(),
   message: z.string(),
-  data: z.array(problemSchema),
+  data: z.array(problemSchema).optional().nullable(),
 });
 export const problemDetailResponseSchema = z.object({
   status: z.number(),

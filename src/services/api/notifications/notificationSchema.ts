@@ -8,7 +8,7 @@ export const notifcationSchema = z.object({
   image: z.string(),
 });
 export const notifcationResponseSchema = z.object({
-  data: z.array(notifcationSchema),
+  data: z.array(notifcationSchema).optional().nullable(),
   message: z.string(),
   status: z.number(),
 });

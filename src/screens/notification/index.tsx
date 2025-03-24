@@ -90,7 +90,7 @@ const MainContent = () => {
               </VStack>
             </HStack>
           )}
-          {!isError && (
+          {!isError && notifications.length > 0 && (
             <VStack className='w-full' space='2xl'>
               {notifications.map((item, index) => {
                 return (
@@ -111,6 +111,9 @@ const MainContent = () => {
                 );
               })}
             </VStack>
+          )}
+          {!isError && notifications.length == 0 && (
+            <Text>Hiện tại không có thông báo nào, vui lòng quay lại sau</Text>
           )}
         </ScrollView>
       </HStack>
