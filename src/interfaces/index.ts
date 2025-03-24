@@ -7,7 +7,10 @@ export interface IProblem {
   problem_type: string;
   date: Date;
   status: string;
+  farmer_id: number;
+  farmer_name: string;
   plan_id: number;
+  plan_name: string;
   result_content?: string;
   problem_images?: IProblemImage[];
 }
@@ -15,12 +18,12 @@ export interface ICreateProblem {
   id: Key;
   problem_name: string;
   description?: string;
-  problem_type: string;
   date: Date;
   status: string;
+  farmer_id: number;
   plan_id: number;
   result_content?: string;
-  problem_images?: string[];
+  list_of_images?: string[];
 }
 
 export interface ISelectPlan {
