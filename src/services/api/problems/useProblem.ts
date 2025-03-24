@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ICreateProblem } from 'src/interfaces';
 
 import { Problem } from './problemSchema';
 import {
@@ -11,6 +12,7 @@ const enum ProblemQueryKey {
   fetchAll = 'fetchAllProblems',
   fetchOne = 'fetchOneProblem',
   fetchByParams = 'fetchByParamsProblems',
+  fetchSelectedPlanByUserId = 'fetchSelectedPlanByUserId',
 }
 
 export const useProblem = () => {
@@ -33,7 +35,14 @@ export const useProblem = () => {
       queryFn: () => ProblemServices.fetchOne(taskId),
       queryKey: [ProblemQueryKey.fetchOne, taskId],
     });
-
+  const useFetchSelectedPlansByUserIdQuery = (
+    id: number,
+  ): ReturnType<typeof useQuery> =>
+    useQuery({
+      enabled: id > 0,
+      queryFn: () => ProblemServices.fetchSelectedPlanByUserId(id),
+      queryKey: [ProblemQueryKey.fetchSelectedPlanByUserId],
+    });
   const useFetchByParamsQuery = (params: ProblemParams, enabled = true) =>
     useQuery({
       enabled,
@@ -41,10 +50,10 @@ export const useProblem = () => {
       queryKey: [ProblemQueryKey.fetchByParams, params],
     });
 
-  const useCreateProblemMutation = () =>
+  const useCreateProblemMutation = (report: ICreateProblem) =>
     useMutation({
-      mutationFn: ({ id, data }: { id: number; data: CreateProblemData }) =>
-        ProblemServices.createProblem(id, data),
+      mutationFn: ({ data }: { data: CreateProblemData }) =>
+        ProblemServices.createProblem(data),
       onSuccess: () => {
         invalidateQuery([
           ProblemQueryKey.fetchAll,
@@ -63,6 +72,7 @@ export const useProblem = () => {
     invalidateQuery,
     useFetchAllQuery,
     useFetchOneQuery,
+    useFetchSelectedPlansByUserIdQuery,
     useFetchByParamsQuery,
     useCreateProblemMutation,
     useUploadImagesMutation,

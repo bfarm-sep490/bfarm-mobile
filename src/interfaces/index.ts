@@ -23,7 +23,7 @@ export interface ICreateProblem {
   farmer_id: number;
   plan_id: number;
   result_content?: string;
-  problem_images?: string[];
+  list_of_images?: string[];
 }
 
 export interface ISelectPlan {

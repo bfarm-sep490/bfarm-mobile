@@ -3,7 +3,9 @@ import { instance } from '@/services/instance';
 import {
   imageUploadResponseSchema,
   problemDetailResponseSchema,
+  planWithFarmerId,
   problemsResponseSchema,
+  plansWithFarmerIdResponseSchema,
 } from './problemSchema';
 
 export type ProblemParams = {
@@ -19,7 +21,7 @@ export type CreateProblemData = {
   description: string;
   plan_id: number;
   farmer_id: number;
-  images: string[];
+  list_of_images: string[];
 };
 
 export const ProblemServices = {
@@ -38,7 +40,10 @@ export const ProblemServices = {
     const response = await instance.get(`problems/${id}`).json();
     return problemDetailResponseSchema.parse(response);
   },
-
+  fetchSelectedPlanByUserId: async (id: number) => {
+    const response = await instance.get(`plans?expert_id=${id}`).json();
+    return plansWithFarmerIdResponseSchema.parse(response);
+  },
   /**
    * Lấy danh sách công việc chăm sóc theo các tham số
    */
@@ -60,10 +65,8 @@ export const ProblemServices = {
   /**
    * Cập nhật báo cáo công việc
    */
-  createProblem: async (id: number, data: CreateProblemData) => {
-    const response = await instance
-      .post(`problems/${id}`, { json: data })
-      .json();
+  createProblem: async (data: CreateProblemData) => {
+    const response = await instance.post('problems', { json: data }).json();
     return problemDetailResponseSchema.parse(response);
   },
 

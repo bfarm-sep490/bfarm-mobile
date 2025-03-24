@@ -5,7 +5,7 @@ export const problemSchema = z.object({
   problem_name: z.string(),
   description: z.string(),
   status: z.string(),
-  created_at: z.date(),
+  created_date: z.string(),
   plan_id: z.number(),
   result_content: z.string().nullable().optional(),
   farmer_id: z.number().nullable().optional(),
@@ -13,8 +13,8 @@ export const problemSchema = z.object({
   problem_images: z
     .array(
       z.object({
-        id: z.number(),
-        url: z.string(),
+        image_id: z.number().optional(),
+        url: z.string().optional(),
       }),
     )
     .nullable()

@@ -78,19 +78,20 @@ export const planByFarmerId = async (farmerId: number) => {
     };
   }
 };
-export const uploadProblemImage = async (images: Asset[]) => {
+export const uploadProblemImage = async (image: Asset) => {
   try {
     const formData = new FormData();
-    images?.forEach(image => {
-      const imageBlob = {
-        uri: image.uri,
-        type: image.type,
-        name: image.fileName,
-      } as unknown as Blob;
-      formData.append('image', imageBlob, image.fileName);
-    });
+    formData.append('image', {
+      uri: image.uri!,
+      type: image.type || 'image/jpeg',
+      name: image.fileName || 'upload.jpg',
+    } as any);
+
     const response = await instance.post('problems/images/upload', {
       body: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
     const data: IResponse = await response.json();
     return {
@@ -98,9 +99,9 @@ export const uploadProblemImage = async (images: Asset[]) => {
       status: data?.status,
       data: data?.data as string[],
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
-      message: error,
+      message: error.message || 'Unknown error',
       status: 500,
       data: null,
     };
