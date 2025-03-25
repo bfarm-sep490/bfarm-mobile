@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Image } from 'react-native';
+import { Image, TouchableOpacity } from 'react-native';
 
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
@@ -25,6 +25,7 @@ import {
   Heart,
   PawPrint,
   Sprout,
+  RefreshCw,
 } from 'lucide-react-native';
 
 import { Box as BoxUI } from '@/components/ui/box';
@@ -162,27 +163,28 @@ const TaskCard = ({
           {/* Farmer assignment information */}
           <BoxUI className='rounded-lg border border-typography-200 p-2'>
             <HStack space='xs' className='items-center'>
-              <Text className='text-xs font-medium text-typography-600'>
-                {activeFarmers.length > 0
-                  ? activeFarmers.map((farmer: any, index: number) => (
-                      <HStack
-                        key={farmer.farmer_id}
-                        space='xs'
-                        className='items-center'
-                      >
-                        <Icon
-                          as={UserIcon}
-                          size='xs'
-                          className='text-typography-500'
-                        />
-                        <Text className='text-xs text-typography-600'>
-                          {farmer.farmer_name ||
-                            `Nông dân #${farmer.farmer_id}`}
-                        </Text>
-                      </HStack>
-                    ))
-                  : 'Chưa có ai được giao nhiệm vụ này'}
-              </Text>
+              <VStack className='text-xs font-medium text-typography-600'>
+                {activeFarmers.length > 0 ? (
+                  activeFarmers.map((farmer: any, index: number) => (
+                    <HStack
+                      key={farmer.farmer_id}
+                      space='xs'
+                      className='items-center'
+                    >
+                      <Icon
+                        as={UserIcon}
+                        size='xs'
+                        className='text-typography-500'
+                      />
+                      <Text className='text-xs text-typography-600'>
+                        {farmer.farmer_name || `Nông dân #${farmer.farmer_id}`}
+                      </Text>
+                    </HStack>
+                  ))
+                ) : (
+                  <Text>Chưa có ai được giao nhiệm vụ này</Text>
+                )}
+              </VStack>
             </HStack>
           </BoxUI>
 
@@ -214,7 +216,7 @@ const TaskCard = ({
 
           {/* Task description */}
           <Text className='text-sm text-typography-700'>
-            {task.description}
+            {task.description || 'Không có mô tả'}
           </Text>
 
           {/* Task image if available */}
@@ -302,7 +304,7 @@ const TaskCard = ({
               <ButtonText>Chi tiết</ButtonText>
             </Button>
 
-            {task.status !== 'Complete' &&
+            {/* {task.status !== 'Complete' &&
               (!currentFarmerInfo ||
                 currentFarmerInfo.status !== 'Completed') && (
                 <Button
@@ -315,7 +317,7 @@ const TaskCard = ({
                 >
                   <ButtonText>Cập nhật</ButtonText>
                 </Button>
-              )}
+              )} */}
           </HStack>
         </VStack>
       </BoxUI>
@@ -556,13 +558,9 @@ export const FarmerTasksScreen = () => {
           <HStack space='md' className='items-center'>
             <Heading size='lg'>Quản lý nhiệm vụ</Heading>
           </HStack>
-          <Pressable
-            onPress={() => {
-              /* Open filter modal */
-            }}
-          >
-            <Icon as={Filter} size='lg' className='text-primary-700' />
-          </Pressable>
+          <TouchableOpacity onPress={handleRefresh}>
+            <Icon as={RefreshCw} size='lg' />
+          </TouchableOpacity>
         </HStack>
       </BoxUI>
 

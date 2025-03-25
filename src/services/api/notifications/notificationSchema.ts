@@ -3,9 +3,9 @@ import { z } from 'zod';
 export const notifcationSchema = z.object({
   id: z.number(),
   title: z.string(),
-  message: z.string(),
+  message: z.string().optional().nullable(),
   created_date: z.string(),
-  image: z.string(),
+  image: z.string().optional().nullable(),
 });
 export const notifcationResponseSchema = z.object({
   data: z.array(notifcationSchema).optional().nullable(),

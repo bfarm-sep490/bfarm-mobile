@@ -11,6 +11,7 @@ export const careImageSchema = z.object({
 export const carePesticideSchema = z.object({
   id: z.number(),
   pesticide_id: z.number(),
+  pesticide_name: z.string(),
   task_id: z.number(),
   unit: z.string(),
   quantity: z.number(),
@@ -20,6 +21,7 @@ export const carePesticideSchema = z.object({
 export const careFertilizerSchema = z.object({
   id: z.number(),
   fertilizer_id: z.number(),
+  fertilizer_name: z.string(),
   task_id: z.number(),
   unit: z.string(),
   quantity: z.number(),
@@ -29,6 +31,7 @@ export const careFertilizerSchema = z.object({
 export const careItemSchema = z.object({
   id: z.number(),
   item_id: z.number(),
+  item_name: z.string(),
   task_id: z.number(),
   quantity: z.number(),
   unit: z.string(),

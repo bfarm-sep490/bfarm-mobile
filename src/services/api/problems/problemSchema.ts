@@ -7,6 +7,7 @@ export const problemSchema = z.object({
   status: z.string(),
   created_date: z.string(),
   plan_id: z.number(),
+  plan_name: z.string().nullable().optional(),
   result_content: z.string().nullable().optional(),
   farmer_id: z.number().nullable().optional(),
   farmer_name: z.string().nullable().optional(),
