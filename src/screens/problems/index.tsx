@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, Pressable, SafeAreaView } from 'react-native';
+import { Alert, Pressable, SafeAreaView, TouchableOpacity } from 'react-native';
 
 import dayjs from 'dayjs';
 import { Link, useLocalSearchParams, router, useRouter } from 'expo-router';
@@ -19,6 +19,9 @@ import {
   Sprout,
   UserIcon,
   Users,
+  RefreshCw,
+  List,
+  AlertTriangle,
 } from 'lucide-react-native';
 import { useForm, Controller, Form } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
@@ -158,7 +161,27 @@ const ProblemFilter = ({
     </HStack>
   );
 };
-
+type FilterProblemByElements = {
+  problems: any[];
+  status: string;
+  name: string;
+};
+const FilterProblemsByElements = ({
+  problems = [],
+  status = 'All',
+  name = '',
+}: FilterProblemByElements) => {
+  let filter = problems;
+  if (status !== 'All') {
+    filter = filter.filter(problem => problem.status === status);
+  }
+  if (name !== '') {
+    filter = filter.filter(problem =>
+      problem.problem_name.toLowerCase().includes(name.toLowerCase()),
+    );
+  }
+  return filter;
+};
 type ProblemCardProps = {
   problem: any;
 };
@@ -178,18 +201,19 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
                 {dayjs(problem.created_date).format('hh:mm DD/MM/YYYY') ||
                   'Không có'}
               </Text>
-              <HStack className='ml-2 flex-row justify-between'>
-                <Text className='line-clamp-2 text-sm'>
-                  Kế hoạch: {problem.problem_type}
-                </Text>
-                <Button
-                  className='h-8 w-24'
-                  onPress={() => router.push(`/problem/${problem.id}`)}
-                >
-                  <ButtonText>Chi tiết</ButtonText>
-                </Button>
-              </HStack>
+
+              <Text className='line-clamp-2 text-sm'>
+                <Icon as={List} size='xs' className='text-typography-500' />
+                {problem?.plan_name}
+              </Text>
             </VStack>
+
+            <Button
+              className='mt-4 h-8 w-full'
+              onPress={() => router.push(`/problem/${problem.id}`)}
+            >
+              <ButtonText>Chi tiết</ButtonText>
+            </Button>
           </VStack>
         </BoxUI>
       </Card>
@@ -201,20 +225,36 @@ export const ProblemsScreen = () => {
   const [activeTab, setActiveTab] = useState<'All' | 'Resolved' | 'Pending'>(
     'All',
   );
-
+  const [searchName, setSearchName] = useState('');
   const { user } = useSession();
   const { useFetchByParamsQuery } = useProblem();
-
+  const [data, setData] = useState<IProblem[]>([]);
   const problemQuery = useFetchByParamsQuery({
     farmer_id: Number(user?.id),
   });
   const handleRefresh = () => {
     problemQuery.refetch();
   };
-  const { data: problems, isLoading, isError, error } = problemQuery;
-  const data = problems?.data;
-  console.log(error);
+  const { data: problemsData, isLoading, isError, error } = problemQuery;
+  const problems = problemsData?.data;
+  useEffect(() => {
+    setData(
+      (problems ?? []).map(problem => ({
+        ...problem,
+      })) as unknown as IProblem[],
+    );
+  }, [problems]);
 
+  console.log(error);
+  useEffect(() => {
+    return setData(
+      FilterProblemsByElements({
+        problems: problems || [],
+        status: activeTab,
+        name: searchName,
+      }),
+    );
+  }, [activeTab, searchName, problems]);
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
       <BoxUI className='px-4 py-4'>
@@ -222,11 +262,13 @@ export const ProblemsScreen = () => {
           <HStack space='md' className='items-center'>
             <Heading size='lg'>Quản lý nhiệm vụ</Heading>
           </HStack>
-          <Pressable onPress={() => {}}>
-            <Icon as={Filter} size='lg' className='text-primary-700' />
-          </Pressable>
+          <TouchableOpacity onPress={handleRefresh}>
+            <Icon as={RefreshCw} size='lg' />
+          </TouchableOpacity>
         </HStack>
       </BoxUI>
+      <Divider />
+
       <BoxUI className='bg-background-0 px-4 py-3'>
         <Input
           variant='outline'
@@ -234,18 +276,16 @@ export const ProblemsScreen = () => {
           size='md'
         >
           <InputIcon className='text-typography-400' />
-          <InputField placeholder='Tìm kiếm vấn đề...' />
+          <InputField
+            onChangeText={setSearchName}
+            placeholder='Tìm kiếm vấn đề...'
+          />
         </Input>
       </BoxUI>
-
-      <BoxUI className='mt-2 flex-col px-4'>
-        <PlanSelector farmerId={user?.id ?? 0} />
-      </BoxUI>
-      <Divider />
-      <BoxUI className='mt-2 flex-col px-4'>
+      <BoxUI className='mt-1 flex-col px-4'>
         <FilterTabs setActiveTab={setActiveTab} activeTab={activeTab} />
       </BoxUI>
-      <VStack className='mb-4 mt-4 w-full flex-row justify-end p-4' space='2xl'>
+      <VStack className='w-full flex-row justify-end p-5' space='2xl'>
         <Button onPress={() => router.push('/problem/create')}>
           <ButtonText>Tạo mới</ButtonText>
         </Button>
@@ -268,9 +308,6 @@ export const ProblemsScreen = () => {
           }}
           showsVerticalScrollIndicator={false}
         >
-          {data === null || data?.length === 0 ? (
-            <Text className='text-center'>Không có dữ liệu</Text>
-          ) : null}
           {data?.map((item, index) => {
             return (
               <VStack>
@@ -295,6 +332,14 @@ export const ProblemsScreen = () => {
             </Button>
           </VStack>
         </HStack>
+      )}
+      {!isLoading && !isError && data?.length === 0 && (
+        <VStack className='w-full items-center justify-center'>
+          <Icon as={AlertTriangle} size='lg' className='mb-2 text-gray-500' />
+          <Text className='text-center text-sm text-gray-600'>
+            Không có dữ liệu
+          </Text>
+        </VStack>
       )}
     </SafeAreaView>
   );
@@ -651,9 +696,9 @@ export const ProblemDetailScreen = () => {
                   <Text className='text-sm text-typography-700'>
                     {problem?.description}
                   </Text>
-                  <Text className='font-semibold'>Vấn đề</Text>
+                  <Text className='font-semibold'>Kế hoạch</Text>
                   <Text className='text-sm text-typography-700'>
-                    {problem?.plan_id}
+                    {problem?.plan_name}
                   </Text>
                   {problem?.result_content && (
                     <>

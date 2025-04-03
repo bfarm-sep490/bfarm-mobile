@@ -6,10 +6,12 @@ import NetInfo from '@react-native-community/netinfo';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 
+import { NotificationProvider } from '@/context/notification';
 import ProvidersWrapper from '@/context/providers';
 import { setIsConnectedToInternet } from '@/store/slices/appSlice';
 
 import { store } from '../store';
+
 import '../translations';
 
 export {
@@ -62,33 +64,35 @@ export default function RootLayout() {
 function RootLayoutNav() {
   return (
     <ProvidersWrapper>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen
-          name='sign-in/index'
-          options={{
-            title: 'Sign In',
-            gestureEnabled: false,
-            animation: 'fade',
-          }}
-        />
-        <Stack.Screen
-          name='splash-screen/index'
-          options={{
-            title: 'Hello',
-            gestureEnabled: false,
-            animation: 'fade',
-          }}
-        />
-        <Stack.Screen
-          name='(dashboard)'
-          options={{
-            headerShown: false,
-            gestureEnabled: false,
-            fullScreenGestureEnabled: false,
-            animation: 'fade',
-          }}
-        />
-      </Stack>
+      <NotificationProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen
+            name='sign-in/index'
+            options={{
+              title: 'Sign In',
+              gestureEnabled: false,
+              animation: 'fade',
+            }}
+          />
+          <Stack.Screen
+            name='splash-screen/index'
+            options={{
+              title: 'Hello',
+              gestureEnabled: false,
+              animation: 'fade',
+            }}
+          />
+          <Stack.Screen
+            name='(dashboard)'
+            options={{
+              headerShown: false,
+              gestureEnabled: false,
+              fullScreenGestureEnabled: false,
+              animation: 'fade',
+            }}
+          />
+        </Stack>
+      </NotificationProvider>
     </ProvidersWrapper>
   );
 }

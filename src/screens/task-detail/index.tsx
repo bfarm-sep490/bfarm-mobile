@@ -98,6 +98,7 @@ const ItemCard = ({
   item: {
     id?: number;
     item_id: number;
+    item_name: string;
     quantity: number;
     unit: string;
     care_images?: { url: string }[];
@@ -132,7 +133,7 @@ const ItemCard = ({
         <Icon as={icon} size='sm' className={textColor} />
       </BoxUI>
       <VStack>
-        <Text className='font-medium'>Công cụ #{item.item_id}</Text>
+        <Text className='font-medium'>{item.item_name}</Text>
         <Text className='text-xs text-typography-500'>
           Số lượng: {item.quantity} {item.unit}
         </Text>
@@ -274,7 +275,32 @@ export const TaskDetailScreen = () => {
       items = task.packaging_items;
     }
   }
+  let fertilizers: any[] = [];
+  if (task) {
+    if (taskType === 'caring' && task.care_fertilizers) {
+      fertilizers = task.care_fertilizers?.map((x: any) => {
+        return {
+          ...x,
+          item_name: x.fertilizer_name,
+          item_id: x.fertilizer_id,
+        };
+      });
+    }
+  }
 
+  let pesticides: any[] = [];
+  if (task) {
+    if (taskType === 'caring' && task.care_pesticides) {
+      pesticides = task.care_pesticides?.map((x: any) => {
+        return {
+          ...x,
+          item_name: x.pesticide_name,
+          item_id: x.pesticide_id,
+        };
+      });
+    }
+  }
+  items = items.concat(fertilizers).concat(pesticides);
   const handleCompleteTask = async (data: {
     resultContent: string;
     images: string[];
@@ -573,7 +599,7 @@ export const TaskDetailScreen = () => {
                   Số lượng thu hoạch:
                 </Text>
                 <Text className='font-medium'>
-                  {task.harvested_quantity} {task.harvested_unit || ''}
+                  {task.harvested_quantity} {task.harvested_unit || 'kg'}
                 </Text>
               </HStack>
               {task.fail_quantity !== null &&
@@ -610,10 +636,12 @@ export const TaskDetailScreen = () => {
         {/* Items section */}
         {items.length > 0 && (
           <BoxUI className='mx-4 mb-4'>
-            <Text className='mb-2 font-semibold'>Công cụ cần thiết</Text>
+            <Text className='mb-2 font-semibold'>
+              Công cụ, phân bón hoặc thuốc cần thiết
+            </Text>
             {items.map(item => (
               <ItemCard
-                key={item.id || item.item_id}
+                key={`item.id || item.item_id`}
                 item={item}
                 type={
                   taskType === 'caring' &&
@@ -632,7 +660,6 @@ export const TaskDetailScreen = () => {
             ))}
           </BoxUI>
         )}
-
         {/* Actions section */}
         {task.status !== 'Complete' &&
           task.status !== 'Completed' &&

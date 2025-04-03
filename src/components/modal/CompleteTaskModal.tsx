@@ -100,7 +100,13 @@ export interface CompleteTaskModalProps {
   /**
    * Function to call when the confirm button is pressed
    */
-  onConfirm: (data: { resultContent: string; images: string[] }) => void;
+  onConfirm: (data: {
+    resultContent: string;
+    images: string[];
+    harvesting_quantity?: number;
+    unpackaging_quantity?: number;
+    packaging_quantity?: number;
+  }) => void;
 }
 
 /**
@@ -124,6 +130,9 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   onConfirm,
 }) => {
   const [resultContent, setResultContent] = useState('');
+  const [harvestingQuantity, setHarvestingQuantity] = useState(0);
+  const [packagingQuantity, setPackagingQuantity] = useState(0);
+  const [unpackagingQuantity, setUnpackagingQuantity] = useState(0);
   const [selectedImages, setSelectedImages] = useState<
     ImagePicker.ImagePickerAsset[]
   >([]);
@@ -152,11 +161,24 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
       console.log('Image URLs:', imageUrls);
       console.log('==============================');
 
-      // Call the onConfirm handler with result and image URLs
-      onConfirm({
-        resultContent,
-        images: imageUrls,
-      });
+      if (taskType === 'caring')
+        onConfirm({
+          resultContent,
+          images: imageUrls,
+        });
+      if (taskType === 'harvesting')
+        onConfirm({
+          resultContent,
+          images: imageUrls,
+          harvesting_quantity: harvestingQuantity,
+        });
+      if (taskType === 'packaging')
+        onConfirm({
+          resultContent,
+          images: imageUrls,
+          unpackaging_quantity: unpackagingQuantity,
+          packaging_quantity: packagingQuantity,
+        });
     } catch (error) {
       console.error('Error in handleConfirm:', error);
     } finally {
@@ -240,6 +262,53 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
         <ModalBody>
           <VStack space='md'>
             <Text>{description}</Text>
+            {taskType === 'harvesting' && (
+              <>
+                <Text className='text-sm font-medium'>Số lượng thu hoạch</Text>
+                <Input variant='underlined'>
+                  <InputField
+                    keyboardType='numeric'
+                    placeholder={'Nhập sản lượng thu hoạch'}
+                    textAlignVertical='center'
+                    value={harvestingQuantity.toString()}
+                    onChange={e =>
+                      setHarvestingQuantity(Number(e.nativeEvent.text))
+                    }
+                  />
+                </Input>
+              </>
+            )}
+            {taskType === 'packaging' && (
+              <>
+                <Text className='text-sm font-medium'>
+                  Số lượng sản phẩm đóng gói
+                </Text>
+                <Input variant='underlined'>
+                  <InputField
+                    keyboardType='numeric'
+                    placeholder={'Nhập số lượng sản phẩm đóng gói...'}
+                    textAlignVertical='center'
+                    value={unpackagingQuantity.toString()}
+                    onChange={e =>
+                      setUnpackagingQuantity(Number(e.nativeEvent.text))
+                    }
+                  />
+                </Input>
+                <Text className='text-sm font-medium'>Sản lượng đóng gói</Text>
+                <Input variant='underlined'>
+                  <InputField
+                    keyboardType='numeric'
+                    placeholder={'Nhập sản lượng đóng gói'}
+                    textAlignVertical='center'
+                    value={packagingQuantity.toString()}
+                    onChange={e =>
+                      setPackagingQuantity(Number(e.nativeEvent.text))
+                    }
+                  />
+                </Input>
+              </>
+            )}
+            <Text className='text-sm font-medium'>Mô tả</Text>
             <Input variant='underlined'>
               <InputField
                 placeholder={placeholder}

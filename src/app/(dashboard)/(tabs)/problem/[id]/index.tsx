@@ -1,7 +1,7 @@
 import { ProblemDetailScreen } from '@/screens/problems';
 
-const problemDetail = () => {
+const index = () => {
   return <ProblemDetailScreen />;
 };
 
-export default problemDetail;
+export default index;

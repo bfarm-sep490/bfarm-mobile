@@ -70,6 +70,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name='problem/[id]/index'
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name='problem/create/index'
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name='todo/index'
         options={{
           title: t('todo:title'),
