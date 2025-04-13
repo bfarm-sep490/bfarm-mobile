@@ -40,8 +40,14 @@ export const PlanServices = {
   },
 
   fetchByFarmer: async (farmerId: number) => {
-    const response = await instance.get(`plans/farmer/${farmerId}`).json();
-    return planResponseSchema.parse(response);
+    try {
+      const response = await instance.get(`plans/farmer/${farmerId}`).json();
+      const parsedResponse = planResponseSchema.parse(response);
+
+      return parsedResponse;
+    } catch (error) {
+      throw error;
+    }
   },
 
   fetchByPlant: async (plantId: number) => {

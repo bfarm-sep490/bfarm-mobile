@@ -64,35 +64,33 @@ export default function RootLayout() {
 function RootLayoutNav() {
   return (
     <ProvidersWrapper>
-      <NotificationProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen
-            name='sign-in/index'
-            options={{
-              title: 'Sign In',
-              gestureEnabled: false,
-              animation: 'fade',
-            }}
-          />
-          <Stack.Screen
-            name='splash-screen/index'
-            options={{
-              title: 'Hello',
-              gestureEnabled: false,
-              animation: 'fade',
-            }}
-          />
-          <Stack.Screen
-            name='(dashboard)'
-            options={{
-              headerShown: false,
-              gestureEnabled: false,
-              fullScreenGestureEnabled: false,
-              animation: 'fade',
-            }}
-          />
-        </Stack>
-      </NotificationProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name='sign-in/index'
+          options={{
+            title: 'Sign In',
+            gestureEnabled: false,
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name='splash-screen/index'
+          options={{
+            title: 'Hello',
+            gestureEnabled: false,
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name='(dashboard)'
+          options={{
+            headerShown: false,
+            gestureEnabled: false,
+            fullScreenGestureEnabled: false,
+            animation: 'fade',
+          }}
+        />
+      </Stack>
     </ProvidersWrapper>
   );
 }

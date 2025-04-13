@@ -641,7 +641,7 @@ export const TaskDetailScreen = () => {
             </Text>
             {items.map(item => (
               <ItemCard
-                key={`item.id || item.item_id`}
+                key={'item.id || item.item_id'}
                 item={item}
                 type={
                   taskType === 'caring' &&

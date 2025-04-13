@@ -197,7 +197,12 @@ const SelectInput = React.forwardRef<
 });
 
 type ISelectIcon = VariantProps<typeof selectIconStyle> &
-  React.ComponentProps<typeof UISelect.Icon> & { className?: string };
+  React.ComponentProps<typeof UISelect.Icon> & {
+    className?: string;
+    height?: number;
+    width?: number;
+    size?: string | number;
+  };
 
 const SelectIcon = React.forwardRef<
   React.ElementRef<typeof UISelect.Icon>,

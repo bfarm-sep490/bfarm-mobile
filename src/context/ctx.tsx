@@ -38,6 +38,7 @@ export function SessionProvider(props: any) {
   return (
     <AuthContext.Provider
       value={{
+        id: user ? JSON.parse(user).id : 0,
         signIn: async (tokens: string, userData: UserData) => {
           setSession(JSON.stringify(tokens));
           setUser(JSON.stringify(userData));

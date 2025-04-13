@@ -34,11 +34,12 @@ function SkeletonLoader({
   }));
 
   useEffect(() => {
-    if (!loading) {
-      return;
+    if (loading) {
+      opacity.value = withRepeat(withTiming(TO, { duration: 800 }), -1, true);
+    } else {
+      opacity.value = FROM;
     }
-    opacity.value = withRepeat(withTiming(TO, { duration: 800 }), -1, true);
-  }, [loading, opacity]);
+  }, [loading]);
 
   return (
     <View

@@ -10,12 +10,20 @@ import React, {
 import { Platform } from 'react-native';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import firebase from '@react-native-firebase/app';
-import messaging from '@react-native-firebase/messaging';
+import { getApp, initializeApp } from '@react-native-firebase/app';
+import {
+  getMessaging,
+  getToken,
+  onMessage,
+  onTokenRefresh,
+  deleteToken,
+} from '@react-native-firebase/messaging';
 import * as Notifications from 'expo-notifications';
 
-if (!firebase.apps.length) {
-  firebase.initializeApp({
+try {
+  getApp();
+} catch {
+  initializeApp({
     apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
     authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
     databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
@@ -99,6 +107,7 @@ const requestNotificationPermission = async (): Promise<boolean> => {
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [deviceToken, setDeviceToken] = useState<string | null>(null);
   const [permissionGranted, setPermissionGranted] = useState<boolean>(false);
+  const messaging = getMessaging();
 
   const unsubscribeRefs = useRef({
     onMessage: () => {},
@@ -108,7 +117,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const getFCMToken = async (): Promise<string | null> => {
     try {
-      const fcmToken = await messaging().getToken();
+      const fcmToken = await getToken(messaging);
       if (fcmToken) {
         setDeviceToken(fcmToken);
         console.log('FCM Token:', fcmToken);
@@ -124,7 +133,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const removeFCMToken = async (): Promise<void> => {
     try {
       if (deviceToken) {
-        await messaging().deleteToken();
+        await deleteToken(messaging);
       }
 
       await AsyncStorage.removeItem('fcmToken');
@@ -147,26 +156,25 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     unsubscribeRefs.current.onOpen();
     unsubscribeRefs.current.tokenRefresh();
 
-    unsubscribeRefs.current.onMessage = messaging().onMessage(
+    unsubscribeRefs.current.onMessage = onMessage(
+      messaging,
       async remoteMessage => {
         await showForegroundNotification(remoteMessage);
       },
     );
 
-    unsubscribeRefs.current.onOpen = messaging().onNotificationOpenedApp(
+    unsubscribeRefs.current.onOpen = messaging.onNotificationOpenedApp(
       remoteMessage => {},
     );
 
-    messaging()
-      .getInitialNotification()
-      .then(remoteMessage => {
-        if (remoteMessage) {
-        }
-      });
+    messaging.getInitialNotification().then(remoteMessage => {
+      if (remoteMessage) {
+      }
+    });
 
-    messaging().setBackgroundMessageHandler(async remoteMessage => {});
+    messaging.setBackgroundMessageHandler(async remoteMessage => {});
 
-    unsubscribeRefs.current.tokenRefresh = messaging().onTokenRefresh(token => {
+    unsubscribeRefs.current.tokenRefresh = onTokenRefresh(messaging, token => {
       setDeviceToken(token);
       AsyncStorage.setItem('fcmToken', token).catch(error => {
         console.error('Error saving refreshed token:', error);
@@ -186,7 +194,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         const storedToken = await AsyncStorage.getItem('fcmToken');
         if (storedToken) {
           setDeviceToken(storedToken);
-          const currentToken = await messaging().getToken();
+          const currentToken = await getToken(messaging);
           if (currentToken !== storedToken) {
             setDeviceToken(currentToken);
             await AsyncStorage.setItem('fcmToken', currentToken);

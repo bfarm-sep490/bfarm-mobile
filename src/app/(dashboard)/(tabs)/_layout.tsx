@@ -5,8 +5,6 @@ import { SvgXml } from 'react-native-svg';
 import {
   homeActiveIcon,
   homeIcon,
-  notificationActiveIcon,
-  notificationIcon,
   problemActiveIcon,
   problemIcon,
   taskActiveIcon,
@@ -14,19 +12,16 @@ import {
   todoActiveIcon,
   todoIcon,
 } from '@/assets/svg';
+import TabBar from '@/components/tab-bar';
 
 export default function TabLayout() {
   const { t } = useTranslation();
   return (
-    <Tabs
-      screenOptions={() => ({
-        headerShown: false,
-        tabBarActiveTintColor: 'green',
-      })}
-    >
+    <Tabs tabBar={props => <TabBar {...props} />}>
       <Tabs.Screen
         name='home/index'
         options={{
+          headerShown: false,
           title: t('home:title'),
           tabBarIcon: ({ focused }) => (
             <SvgXml
@@ -50,6 +45,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name='farmer-tasks/index'
         options={{
@@ -90,20 +86,6 @@ export default function TabLayout() {
               height={24}
               width={24}
               xml={focused ? todoActiveIcon : todoIcon}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name='notification/index'
-        options={{
-          title: t('notification:title'),
-          tabBarIcon: ({ focused }) => (
-            <SvgXml
-              height={24}
-              width={24}
-              xml={focused ? notificationActiveIcon : notificationIcon}
             />
           ),
         }}

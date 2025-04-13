@@ -182,7 +182,9 @@ const TaskCard = ({
                     </HStack>
                   ))
                 ) : (
-                  <Text>Chưa có ai được giao nhiệm vụ này</Text>
+                  <Text className='text-xs text-typography-600'>
+                    Chưa có ai được giao nhiệm vụ này
+                  </Text>
                 )}
               </VStack>
             </HStack>

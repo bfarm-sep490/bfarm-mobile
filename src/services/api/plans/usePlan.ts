@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { PlanServices, type PlanParams } from './planService';
+import { PlanServices } from './planService';
 
 import type { Plan } from './planSchema';
 
@@ -36,17 +36,17 @@ export const usePlan = () => {
       queryKey: [PlanQueryKey.fetchOne, planId],
     });
 
-  const useFetchByParamsQuery = (params: PlanParams, enabled = true) =>
-    useQuery({
-      enabled,
-      queryFn: () => PlanServices.fetchByParams(params),
-      queryKey: [PlanQueryKey.fetchByParams, params],
-    });
-
   const useFetchByFarmerQuery = (farmerId: number, enabled = true) =>
     useQuery({
       enabled: enabled && farmerId > 0,
-      queryFn: () => PlanServices.fetchByFarmer(farmerId),
+      queryFn: async () => {
+        try {
+          const response = await PlanServices.fetchByFarmer(farmerId);
+          return response;
+        } catch (error) {
+          throw error;
+        }
+      },
       queryKey: [PlanQueryKey.fetchByFarmer, farmerId],
     });
 
@@ -155,7 +155,6 @@ export const usePlan = () => {
     invalidateQuery,
     useFetchAllQuery,
     useFetchOneQuery,
-    useFetchByParamsQuery,
     useFetchByFarmerQuery,
     useFetchByPlantQuery,
     useFetchByExpertQuery,

@@ -16,6 +16,7 @@ import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 
 import { SessionProvider } from './ctx';
 import { store } from '../store';
+import { NotificationProvider } from './notification';
 
 // Query Client Configuration
 const queryClientConfig = {
@@ -50,11 +51,13 @@ const ProvidersWrapper = ({ children }: ProvidersWrapperProps) => {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <SafeAreaProvider>
           <GestureWrapper>
-            <SessionProvider>
-              <QueryClientProvider client={queryClient}>
-                <Provider store={store}>{children}</Provider>
-              </QueryClientProvider>
-            </SessionProvider>
+            <NotificationProvider>
+              <SessionProvider>
+                <QueryClientProvider client={queryClient}>
+                  <Provider store={store}>{children}</Provider>
+                </QueryClientProvider>
+              </SessionProvider>
+            </NotificationProvider>
           </GestureWrapper>
         </SafeAreaProvider>
       </ThemeProvider>

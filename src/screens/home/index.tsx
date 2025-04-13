@@ -14,10 +14,8 @@ import {
   Menu,
   ChevronRight,
   ClipboardList,
-  Cloud,
   Droplets,
   Bug,
-  SunMoon,
   Shovel,
 } from 'lucide-react-native';
 
@@ -29,7 +27,7 @@ import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
-import { Progress } from '@/components/ui/progress';
+import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
@@ -43,50 +41,6 @@ type MobileHeaderProps = {
   title: string;
 };
 
-interface QuickActionCardProps {
-  icon: any;
-  title: string;
-  onPress: () => void;
-  color?: string;
-  bgColor?: string;
-}
-
-const HeaderWeather = () => (
-  <HStack
-    className='items-center justify-between rounded-lg bg-primary-700 p-2'
-    space='xs'
-  >
-    <HStack space='xs' className='items-center'>
-      <Icon as={Cloud} size='sm' color='white' />
-      <Text className='font-medium text-background-0'>27°C</Text>
-    </HStack>
-    <VStack>
-      <HStack space='xs' className='items-center'>
-        <Icon as={Droplets} size='xs' color='white' />
-        <Text className='text-xs text-background-0'>78%</Text>
-      </HStack>
-    </VStack>
-  </HStack>
-);
-
-const QuickActionCard = ({
-  icon,
-  title,
-  onPress,
-  color = 'text-primary-600',
-  bgColor = 'bg-primary-50',
-}: QuickActionCardProps) => (
-  <Pressable
-    onPress={onPress}
-    className={`rounded-xl p-4 ${bgColor} min-w-20 flex-1`}
-  >
-    <VStack space='sm' className='items-center'>
-      <Icon as={icon} size='lg' className={color} />
-      <Text className='text-center text-sm font-medium'>{title}</Text>
-    </VStack>
-  </Pressable>
-);
-
 const DashboardLayout = (props: any) => {
   const { user } = useSession();
 
@@ -94,7 +48,6 @@ const DashboardLayout = (props: any) => {
     <VStack className='h-full w-full bg-background-0'>
       <Box className='md:hidden'>
         <MobileHeader title={props.title} />
-
         <Box className='px-4 py-2'>
           <HStack className='mb-2 w-full items-center justify-between'>
             <Text className='text-lg font-bold text-typography-900'>
@@ -135,29 +88,25 @@ function MobileHeader(props: MobileHeaderProps) {
             {props.title}
           </Heading>
         </VStack>
-        <Pressable
-          className='rounded-full border-2 border-primary-500 bg-primary-700 p-2.5'
-          onPress={() => {
-            router.push('/profile');
-          }}
-        >
-          <Icon as={User2} color='white' />
-        </Pressable>
-      </HStack>
-
-      <Box className='rounded-b-xl bg-primary-600 px-5 pb-4'>
-        <HStack space='md'>
-          <HeaderWeather />
-
-          <HStack
-            className='flex-1 items-center justify-center rounded-lg bg-primary-700 px-3 py-2'
-            space='xs'
+        <HStack space='sm'>
+          <Pressable
+            className='rounded-full border-2 border-primary-500 bg-primary-700 p-2.5'
+            onPress={() => {
+              router.push('/profile');
+            }}
           >
-            <Icon as={SunMoon} size='sm' color='white' />
-            <Text className='text-sm text-background-0'>Trưa</Text>
-          </HStack>
+            <Icon as={Bell} color='white' />
+          </Pressable>
+          <Pressable
+            className='rounded-full border-2 border-primary-500 bg-primary-700 p-2.5'
+            onPress={() => {
+              router.push('/profile');
+            }}
+          >
+            <Icon as={User2} color='white' />
+          </Pressable>
         </HStack>
-      </Box>
+      </HStack>
     </VStack>
   );
 }
@@ -201,9 +150,9 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
   );
 
   return (
-    <Card className='mb-4 overflow-hidden rounded-xl'>
+    <Card className='mb-4 overflow-hidden rounded-xl p-0'>
       {/* Header */}
-      <Box className='rounded-lg bg-primary-600 px-4 py-3'>
+      <Box className='rounded-t-lg bg-primary-600 px-4 py-3'>
         <HStack className='items-center justify-between'>
           <HStack space='sm' className='items-center'>
             <Icon as={Leaf} color='white' />
@@ -218,7 +167,7 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
       </Box>
 
       {/* Content */}
-      <Box className='p-4'>
+      <Box className='bg-primary-100/30 p-4'>
         <VStack space='md'>
           <HStack className='items-center justify-between'>
             <Text className='text-lg font-semibold'>
@@ -251,7 +200,7 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
             <HStack space='xs' className='items-center'>
               <Icon as={BarChart3} size='sm' className='text-indigo-600' />
               <Text className='text-sm'>
-                {currentPlan.estimated_product} {currentPlan.estimated_unit}
+                {currentPlan.estimated_product} kg
               </Text>
             </HStack>
           </HStack>
@@ -263,10 +212,20 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
                 {Math.round(progressPercent)}%
               </Text>
             </HStack>
-            <Progress value={progressPercent} className='h-2 rounded-full' />
+            <Progress
+              value={progressPercent}
+              orientation='horizontal'
+              size='md'
+            >
+              <ProgressFilledTrack className='h-1' />
+            </Progress>
             <HStack className='justify-between'>
-              <Text className='text-xs text-typography-500'>Ngày bắt đầu</Text>
-              <Text className='text-xs text-typography-500'>Ngày kết thúc</Text>
+              <Text className='text-xs text-typography-500'>
+                {dayjs(currentPlan.start_date).format('DD/MM/YYYY')}
+              </Text>
+              <Text className='text-xs text-typography-500'>
+                {dayjs(currentPlan.end_date).format('DD/MM/YYYY')}
+              </Text>
             </HStack>
           </VStack>
 
@@ -295,7 +254,7 @@ const TasksList = () => (
       </Pressable>
     </HStack>
 
-    <Card className='overflow-hidden rounded-xl'>
+    <Card className='overflow-hidden rounded-xl px-0'>
       <VStack>
         <HStack className='items-center justify-between p-3'>
           <HStack space='md' className='items-center'>
@@ -350,47 +309,6 @@ const TasksList = () => (
   </VStack>
 );
 
-const QuickActions = () => {
-  const router = useRouter();
-
-  return (
-    <VStack space='md' className='mb-6'>
-      <HStack className='items-center justify-between'>
-        <Text className='font-bold text-typography-900'>Thao tác nhanh</Text>
-        <Pressable>
-          <Text className='text-sm text-primary-600'>Xem tất cả</Text>
-        </Pressable>
-      </HStack>
-
-      <HStack space='md' className='flex-wrap'>
-        <QuickActionCard
-          icon={Droplets}
-          title='Tưới nước'
-          color='text-blue-600'
-          bgColor='bg-blue-50'
-          onPress={() => router.push('/tasks/watering')}
-        />
-
-        <QuickActionCard
-          icon={Bug}
-          title='Phòng dịch'
-          color='text-red-600'
-          bgColor='bg-red-50'
-          onPress={() => router.push('/tasks/pest-control')}
-        />
-
-        <QuickActionCard
-          icon={Shovel}
-          title='Bón phân'
-          color='text-amber-600'
-          bgColor='bg-amber-50'
-          onPress={() => router.push('/tasks/fertilizing')}
-        />
-      </HStack>
-    </VStack>
-  );
-};
-
 const UpcomingEvents = () => (
   <VStack space='md' className='mb-6'>
     <HStack className='items-center justify-between'>
@@ -441,7 +359,6 @@ const MainContent = () => {
           ) : (
             <>
               <PlanStatusCard currentPlan={currentPlan} />
-              <QuickActions />
               <TasksList />
               <UpcomingEvents />
             </>
