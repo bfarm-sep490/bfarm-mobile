@@ -17,7 +17,14 @@ import TabBar from '@/components/tab-bar';
 export default function TabLayout() {
   const { t } = useTranslation();
   return (
-    <Tabs tabBar={props => <TabBar {...props} />}>
+    <Tabs
+      tabBar={props => <TabBar {...props} />}
+      screenOptions={{
+        tabBarStyle: {
+          display: 'none',
+        },
+      }}
+    >
       <Tabs.Screen
         name='home/index'
         options={{
@@ -30,6 +37,9 @@ export default function TabLayout() {
               xml={focused ? homeActiveIcon : homeIcon}
             />
           ),
+          tabBarStyle: {
+            display: 'flex',
+          },
         }}
       />
       <Tabs.Screen
@@ -43,12 +53,16 @@ export default function TabLayout() {
               xml={focused ? problemActiveIcon : problemIcon}
             />
           ),
+          tabBarStyle: {
+            display: 'flex',
+          },
         }}
       />
 
       <Tabs.Screen
         name='farmer-tasks/index'
         options={{
+          headerShown: false,
           title: t('farmerTask:title'),
           tabBarIcon: ({ focused }) => (
             <SvgXml
@@ -57,24 +71,37 @@ export default function TabLayout() {
               xml={focused ? taskActiveIcon : taskIcon}
             />
           ),
+          tabBarStyle: {
+            display: 'flex',
+          },
         }}
       />
       <Tabs.Screen
         name='farmer-tasks/[id]/index'
         options={{
+          headerShown: false,
           href: null,
+          tabBarStyle: {
+            display: 'none',
+          },
         }}
       />
       <Tabs.Screen
         name='problem/[id]/index'
         options={{
           href: null,
+          tabBarStyle: {
+            display: 'none',
+          },
         }}
       />
       <Tabs.Screen
         name='problem/create/index'
         options={{
           href: null,
+          tabBarStyle: {
+            display: 'none',
+          },
         }}
       />
       <Tabs.Screen
@@ -88,6 +115,9 @@ export default function TabLayout() {
               xml={focused ? todoActiveIcon : todoIcon}
             />
           ),
+          tabBarStyle: {
+            display: 'flex',
+          },
         }}
       />
     </Tabs>

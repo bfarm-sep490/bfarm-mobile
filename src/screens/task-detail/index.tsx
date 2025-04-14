@@ -367,7 +367,7 @@ export const TaskDetailScreen = () => {
         <BoxUI className='px-4 py-4'>
           <HStack className='items-center justify-between'>
             <HStack space='md' className='flex-1 items-center'>
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => router.push('/farmer-tasks')}>
                 <Icon as={ArrowLeft} />
               </Pressable>
               <Heading size='md'>{task?.task_name}</Heading>
@@ -388,7 +388,7 @@ export const TaskDetailScreen = () => {
         <BoxUI className='px-4 py-4'>
           <HStack className='items-center justify-between'>
             <HStack space='md' className='flex-1 items-center'>
-              <Pressable onPress={() => router.back()}>
+              <Pressable onPress={() => router.push('/farmer-tasks')}>
                 <Icon as={ArrowLeft} />
               </Pressable>
               <Heading size='md'>{task?.task_name}</Heading>
@@ -414,7 +414,7 @@ export const TaskDetailScreen = () => {
       <BoxUI className='p-4'>
         <HStack className='items-center'>
           <HStack space='md' className='flex-1 items-center justify-between'>
-            <Pressable onPress={() => router.back()}>
+            <Pressable onPress={() => router.push('/farmer-tasks')}>
               <Icon as={ArrowLeft} />
             </Pressable>
             <Heading size='md'>{task?.task_name}</Heading>
@@ -574,7 +574,7 @@ export const TaskDetailScreen = () => {
               <HStack space='sm'>
                 {images.map((image, index) => (
                   <BoxUI
-                    key={index}
+                    key={`image-${index}-${image.url}`}
                     className='h-48 w-48 overflow-hidden rounded-xl'
                   >
                     <Image
@@ -617,22 +617,6 @@ export const TaskDetailScreen = () => {
           </Card>
         )}
 
-        {taskType === 'packaging' && task.packed_quantity && (
-          <Card className='mx-4 mb-4 overflow-hidden rounded-xl'>
-            <BoxUI className='p-4'>
-              <Text className='mb-2 font-semibold'>Thông tin đóng gói</Text>
-              <HStack className='items-center justify-between'>
-                <Text className='text-sm text-typography-700'>
-                  Số lượng đóng gói:
-                </Text>
-                <Text className='font-medium'>
-                  {task.packed_quantity} {task.packed_unit || ''}
-                </Text>
-              </HStack>
-            </BoxUI>
-          </Card>
-        )}
-
         {/* Items section */}
         {items.length > 0 && (
           <BoxUI className='mx-4 mb-4'>
@@ -641,7 +625,7 @@ export const TaskDetailScreen = () => {
             </Text>
             {items.map(item => (
               <ItemCard
-                key={'item.id || item.item_id'}
+                key={`item-${item.id || item.item_id}-${item.item_name}`}
                 item={item}
                 type={
                   taskType === 'caring' &&

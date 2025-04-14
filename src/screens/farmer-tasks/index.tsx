@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
-  Filter,
   Search,
   Leaf,
   Droplets,
@@ -22,8 +21,6 @@ import {
   Settings,
   Info,
   UserIcon,
-  Heart,
-  PawPrint,
   Sprout,
   RefreshCw,
 } from 'lucide-react-native';
@@ -268,21 +265,6 @@ const TaskCard = ({
                 </Text>
               </HStack>
             )}
-
-            {taskType === 'packaging' && task.packed_quantity && (
-              <HStack space='sm' className='items-center'>
-                <Icon
-                  as={PackageOpen}
-                  size='xs'
-                  className='text-typography-500'
-                />
-                <Text className='text-xs text-typography-500'>
-                  Số lượng đóng gói: {task.packed_quantity}
-                  {task.packed_unit ? ` ${task.packed_unit}` : ''}
-                </Text>
-              </HStack>
-            )}
-
             {/* Show result if available */}
             {task.result_content && (
               <BoxUI className='mt-2 rounded-lg bg-typography-50 p-2'>
@@ -305,21 +287,6 @@ const TaskCard = ({
             >
               <ButtonText>Chi tiết</ButtonText>
             </Button>
-
-            {/* {task.status !== 'Complete' &&
-              (!currentFarmerInfo ||
-                currentFarmerInfo.status !== 'Completed') && (
-                <Button
-                  className='flex-1'
-                  variant='solid'
-                  size='sm'
-                  onPress={() =>
-                    router.push(`/tasks/${task.id}/update?type=${taskType}`)
-                  }
-                >
-                  <ButtonText>Cập nhật</ButtonText>
-                </Button>
-              )} */}
           </HStack>
         </VStack>
       </BoxUI>

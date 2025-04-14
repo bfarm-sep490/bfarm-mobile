@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { NavigationState, Route } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -18,6 +18,16 @@ const TabBar = ({
 }) => {
   const primaryColor = '#0891b2';
   const greyColor = '#737373';
+
+  // Check if current route is a detail page
+  const isDetailPage =
+    state.routes[state.index].name.includes('[id]') ||
+    state.routes[state.index].name.includes('create');
+
+  // If it's a detail page, don't render the tab bar
+  if (isDetailPage) {
+    return null;
+  }
 
   return (
     <Animated.View entering={FadeInDown.duration(500)} style={styles.tabbar}>
@@ -102,17 +112,17 @@ const TabBar = ({
 const styles = StyleSheet.create({
   tabbar: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
+    bottom: 15,
+    left: 15,
+    right: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'white',
-    paddingVertical: 15,
+    paddingVertical: 10,
     borderRadius: 25,
     borderCurve: 'continuous',
-    shadowColor: 'black',
+    shadowColor: 'green',
     shadowOffset: { width: 0, height: 10 },
     shadowRadius: 10,
     shadowOpacity: 0.1,
