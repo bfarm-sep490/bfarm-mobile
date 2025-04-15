@@ -15,7 +15,9 @@ export type PackagingTaskParams = {
 };
 
 export type TaskReportData = {
-  packed_quantity: number;
+  harvesting_task_id?: number;
+  packaged_item_count?: number;
+  total_packaged_weight?: number;
   result_content?: string;
   status: string;
   report_by: string;
@@ -64,9 +66,11 @@ export const PackagingTaskServices = {
    * Cập nhật báo cáo công việc đóng gói
    */
   updateTaskReport: async (id: number, data: TaskReportData) => {
+    console.log('data', data);
     const response = await instance
       .put(`packaging-tasks/${id}/task-report`, { json: data })
       .json();
+    console.log('response', response);
     return taskReportUpdateResponseSchema.parse(response);
   },
 
@@ -83,7 +87,6 @@ export const PackagingTaskServices = {
       .post('packaging-tasks/images/upload', {
         body: formData,
         headers: {
-          // Remove Content-Type header so that the browser can set it with proper boundary
           'Content-Type': undefined,
         },
       })

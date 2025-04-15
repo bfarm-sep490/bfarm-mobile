@@ -69,7 +69,8 @@ export const HarvestingTaskServices = {
     const response = await instance
       .put(`harvesting-tasks/${id}/task-report`, { json: data })
       .json();
-    return taskReportUpdateResponseSchema.parse(response);
+    const responseData = taskReportUpdateResponseSchema.parse(response);
+    return responseData;
   },
 
   /**

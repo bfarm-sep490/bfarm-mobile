@@ -4,6 +4,7 @@ import { Image, StyleSheet } from 'react-native';
 
 import * as ImagePicker from 'expo-image-picker';
 import { XCircle, Camera, ImageIcon, X } from 'lucide-react-native';
+import RNPickerSelect from 'react-native-picker-select';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -25,8 +26,12 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useHarvestingProduct } from '@/services/api/harvesting_products/useHarvestingProduct';
+import { usePackagingType } from '@/services/api/packaging-types/usePackagingType';
 
 export interface CompleteTaskModalProps {
+  packaging_type_id?: number;
+  idPlan?: number;
   /**
    * Controls whether the modal is visible
    */
@@ -103,6 +108,9 @@ export interface CompleteTaskModalProps {
   onConfirm: (data: {
     resultContent: string;
     images: string[];
+    harvesting_task_id?: number;
+    total_packaged_weight?: number;
+    packaged_item_count?: number;
     harvesting_quantity?: number;
     unpackaging_quantity?: number;
     packaging_quantity?: number;
@@ -115,6 +123,8 @@ export interface CompleteTaskModalProps {
  * A reusable modal for completing tasks with content and images
  */
 export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
+  packaging_type_id,
+  idPlan,
   isOpen,
   onClose,
   title = 'Xác nhận hoàn thành',
@@ -133,19 +143,28 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   const [harvestingQuantity, setHarvestingQuantity] = useState(0);
   const [packagingQuantity, setPackagingQuantity] = useState(0);
   const [unpackagingQuantity, setUnpackagingQuantity] = useState(0);
+  const [harvestingProductId, setHarvestingProductId] = useState<number | null>(
+    null,
+  );
   const [selectedImages, setSelectedImages] = useState<
     ImagePicker.ImagePickerAsset[]
   >([]);
   const [isUploading, setIsUploading] = useState(false);
-
-  // Reset state when modal is closed
+  const { useFetchByParamsQuery } = useHarvestingProduct();
+  const { data: harvestingProducts } = useFetchByParamsQuery(
+    { plan_id: idPlan },
+    !!idPlan,
+  );
+  const { useFetchAllQuery: usePackagingTypeAll } = usePackagingType();
+  const { data: packagingTypes } = usePackagingTypeAll({
+    enabled: true,
+  });
   const handleClose = () => {
     setResultContent('');
     setSelectedImages([]);
     setIsUploading(false);
     onClose();
   };
-
   // Handle submission
   const handleConfirm = async () => {
     try {
@@ -167,18 +186,23 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
           images: imageUrls,
         });
       if (taskType === 'harvesting')
+        console.log('harvestingQuantity', harvestingQuantity);
+      onConfirm({
+        resultContent,
+        images: imageUrls,
+        harvesting_quantity: harvestingQuantity,
+      });
+      if (taskType === 'packaging') {
         onConfirm({
+          harvesting_task_id: harvestingProductId || 0,
           resultContent,
-          images: imageUrls,
-          harvesting_quantity: harvestingQuantity,
-        });
-      if (taskType === 'packaging')
-        onConfirm({
-          resultContent,
+          packaged_item_count: packagingQuantity,
+          total_packaged_weight: unpackagingQuantity,
           images: imageUrls,
           unpackaging_quantity: unpackagingQuantity,
           packaging_quantity: packagingQuantity,
         });
+      }
     } catch (error) {
       console.error('Error in handleConfirm:', error);
     } finally {
@@ -187,12 +211,10 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
     }
   };
 
-  // Request camera permission and take photo
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
     if (status !== 'granted') {
-      // Handle permission denied
       alert('Cần cấp quyền truy cập camera để chụp ảnh!');
       return;
     }
@@ -264,7 +286,9 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             <Text>{description}</Text>
             {taskType === 'harvesting' && (
               <>
-                <Text className='text-sm font-medium'>Số lượng thu hoạch</Text>
+                <Text className='text-sm font-medium'>
+                  Số lượng thu hoạch (kg)
+                </Text>
                 <Input variant='underlined'>
                   <InputField
                     keyboardType='numeric'
@@ -280,6 +304,27 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             )}
             {taskType === 'packaging' && (
               <>
+                <Text className='text-sm font-normal italic text-red-600'>
+                  *Lưu ý đóng gói theo{' '}
+                  {
+                    packagingTypes?.data?.find(x => x.id === packaging_type_id)
+                      ?.name
+                  }
+                </Text>
+                <Text className='text-sm font-medium'>
+                  Chọn sản lượng đã thu hoạch
+                </Text>
+                <RNPickerSelect
+                  textInputProps={{
+                    textAlign: 'center',
+                    textAlignVertical: 'center',
+                  }}
+                  onValueChange={value => setHarvestingProductId(value)}
+                  items={(harvestingProducts?.data || [])?.map(item => ({
+                    label: `Thu hoạch #${item?.harvesting_task_id} - ${item?.available_harvesting_quantity} ${item?.harvesting_unit} chưa đóng gói`,
+                    value: item?.harvesting_task_id,
+                  }))}
+                />
                 <Text className='text-sm font-medium'>
                   Số lượng sản phẩm đóng gói
                 </Text>

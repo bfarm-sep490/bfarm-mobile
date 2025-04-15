@@ -46,6 +46,7 @@ import { useSession } from '@/context/ctx';
 import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
 import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
 import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
+import { usePackagingType } from '@/services/api/packaging-types/usePackagingType';
 
 // Helper function to get icon based on task type
 const getTaskTypeIcon = (taskType: string) => {
@@ -191,10 +192,12 @@ export const TaskDetailScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string; type: string }>();
   const taskType = params.type || 'caring';
-
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const { useFetchAllQuery: usePackagingTypeAll } = usePackagingType();
+  const { data: packagingTypes } = usePackagingTypeAll({
+    enabled: true,
+  });
   // Get session data
   const { user } = useSession();
   const currentFarmerId = user?.id;
@@ -304,6 +307,10 @@ export const TaskDetailScreen = () => {
   const handleCompleteTask = async (data: {
     resultContent: string;
     images: string[];
+    harvesting_task_id?: number;
+    harvesting_quantity?: number;
+    packaged_item_count?: number;
+    total_packaged_weight?: number;
   }) => {
     if (!task) return;
 
@@ -313,11 +320,10 @@ export const TaskDetailScreen = () => {
         await updateTaskMutation.mutateAsync({
           id: task.id,
           data: {
-            status: 'Completed',
+            status: 'Complete',
             result_content: data.resultContent,
             list_of_image_urls: data.images,
             harvested_quantity: task.harvested_quantity || 0,
-            packed_quantity: task.packed_quantity || 0,
             report_by: user?.name ?? 'Unknown',
           },
         });
@@ -325,11 +331,10 @@ export const TaskDetailScreen = () => {
         await updateTaskMutation.mutateAsync({
           id: task.id,
           data: {
-            status: 'Completed',
+            status: 'Complete',
             result_content: data.resultContent,
             list_of_image_urls: data.images,
-            harvested_quantity: task.harvested_quantity || 0,
-            packed_quantity: task.packed_quantity || 0,
+            harvested_quantity: data.harvesting_quantity || 0,
             report_by: user?.name ?? 'Unknown',
           },
         });
@@ -337,11 +342,13 @@ export const TaskDetailScreen = () => {
         await updateTaskMutation.mutateAsync({
           id: task.id,
           data: {
-            status: 'Completed',
+            status: 'Complete',
+            harvesting_task_id: data.harvesting_task_id,
+            packaged_item_count: data.packaged_item_count || 0,
+            total_packaged_weight: data.total_packaged_weight || 0,
             result_content: data.resultContent,
             list_of_image_urls: data.images,
             harvested_quantity: task.harvested_quantity || 0,
-            packed_quantity: task.packed_quantity || 0,
             report_by: user?.name ?? 'Unknown',
           },
         });
@@ -407,7 +414,6 @@ export const TaskDetailScreen = () => {
       </SafeAreaView>
     );
   }
-
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
       {/* Header */}
@@ -465,7 +471,18 @@ export const TaskDetailScreen = () => {
               </HStack>
 
               <Divider />
-
+              {taskType === 'packaging' && (
+                <VStack space='sm'>
+                  <Text className='font-semibold'>Loại bao bì</Text>
+                  <Text className='text-sm text-typography-700'>
+                    {
+                      packagingTypes?.data?.find(
+                        x => x.id === task.packaging_type_id,
+                      )?.name
+                    }
+                  </Text>
+                </VStack>
+              )}
               {/* Task details */}
               <VStack space='sm'>
                 <Text className='font-semibold'>Mô tả</Text>
@@ -473,12 +490,26 @@ export const TaskDetailScreen = () => {
                   {task.description}
                 </Text>
 
-                {task.result_content && (
+                {task?.status === 'Complete' && (
                   <>
                     <Text className='mt-2 font-semibold'>Kết quả</Text>
                     <BoxUI className='rounded-lg border border-success-200 bg-success-50 p-3'>
                       <Text className='text-sm text-success-800'>
-                        {task.result_content}
+                        {task?.result_content
+                          ? task?.result_content
+                          : 'Không có nội dung'}
+                      </Text>
+                    </BoxUI>
+                  </>
+                )}
+                {task?.status === 'Complete' && taskType === 'harvesting' && (
+                  <>
+                    <Text className='mt-2 font-semibold'>
+                      Số lượng thu hoạch:
+                    </Text>
+                    <BoxUI className='rounded-lg border border-success-200 bg-success-50 p-3'>
+                      <Text className='text-sm text-success-800'>
+                        {task.harvested_quantity} {task.harvested_unit || 'kg'}
                       </Text>
                     </BoxUI>
                   </>
@@ -588,36 +619,6 @@ export const TaskDetailScreen = () => {
             </ScrollView>
           </BoxUI>
         )}
-
-        {/* Task-specific information */}
-        {taskType === 'harvesting' && task.harvested_quantity && (
-          <Card className='mb-4 overflow-hidden rounded-xl'>
-            <BoxUI>
-              <Text className='mb-2 font-semibold'>Thông tin thu hoạch</Text>
-              <HStack className='items-center justify-between'>
-                <Text className='text-sm text-typography-700'>
-                  Số lượng thu hoạch:
-                </Text>
-                <Text className='font-medium'>
-                  {task.harvested_quantity} {task.harvested_unit || 'kg'}
-                </Text>
-              </HStack>
-              {task.fail_quantity !== null &&
-                task.fail_quantity !== undefined && (
-                  <HStack className='mt-2 items-center justify-between'>
-                    <Text className='text-sm text-typography-700'>
-                      Số lượng hỏng:
-                    </Text>
-                    <Text className='text-danger-600 font-medium'>
-                      {task.fail_quantity} {task.harvested_unit || ''}
-                    </Text>
-                  </HStack>
-                )}
-            </BoxUI>
-          </Card>
-        )}
-
-        {/* Items section */}
         {items.length > 0 && (
           <BoxUI className='mx-4 mb-4'>
             <Text className='mb-2 font-semibold'>
@@ -645,16 +646,14 @@ export const TaskDetailScreen = () => {
           </BoxUI>
         )}
         {/* Actions section */}
-        {task.status !== 'Complete' &&
-          task.status !== 'Completed' &&
-          (!currentFarmerInfo || currentFarmerInfo.status === 'Active') && (
-            <Card className='m-4 rounded-xl'>
-              <BoxUI className='p-4'>
-                <VStack space='md'>
-                  <Text className='font-semibold'>Cập nhật trạng thái</Text>
+        <Card className='m-4 rounded-xl'>
+          <BoxUI className='p-4'>
+            <VStack space='md'>
+              <>
+                <Text className='font-semibold'>Cập nhật trạng thái</Text>
 
-                  <HStack space='md'>
-                    <Button
+                <HStack space='md'>
+                  {/* <Button
                       variant='outline'
                       className='flex-1'
                       onPress={() =>
@@ -664,35 +663,36 @@ export const TaskDetailScreen = () => {
                     >
                       <ButtonIcon as={Edit3} />
                       <ButtonText>Chỉnh sửa</ButtonText>
-                    </Button>
+                    </Button> */}
 
-                    <Button
-                      variant='solid'
-                      className='flex-1 bg-success-600'
-                      onPress={() => setShowCompleteModal(true)}
-                      isDisabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <HStack space='sm' className='items-center'>
-                          <Spinner size='small' color='white' />
-                          <ButtonText>Đang xử lý...</ButtonText>
-                        </HStack>
-                      ) : (
-                        <>
-                          <ButtonIcon as={Check} />
-                          <ButtonText>Hoàn thành</ButtonText>
-                        </>
-                      )}
-                    </Button>
-                  </HStack>
-                </VStack>
-              </BoxUI>
-            </Card>
-          )}
-
+                  <Button
+                    variant='solid'
+                    className='flex-1 bg-success-600'
+                    onPress={() => setShowCompleteModal(true)}
+                    isDisabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <HStack space='sm' className='items-center'>
+                        <Spinner size='small' color='white' />
+                        <ButtonText>Đang xử lý...</ButtonText>
+                      </HStack>
+                    ) : (
+                      <>
+                        <ButtonIcon as={Check} />
+                        <ButtonText>Hoàn thành</ButtonText>
+                      </>
+                    )}
+                  </Button>
+                </HStack>
+              </>
+            </VStack>
+          </BoxUI>
+        </Card>
         <BoxUI className='h-10' />
       </ScrollView>
       <CompleteTaskModal
+        packaging_type_id={task?.packaging_type_id}
+        idPlan={task?.plan_id}
         isOpen={showCompleteModal}
         onClose={() => setShowCompleteModal(false)}
         taskType={taskType as 'caring' | 'harvesting' | 'packaging'}

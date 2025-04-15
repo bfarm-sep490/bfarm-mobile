@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
-import { Alert, Pressable, SafeAreaView, TouchableOpacity } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  RefreshControl,
+  SafeAreaView,
+  TouchableOpacity,
+} from 'react-native';
 
 import dayjs from 'dayjs';
 import { Link, useLocalSearchParams, router, useRouter } from 'expo-router';
@@ -25,6 +31,7 @@ import {
 } from 'lucide-react-native';
 import { useForm, Controller, Form } from 'react-hook-form';
 import DatePicker from 'react-native-date-picker';
+import { FlatList } from 'react-native-gesture-handler';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNPickerSelect from 'react-native-picker-select';
 import Carousel from 'react-native-reanimated-carousel';
@@ -188,13 +195,29 @@ type ProblemCardProps = {
 export const ProblemCard = ({ problem }: ProblemCardProps) => {
   return (
     <VStack className='w-full'>
-      <Card className='overflow-hidden rounded-xl'>
+      <Card className='border-1 overflow-hidden rounded-xl'>
         <BoxUI className='w-full flex-row justify-center rounded-lg'>
-          <VStack className='p-4'>
+          <VStack className='p-2'>
             <HStack className='w-full justify-between'>
-              <Heading size='md'>{problem.problem_name}</Heading>
+              <Heading size='lg'>{problem.problem_name}</Heading>
               <StatusProblem status={problem.status} />
             </HStack>
+            <BoxUI className='mt-2 rounded-lg border border-typography-200 p-2'>
+              <HStack space='xs' className='items-center'>
+                <VStack className='text-xs font-medium text-typography-600'>
+                  <HStack space='xs' className='items-center'>
+                    <Icon
+                      as={UserIcon}
+                      size='xs'
+                      className='text-typography-500'
+                    />
+                    <Text className='text-xs text-typography-600'>
+                      {problem.farmer_name || `Nông dân #${problem.farmer_id}`}
+                    </Text>
+                  </HStack>
+                </VStack>
+              </HStack>
+            </BoxUI>
             <VStack className='ml-2 w-full' space='md'>
               <Text className='mt-4 text-sm'>
                 <Icon as={Calendar} size='xs' className='text-typography-500' />{' '}
@@ -225,6 +248,9 @@ export const ProblemsScreen = () => {
   const [activeTab, setActiveTab] = useState<'All' | 'Resolved' | 'Pending'>(
     'All',
   );
+  const [page, setPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasMoreData] = useState(true);
   const [searchName, setSearchName] = useState('');
   const { user } = useSession();
   const { useFetchByParamsQuery } = useProblem();
@@ -235,7 +261,14 @@ export const ProblemsScreen = () => {
   const handleRefresh = () => {
     problemQuery.refetch();
   };
-  const { data: problemsData, isLoading, isError, error } = problemQuery;
+  const {
+    data: problemsData,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+    refetch,
+  } = problemQuery;
   const problems = problemsData?.data;
   useEffect(() => {
     setData(
@@ -244,6 +277,9 @@ export const ProblemsScreen = () => {
       })) as unknown as IProblem[],
     );
   }, [problems]);
+  const handleLoadMore = () => {
+    refetch();
+  };
 
   console.log(error);
   useEffect(() => {
@@ -255,20 +291,19 @@ export const ProblemsScreen = () => {
       }),
     );
   }, [activeTab, searchName, problems]);
+  const renderFooter = () => {
+    if (!isLoading) return null;
+    return (
+      <VStack className='items-center justify-center py-4'>
+        <Spinner size='small' color='$primary600' />
+        <Text className='mt-2 text-center text-typography-500'>
+          Đang tải thêm...
+        </Text>
+      </VStack>
+    );
+  };
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
-      <BoxUI className='px-4 py-4'>
-        <HStack className='items-center justify-between'>
-          <HStack space='md' className='items-center'>
-            <Heading size='lg'>Quản lý nhiệm vụ</Heading>
-          </HStack>
-          <TouchableOpacity onPress={handleRefresh}>
-            <Icon as={RefreshCw} size='lg' />
-          </TouchableOpacity>
-        </HStack>
-      </BoxUI>
-      <Divider />
-
       <BoxUI className='bg-background-0 px-4 py-3'>
         <Input
           variant='outline'
@@ -301,22 +336,32 @@ export const ProblemsScreen = () => {
         </VStack>
       )}
       {!isError && (
-        <ScrollView
+        <FlatList
           className='h-64 w-full flex-1 md:mb-2'
           contentContainerStyle={{
             paddingBottom: isWeb ? 0 : 140,
           }}
           showsVerticalScrollIndicator={false}
-        >
-          {data?.map((item, index) => {
-            return (
-              <VStack>
-                <ProblemCard key={'problem_' + item.id} problem={item} />
-                <Divider />
-              </VStack>
-            );
-          })}
-        </ScrollView>
+          ListFooterComponent={renderFooter}
+          onEndReached={handleLoadMore}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading || isFetching}
+              onRefresh={handleRefresh}
+              colors={['#4F46E5']}
+              tintColor='#4F46E5'
+            />
+          }
+          data={problemsData?.data}
+          keyExtractor={item => 'problem_' + item.id}
+          renderItem={({ item }) => (
+            <VStack>
+              <ProblemCard problem={item} />
+              <Divider />
+            </VStack>
+          )}
+          onEndReachedThreshold={0.5}
+        ></FlatList>
       )}
       {isError && (
         <HStack space='2xl' className='h-full w-full flex-1'>
@@ -414,8 +459,11 @@ export const CreateScreen = () => {
   }
   const onSubmit = async (report: ICreateProblem) => {
     const income_data = { ...report, list_of_images: images } as ICreateProblem;
+    console.log('income_data', income_data);
     const { status, data, message } = await createProblem(income_data);
-
+    console.log('data', data);
+    console.log('status', status);
+    console.log('message', message);
     if (status && data) {
       Alert.alert('Thành công', 'Báo cáo thành công');
       router.push({
@@ -423,7 +471,10 @@ export const CreateScreen = () => {
         params: { id: data?.id?.toString() },
       });
     } else {
-      Alert.alert('Lỗi', 'Không thể báo cáo. Hãy thử lại!');
+      Alert.alert(
+        'Lỗi',
+        (message as string) ?? 'Có lỗi xảy ra. Vui lòng thử lại!',
+      );
     }
   };
 

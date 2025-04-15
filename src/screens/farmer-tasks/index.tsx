@@ -621,7 +621,7 @@ export const FarmerTasksScreen = () => {
         {!isLoading &&
           !hasError &&
           filteredTasks.length > 0 &&
-          filteredTasks.map(task => (
+          filteredTasks?.map(task => (
             <TaskCard
               key={`${task.taskType}-${task.id}`}
               task={task}

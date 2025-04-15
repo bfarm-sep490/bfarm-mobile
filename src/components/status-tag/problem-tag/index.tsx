@@ -34,10 +34,11 @@ export const StatusProblem = ({ status }: { status: string }) => {
         paddingLeft: 4,
         paddingRight: 4,
         color: getColorStatus(status)?.[0] || 'black',
-        fontSize: 11,
-        minWidth: 60,
+        fontSize: 12,
+        minWidth: 80,
         textAlign: 'center',
         fontWeight: 'bold',
+        alignItems: 'center',
       }}
     >
       {getValueStatus(status)}
