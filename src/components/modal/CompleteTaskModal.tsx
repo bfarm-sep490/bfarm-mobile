@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Image, StyleSheet } from 'react-native';
+import { Image, RefreshControlComponent, StyleSheet } from 'react-native';
 
 import * as ImagePicker from 'expo-image-picker';
 import { XCircle, Camera, ImageIcon, X } from 'lucide-react-native';
@@ -26,7 +26,10 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
+import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
 import { useHarvestingProduct } from '@/services/api/harvesting_products/useHarvestingProduct';
+import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 import { usePackagingType } from '@/services/api/packaging-types/usePackagingType';
 
 export interface CompleteTaskModalProps {
@@ -139,6 +142,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   maxImages = 5,
   onConfirm,
 }) => {
+  const [showingImages, setShowingImages] = useState(false);
   const [resultContent, setResultContent] = useState('');
   const [harvestingQuantity, setHarvestingQuantity] = useState(0);
   const [packagingQuantity, setPackagingQuantity] = useState(0);
@@ -155,6 +159,10 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
     { plan_id: idPlan },
     !!idPlan,
   );
+  const { useUploadImagesMutation: harvestingUplooad } = useHarvestingTask();
+  const { useUploadImagesMutation: caringUpload } = useCaringTask();
+  const { useUploadImagesMutation: packagingUpload } = usePackagingTask();
+
   const { useFetchAllQuery: usePackagingTypeAll } = usePackagingType();
   const { data: packagingTypes } = usePackagingTypeAll({
     enabled: true,
@@ -219,51 +227,77 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
+    ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
       allowsEditing: true,
-    });
+    })
+      .then(async result => {
+        if (result.canceled) return;
+        setShowingImages(true);
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      if (!allowMultipleImages) {
-        setSelectedImages([result.assets[0]]);
-      } else if (selectedImages.length < maxImages) {
-        setSelectedImages([...selectedImages, result.assets[0]]);
-      } else {
-        alert(`Bạn chỉ được chọn tối đa ${maxImages} ảnh!`);
-      }
-    }
+        const file = {
+          uri: result.assets[0].uri,
+          name: result.assets[0].fileName || 'image.jpg',
+          type: result.assets[0].type || 'image/jpeg',
+        } as unknown as File;
+        try {
+          const response = await packagingUpload([file]).mutateAsync();
+          console.log('result', result);
+          console.log('response', response);
+          setSelectedImages([...selectedImages, result.assets[0]]);
+        } catch (error) {
+          alert('Lỗi khi tải ảnh lên: ' + error);
+        } finally {
+          setShowingImages(false);
+        }
+      })
+      .catch(error => {
+        alert('Lỗi khi chụp ảnh: ' + error.message);
+        setShowingImages(false);
+      });
   };
 
-  // Request gallery permission and pick images
   const pickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      // Handle permission denied
       alert('Cần cấp quyền truy cập thư viện ảnh!');
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
+    ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
       allowsMultipleSelection: allowMultipleImages,
       selectionLimit: allowMultipleImages
         ? maxImages - selectedImages.length
         : 1,
-    });
+    })
+      .then(async result => {
+        if (result.canceled) return;
+        setShowingImages(true);
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      if (!allowMultipleImages) {
-        setSelectedImages([result.assets[0]]);
-      } else if (selectedImages.length + result.assets.length <= maxImages) {
-        setSelectedImages([...selectedImages, ...result.assets]);
-      } else {
-        alert(`Bạn chỉ được chọn tối đa ${maxImages} ảnh!`);
-      }
-    }
+        const file = {
+          uri: result.assets[0].uri,
+          name: result.assets[0].fileName || 'image.jpg',
+          type: result.assets[0].type || 'image/jpeg',
+        } as unknown as File;
+        try {
+          const response = await packagingUpload([file]).mutateAsync();
+          console.log('result', result);
+          console.log('response', response);
+          setSelectedImages([...selectedImages, result.assets[0]]);
+        } catch (error) {
+          alert('Lỗi khi tải ảnh lên: ' + error);
+        } finally {
+          setShowingImages(false);
+        }
+      })
+      .catch(error => {
+        alert('Lỗi khi chụp ảnh: ' + error.message);
+        setShowingImages(false);
+      });
   };
 
   // Remove an image
@@ -436,7 +470,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             variant='outline'
             size='sm'
             onPress={handleClose}
-            isDisabled={isUploading}
+            isDisabled={isUploading || showingImages}
           >
             <ButtonText>{cancelText}</ButtonText>
           </Button>
@@ -445,7 +479,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             variant='solid'
             className='ml-3'
             onPress={handleConfirm}
-            isDisabled={isUploading}
+            isDisabled={isUploading || showingImages}
           >
             {isUploading ? (
               <HStack space='sm'>

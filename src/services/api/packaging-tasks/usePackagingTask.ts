@@ -70,12 +70,11 @@ export const usePackagingTask = () => {
   /**
    * Hook để upload hình ảnh cho công việc đóng gói
    */
-  const useUploadImagesMutation = () =>
-    useMutation({
-      mutationFn: (images: File[]) =>
-        PackagingTaskServices.uploadImages(images),
+  const useUploadImagesMutation = (images: File[]) => {
+    return useMutation({
+      mutationFn: () => PackagingTaskServices.uploadImages(images),
     });
-
+  };
   return {
     invalidateQuery,
     useFetchAllQuery,

@@ -518,7 +518,6 @@ export const FarmerTasksScreen = () => {
       packagingQuery.refetch();
     }
   };
-
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
       {/* Header */}
@@ -576,7 +575,6 @@ export const FarmerTasksScreen = () => {
           </VStack>
         )}
 
-        {/* Error state */}
         {hasError && !isLoading && (
           <VStack className='items-center justify-center py-10'>
             <BoxUI className='bg-danger-100 mb-4 rounded-full p-4'>

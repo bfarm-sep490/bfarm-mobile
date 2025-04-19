@@ -327,14 +327,6 @@ export const ProblemsScreen = () => {
       </VStack>
       <Divider />
 
-      {isLoading && (
-        <VStack className='items-center justify-center py-10'>
-          <Spinner size='large' color='$primary600' />
-          <Text className='mt-4 text-center text-typography-500'>
-            Đang tải dữ liệu...
-          </Text>
-        </VStack>
-      )}
       {!isError && (
         <FlatList
           className='h-64 w-full flex-1 md:mb-2'

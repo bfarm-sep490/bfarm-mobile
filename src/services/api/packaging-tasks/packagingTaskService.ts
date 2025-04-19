@@ -78,6 +78,7 @@ export const PackagingTaskServices = {
    * Upload hình ảnh cho công việc đóng gói
    */
   uploadImages: async (images: File[]) => {
+    console.log('File:' + images);
     const formData = new FormData();
     images.forEach(image => {
       formData.append('image', image);
