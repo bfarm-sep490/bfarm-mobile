@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 
-import { Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Alert } from 'react-native';
 
-import * as ImagePicker from 'expo-image-picker';
+import { useMutation } from '@tanstack/react-query';
 import { XCircle, Camera, ImageIcon, X } from 'lucide-react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import RNPickerSelect from 'react-native-picker-select';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -25,8 +27,25 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
+import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
+import { useHarvestingProduct } from '@/services/api/harvesting_products/useHarvestingProduct';
+import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
+import { usePackagingType } from '@/services/api/packaging-types/usePackagingType';
+
+interface ApiError extends Error {
+  name: string;
+  message: string;
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
 
 export interface CompleteTaskModalProps {
+  packaging_type_id?: number;
+  idPlan?: number;
   /**
    * Controls whether the modal is visible
    */
@@ -103,6 +122,9 @@ export interface CompleteTaskModalProps {
   onConfirm: (data: {
     resultContent: string;
     images: string[];
+    harvesting_task_id?: number;
+    total_packaged_weight?: number;
+    packaged_item_count?: number;
     harvesting_quantity?: number;
     unpackaging_quantity?: number;
     packaging_quantity?: number;
@@ -115,6 +137,8 @@ export interface CompleteTaskModalProps {
  * A reusable modal for completing tasks with content and images
  */
 export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
+  packaging_type_id,
+  idPlan,
   isOpen,
   onClose,
   title = 'Xác nhận hoàn thành',
@@ -133,120 +157,174 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   const [harvestingQuantity, setHarvestingQuantity] = useState(0);
   const [packagingQuantity, setPackagingQuantity] = useState(0);
   const [unpackagingQuantity, setUnpackagingQuantity] = useState(0);
-  const [selectedImages, setSelectedImages] = useState<
-    ImagePicker.ImagePickerAsset[]
-  >([]);
+  const [harvestingProductId, setHarvestingProductId] = useState<number | null>(
+    null,
+  );
+  const [images, setImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const { useFetchByParamsQuery } = useHarvestingProduct();
+  const { data: harvestingProducts } = useFetchByParamsQuery(
+    { plan_id: idPlan },
+    !!idPlan,
+  );
+  const { useUploadImagesMutation: caringUpload } = useCaringTask();
+  const { useUploadImagesMutation: harvestingUpload } = useHarvestingTask();
+  const { useUploadImagesMutation: packagingUpload } = usePackagingTask();
 
-  // Reset state when modal is closed
+  const { useFetchAllQuery: usePackagingTypeAll } = usePackagingType();
+  const { data: packagingTypes } = usePackagingTypeAll({
+    enabled: true,
+  });
+
+  const uploadMutation =
+    taskType === 'caring'
+      ? caringUpload
+      : taskType === 'harvesting'
+        ? harvestingUpload
+        : packagingUpload;
+
+  const { mutateAsync: uploadImages } = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const endpoint =
+        taskType === 'caring'
+          ? 'caring-tasks/images/upload'
+          : taskType === 'harvesting'
+            ? 'harvesting-tasks/images/upload'
+            : 'packaging-tasks/images/upload';
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      try {
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/api/${endpoint}`,
+          {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            signal: controller.signal,
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Upload failed');
+        }
+
+        const result = await response.json();
+        return result;
+      } catch (error: unknown) {
+        const apiError = error as ApiError;
+        if (apiError.name === 'AbortError') {
+          throw new Error('Request timed out. Please try again.');
+        }
+        if (apiError.message === 'Network request failed') {
+          throw new Error(
+            'Network error. Please check your connection and try again.',
+          );
+        }
+        throw apiError;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+
   const handleClose = () => {
     setResultContent('');
-    setSelectedImages([]);
+    setImages([]);
     setIsUploading(false);
     onClose();
   };
 
-  // Handle submission
   const handleConfirm = async () => {
+    if (isUploading) {
+      Alert.alert('Lỗi', 'Vui lòng đợi quá trình tải ảnh hoàn tất');
+      return;
+    }
+
     try {
       setIsUploading(true);
 
-      // Chỉ lấy uri của hình ảnh
-      const imageUrls = selectedImages.map(image => image.uri);
-
-      // Log data trước khi gửi
-      console.log('===== SUBMITTING TASK DATA =====');
-      console.log('Task Type:', taskType);
-      console.log('Result Content:', resultContent);
-      console.log('Image URLs:', imageUrls);
-      console.log('==============================');
-
-      if (taskType === 'caring')
-        onConfirm({
-          resultContent,
-          images: imageUrls,
-        });
-      if (taskType === 'harvesting')
-        onConfirm({
-          resultContent,
-          images: imageUrls,
-          harvesting_quantity: harvestingQuantity,
-        });
-      if (taskType === 'packaging')
-        onConfirm({
-          resultContent,
-          images: imageUrls,
-          unpackaging_quantity: unpackagingQuantity,
-          packaging_quantity: packagingQuantity,
-        });
-    } catch (error) {
-      console.error('Error in handleConfirm:', error);
+      onConfirm({
+        resultContent,
+        images,
+        harvesting_quantity: harvestingQuantity,
+        unpackaging_quantity: unpackagingQuantity,
+        packaging_quantity: packagingQuantity,
+      });
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error('Error in handleConfirm:', apiError);
+      Alert.alert(
+        'Lỗi',
+        apiError.message || 'Không thể cập nhật nhiệm vụ. Vui lòng thử lại!',
+      );
     } finally {
       setIsUploading(false);
       handleClose();
     }
   };
 
-  // Request camera permission and take photo
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-
-    if (status !== 'granted') {
-      // Handle permission denied
-      alert('Cần cấp quyền truy cập camera để chụp ảnh!');
+  const pickImage = () => {
+    if (images.length >= maxImages) {
+      Alert.alert('Lỗi', `Chỉ được tải lên tối đa ${maxImages} ảnh`);
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsEditing: true,
-    });
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        selectionLimit: allowMultipleImages ? maxImages - images.length : 1,
+        quality: 0.8,
+      },
+      async pickerResponse => {
+        if (pickerResponse.errorMessage) {
+          Alert.alert('Lỗi', 'Lỗi tải ảnh: ' + pickerResponse.errorMessage);
+          return;
+        }
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      if (!allowMultipleImages) {
-        setSelectedImages([result.assets[0]]);
-      } else if (selectedImages.length < maxImages) {
-        setSelectedImages([...selectedImages, result.assets[0]]);
-      } else {
-        alert(`Bạn chỉ được chọn tối đa ${maxImages} ảnh!`);
-      }
-    }
+        if (!pickerResponse.assets || pickerResponse.assets.length === 0) {
+          return;
+        }
+
+        try {
+          setIsUploading(true);
+
+          const formData = new FormData();
+          pickerResponse.assets.forEach((asset: any, index: number) => {
+            formData.append('image', {
+              uri: asset.uri,
+              type: asset.type || 'image/jpeg',
+              name: asset.fileName || `image_${index}.jpg`,
+            } as any);
+          });
+
+          const result = await uploadImages(formData);
+
+          if (result.data && result.data.length > 0) {
+            setImages(prev => [...prev, ...result.data]);
+          }
+        } catch (err: unknown) {
+          const error = err as Error;
+          console.error('Upload error:', error);
+          Alert.alert(
+            'Lỗi',
+            error.message || 'Không thể tải ảnh lên. Vui lòng thử lại!',
+          );
+        } finally {
+          setIsUploading(false);
+        }
+      },
+    );
   };
 
-  // Request gallery permission and pick images
-  const pickImages = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (status !== 'granted') {
-      // Handle permission denied
-      alert('Cần cấp quyền truy cập thư viện ảnh!');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsMultipleSelection: allowMultipleImages,
-      selectionLimit: allowMultipleImages
-        ? maxImages - selectedImages.length
-        : 1,
-    });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      if (!allowMultipleImages) {
-        setSelectedImages([result.assets[0]]);
-      } else if (selectedImages.length + result.assets.length <= maxImages) {
-        setSelectedImages([...selectedImages, ...result.assets]);
-      } else {
-        alert(`Bạn chỉ được chọn tối đa ${maxImages} ảnh!`);
-      }
-    }
-  };
-
-  // Remove an image
   const removeImage = (index: number) => {
-    setSelectedImages(selectedImages.filter((_, i) => i !== index));
+    setImages(images.filter((_, i) => i !== index));
   };
 
   return (
@@ -264,7 +342,9 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             <Text>{description}</Text>
             {taskType === 'harvesting' && (
               <>
-                <Text className='text-sm font-medium'>Số lượng thu hoạch</Text>
+                <Text className='text-sm font-medium'>
+                  Số lượng thu hoạch (kg)
+                </Text>
                 <Input variant='underlined'>
                   <InputField
                     keyboardType='numeric'
@@ -280,6 +360,27 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             )}
             {taskType === 'packaging' && (
               <>
+                <Text className='text-sm font-normal italic text-red-600'>
+                  *Lưu ý đóng gói theo{' '}
+                  {
+                    packagingTypes?.data?.find(x => x.id === packaging_type_id)
+                      ?.name
+                  }
+                </Text>
+                <Text className='text-sm font-medium'>
+                  Chọn sản lượng đã thu hoạch
+                </Text>
+                <RNPickerSelect
+                  textInputProps={{
+                    textAlign: 'center',
+                    textAlignVertical: 'center',
+                  }}
+                  onValueChange={value => setHarvestingProductId(value)}
+                  items={(harvestingProducts?.data || [])?.map(item => ({
+                    label: `Thu hoạch #${item?.harvesting_task_id} - ${item?.available_harvesting_quantity} ${item?.harvesting_unit} chưa đóng gói`,
+                    value: item?.harvesting_task_id,
+                  }))}
+                />
                 <Text className='text-sm font-medium'>
                   Số lượng sản phẩm đóng gói
                 </Text>
@@ -325,7 +426,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
               {showCameraButton && (
                 <Pressable
                   className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
-                  onPress={takePhoto}
+                  onPress={pickImage}
                 >
                   <VStack className='items-center'>
                     <Icon as={Camera} className='text-typography-500' />
@@ -339,7 +440,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
               {showGalleryButton && (
                 <Pressable
                   className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
-                  onPress={pickImages}
+                  onPress={pickImage}
                 >
                   <VStack className='items-center'>
                     <Icon as={ImageIcon} className='text-typography-500' />
@@ -352,18 +453,18 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             </HStack>
 
             {/* Selected images */}
-            {selectedImages.length > 0 && (
+            {images.length > 0 && (
               <Box className='mt-2'>
                 <Text className='mb-2 text-sm font-medium'>Ảnh đã chọn:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <HStack space='sm'>
-                    {selectedImages.map((image, index) => (
+                    {images.map((image, index) => (
                       <Box
                         key={index}
                         className='relative h-20 w-20 overflow-hidden rounded-md'
                       >
                         <Image
-                          source={{ uri: image.uri }}
+                          source={{ uri: image }}
                           style={styles.previewImage}
                         />
                         <Pressable
@@ -379,9 +480,9 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
               </Box>
             )}
 
-            {selectedImages.length > 0 && allowMultipleImages && (
+            {images.length > 0 && allowMultipleImages && (
               <Text className='text-xs text-typography-500'>
-                {selectedImages.length} / {maxImages} ảnh
+                {images.length} / {maxImages} ảnh
               </Text>
             )}
           </VStack>

@@ -73,10 +73,9 @@ export const useHarvestingTask = () => {
   /**
    * Hook để upload hình ảnh cho công việc thu hoạch
    */
-  const useUploadImagesMutation = () =>
+  const useUploadImagesMutation = (images: File[]) =>
     useMutation({
-      mutationFn: (images: File[]) =>
-        HarvestingTaskServices.uploadImages(images),
+      mutationFn: () => HarvestingTaskServices.uploadImages(images),
     });
 
   return {

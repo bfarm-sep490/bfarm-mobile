@@ -34,6 +34,13 @@ export default function AppLayout() {
           gestureEnabled: false,
         }}
       />
+      <Stack.Screen
+        name='notification/index'
+        options={{
+          headerShown: false,
+          gestureEnabled: false,
+        }}
+      />
     </Stack>
   );
 }

@@ -15,7 +15,9 @@ export type PackagingTaskParams = {
 };
 
 export type TaskReportData = {
-  packed_quantity: number;
+  harvesting_task_id?: number;
+  packaged_item_count?: number;
+  total_packaged_weight?: number;
   result_content?: string;
   status: string;
   report_by: string;
@@ -64,31 +66,50 @@ export const PackagingTaskServices = {
    * Cập nhật báo cáo công việc đóng gói
    */
   updateTaskReport: async (id: number, data: TaskReportData) => {
-    const response = await instance
-      .put(`packaging-tasks/${id}/task-report`, { json: data })
-      .json();
-    return taskReportUpdateResponseSchema.parse(response);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    try {
+      const response = await instance
+        .put(`packaging-tasks/${id}/task-report`, {
+          json: data,
+          signal: controller.signal,
+          timeout: 30000,
+        })
+        .json();
+      return taskReportUpdateResponseSchema.parse(response);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   },
 
   /**
    * Upload hình ảnh cho công việc đóng gói
    */
   uploadImages: async (images: File[]) => {
-    const formData = new FormData();
-    images.forEach(image => {
-      formData.append('image', image);
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const response = await instance
-      .post('packaging-tasks/images/upload', {
-        body: formData,
-        headers: {
-          // Remove Content-Type header so that the browser can set it with proper boundary
-          'Content-Type': undefined,
-        },
-      })
-      .json();
+    try {
+      const formData = new FormData();
+      images.forEach(image => {
+        formData.append('image', image);
+      });
 
-    return imageUploadResponseSchema.parse(response);
+      const response = await instance
+        .post('packaging-tasks/images/upload', {
+          body: formData,
+          signal: controller.signal,
+          timeout: 30000,
+          headers: {
+            'Content-Type': undefined,
+          },
+        })
+        .json();
+
+      return imageUploadResponseSchema.parse(response);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   },
 };

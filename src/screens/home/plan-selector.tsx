@@ -1,6 +1,17 @@
 import React, { useEffect } from 'react';
 
-import { ChevronDown, AlertCircle, Calendar, Leaf } from 'lucide-react-native';
+import { Pressable } from 'react-native';
+
+import { FlashList } from '@shopify/flash-list';
+import dayjs from 'dayjs';
+import {
+  ChevronDown,
+  AlertCircle,
+  Calendar,
+  Leaf,
+  Clock,
+  BarChart3,
+} from 'lucide-react-native';
 
 import {
   Actionsheet,
@@ -9,8 +20,6 @@ import {
   ActionsheetDragIndicator,
   ActionsheetDragIndicatorWrapper,
   ActionsheetItem,
-  ActionsheetSectionHeaderText,
-  ActionsheetSectionList,
 } from '@/components/ui';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -60,13 +69,6 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
     handleClose();
   };
 
-  const sections = [
-    {
-      title: 'Kế hoạch hiện có',
-      data: plansResponse?.data ?? [],
-    },
-  ];
-
   const renderNoPlansUI = () => (
     <Box className='items-center p-6'>
       <Box className='mb-4 rounded-full bg-warning-100 p-4'>
@@ -79,72 +81,120 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
         Bạn chưa được gán kế hoạch nào. Vui lòng liên hệ với quản trị viên để
         bắt đầu.
       </Text>
-      <Button
-        className='mt-4 w-full'
-        variant='solid'
-        onPress={() => {
-          handleClose();
-        }}
-      >
+      <Button className='mt-4 w-full' variant='solid' onPress={handleClose}>
         <ButtonText>Liên hệ quản trị viên</ButtonText>
       </Button>
     </Box>
   );
 
-  const renderPlanItem = (item: Plan) => (
-    <ActionsheetItem
-      key={item.id}
-      onPress={() => handleSelectPlan(item)}
-      className={`${currentPlan?.id === item.id ? 'bg-primary-50' : ''}`}
-    >
-      <VStack space='sm' className='w-full'>
-        <HStack className='items-center justify-between'>
-          <Text className='font-semibold'>{item.plan_name}</Text>
-          {currentPlan?.id === item.id && (
-            <Box className='h-2 w-2 rounded-full bg-primary-600' />
-          )}
-        </HStack>
-        <HStack space='md' className='flex-wrap'>
-          <HStack space='xs' className='items-center'>
-            <Icon as={Leaf} size='sm' className='text-success-600' />
-            <Text className='text-sm text-typography-500'>
-              {item.plant_name}
+  const renderPlanItem = ({ item }: { item: Plan }) => {
+    const startDate = dayjs(item.start_date);
+    const endDate = dayjs(item.end_date);
+    const today = dayjs();
+    const daysRemaining = endDate.diff(today, 'day');
+
+    return (
+      <ActionsheetItem
+        key={item.id}
+        onPress={() => handleSelectPlan(item)}
+        className={`${currentPlan?.id === item.id ? 'bg-primary-50' : ''}`}
+      >
+        <VStack space='sm' className='w-full'>
+          <HStack className='items-center justify-between'>
+            <Text className='font-semibold'>{item.plan_name}</Text>
+            {currentPlan?.id === item.id && (
+              <Box className='h-2 w-2 rounded-full bg-primary-600' />
+            )}
+          </HStack>
+
+          <HStack space='md' className='flex-wrap'>
+            <HStack space='xs' className='items-center'>
+              <Icon as={Leaf} size='sm' className='text-success-600' />
+              <Text className='text-sm text-typography-500'>
+                {item.plant_name}
+              </Text>
+            </HStack>
+            <HStack space='xs' className='items-center'>
+              <Icon as={Calendar} size='sm' className='text-primary-600' />
+              <Text className='text-sm text-typography-500'>
+                {startDate.format('DD/MM/YYYY')}
+              </Text>
+            </HStack>
+          </HStack>
+
+          <HStack space='md' className='flex-wrap'>
+            <HStack space='xs' className='items-center'>
+              <Icon as={Clock} size='sm' className='text-warning-600' />
+              <Text className='text-sm text-typography-500'>
+                {daysRemaining > 0
+                  ? `Còn ${daysRemaining} ngày`
+                  : daysRemaining === 0
+                    ? 'Kết thúc hôm nay'
+                    : 'Đã kết thúc'}
+              </Text>
+            </HStack>
+            <HStack space='xs' className='items-center'>
+              <Icon as={BarChart3} size='sm' className='text-indigo-600' />
+              <Text className='text-sm text-typography-500'>
+                {item.estimated_product} kg
+              </Text>
+            </HStack>
+          </HStack>
+
+          <Box
+            className={`mt-2 rounded-full px-2 py-1 ${
+              item.status === 'Complete' ? 'bg-success-100' : 'bg-warning-100'
+            }`}
+          >
+            <Text
+              className={`text-xs ${
+                item.status === 'Complete'
+                  ? 'text-success-700'
+                  : 'text-warning-700'
+              }`}
+            >
+              {item.status}
             </Text>
-          </HStack>
-          <HStack space='xs' className='items-center'>
-            <Icon as={Calendar} size='sm' className='text-primary-600' />
-            <Text className='text-sm text-typography-500'>{item.status}</Text>
-          </HStack>
-        </HStack>
-      </VStack>
-    </ActionsheetItem>
-  );
+          </Box>
+        </VStack>
+      </ActionsheetItem>
+    );
+  };
 
   return (
     <VStack space='sm'>
       {!error && !isNoPlansError && (
-        <Button
-          variant='outline'
+        <Pressable
           onPress={() => setShowActionsheet(true)}
-          className='border-primary-200 bg-white'
+          className='rounded-lg border border-primary-200 bg-white p-3'
         >
           <HStack className='w-full items-center justify-between'>
-            <ButtonText className='font-medium'>
-              {isLoading
-                ? 'Đang tải kế hoạch...'
-                : isNoPlansError
-                  ? 'Chưa có kế hoạch'
-                  : currentPlan
-                    ? currentPlan.plan_name
-                    : 'Chọn kế hoạch'}
-            </ButtonText>
-            {isLoading ? (
-              <Spinner size='small' />
-            ) : (
-              <Icon as={ChevronDown} size='sm' className='text-primary-600' />
-            )}
+            <VStack space='xs' className='flex-1'>
+              <Text className='text-sm text-typography-500'>
+                Kế hoạch hiện tại
+              </Text>
+              <HStack space='sm' className='items-center'>
+                {isLoading ? (
+                  <Spinner size='small' />
+                ) : (
+                  <>
+                    <Text className='font-medium text-typography-900'>
+                      {currentPlan ? currentPlan.plan_name : 'Chọn kế hoạch'}
+                    </Text>
+                    {currentPlan && (
+                      <Box className='rounded-full bg-primary-100 px-2 py-0.5'>
+                        <Text className='text-xs text-primary-700'>
+                          {currentPlan.status}
+                        </Text>
+                      </Box>
+                    )}
+                  </>
+                )}
+              </HStack>
+            </VStack>
+            <Icon as={ChevronDown} size='sm' className='text-primary-600' />
           </HStack>
-        </Button>
+        </Pressable>
       )}
 
       {isNoPlansError && (
@@ -183,17 +233,19 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
               </Text>
             </Box>
           ) : (
-            <ActionsheetSectionList
-              sections={sections}
-              keyExtractor={item => (item as Plan).id.toString()}
-              renderItem={({ item }: { item: any }) => renderPlanItem(item)}
-              renderSectionHeader={({ section }: { section: any }) => (
-                <ActionsheetSectionHeaderText className='text-lg font-semibold'>
-                  {section.title} ({section.data.length})
-                </ActionsheetSectionHeaderText>
-              )}
-              className='px-4'
-            />
+            <VStack className='mb-20 w-full flex-1'>
+              <Text className='px-4 py-2 text-lg font-semibold'>
+                Kế hoạch hiện có ({plansResponse?.data?.length ?? 0})
+              </Text>
+              <FlashList
+                data={plansResponse?.data ?? []}
+                renderItem={renderPlanItem}
+                estimatedItemSize={100}
+                keyExtractor={item => item.id.toString()}
+                className='flex-1'
+                showsVerticalScrollIndicator={false}
+              />
+            </VStack>
           )}
         </ActionsheetContent>
       </Actionsheet>

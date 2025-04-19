@@ -24,13 +24,13 @@ try {
   getApp();
 } catch {
   initializeApp({
-    apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
-    projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+    apiKey: 'AIzaSyDTdClmhDSwVV1kCzDUP20BASRC5fn2xMo',
+    authDomain: 'blcap-sep490.firebaseapp.com',
+    databaseURL: 'https://blcap-sep490.firebaseio.com',
+    projectId: 'blcap-sep490',
+    storageBucket: 'blcap-sep490.appspot.com',
+    messagingSenderId: '1032682814172',
+    appId: '1:1032682814172:android:329abb2eb698a78d4a1219',
   });
 }
 

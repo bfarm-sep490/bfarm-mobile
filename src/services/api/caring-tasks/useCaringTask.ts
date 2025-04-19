@@ -70,9 +70,9 @@ export const useCaringTask = () => {
   /**
    * Hook để upload hình ảnh cho công việc chăm sóc
    */
-  const useUploadImagesMutation = () =>
+  const useUploadImagesMutation = (images: File[]) =>
     useMutation({
-      mutationFn: (images: File[]) => CaringTaskServices.uploadImages(images),
+      mutationFn: () => CaringTaskServices.uploadImages(images),
     });
 
   return {
