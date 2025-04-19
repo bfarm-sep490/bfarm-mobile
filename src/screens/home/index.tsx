@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
+import { RefreshControl } from 'react-native';
+
+import { FlashList } from '@shopify/flash-list';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import {
@@ -11,7 +14,6 @@ import {
   Clock,
   BarChart3,
   Bell,
-  Menu,
   ChevronRight,
   ClipboardList,
   Droplets,
@@ -29,11 +31,12 @@ import { Icon } from '@/components/ui/icon';
 import { Pressable } from '@/components/ui/pressable';
 import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
-import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useSession } from '@/context/ctx';
 import { Plan } from '@/services/api/plans/planSchema';
+import { usePlan } from '@/services/api/plans/usePlan';
+import { useProblem } from '@/services/api/problems/useProblem';
 
 import { PlanSelector } from './plan-selector';
 
@@ -49,19 +52,6 @@ const DashboardLayout = (props: any) => {
       <Box className='md:hidden'>
         <MobileHeader title={props.title} />
         <Box className='px-4 py-2'>
-          <HStack className='mb-2 w-full items-center justify-between'>
-            <Text className='text-lg font-bold text-typography-900'>
-              Kế hoạch của bạn
-            </Text>
-            <HStack space='sm'>
-              <Pressable className='rounded-full bg-background-100 p-2'>
-                <Icon as={Bell} size='sm' />
-              </Pressable>
-              <Pressable className='rounded-full bg-background-100 p-2'>
-                <Icon as={Menu} size='sm' />
-              </Pressable>
-            </HStack>
-          </HStack>
           <PlanSelector farmerId={user?.id ?? 0} />
         </Box>
       </Box>
@@ -92,7 +82,7 @@ function MobileHeader(props: MobileHeaderProps) {
           <Pressable
             className='rounded-full border-2 border-primary-500 bg-primary-700 p-2.5'
             onPress={() => {
-              router.push('/profile');
+              router.push('/notification');
             }}
           >
             <Icon as={Bell} color='white' />
@@ -245,126 +235,219 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
   );
 };
 
-const TasksList = () => (
-  <VStack space='md' className='mb-6'>
-    <HStack className='items-center justify-between'>
-      <Text className='font-bold text-typography-900'>Nhiệm vụ gần đây</Text>
-      <Pressable>
-        <Text className='text-sm text-primary-600'>Xem tất cả</Text>
-      </Pressable>
-    </HStack>
+type TaskItem = {
+  id: number;
+  icon: any;
+  iconColor: string;
+  title: string;
+  time: string;
+  status: 'completed' | 'pending';
+};
 
-    <Card className='overflow-hidden rounded-xl px-0'>
-      <VStack>
-        <HStack className='items-center justify-between p-3'>
-          <HStack space='md' className='items-center'>
-            <Box className='rounded-lg bg-blue-100 p-2'>
-              <Icon as={Droplets} size='sm' className='text-blue-600' />
-            </Box>
-            <VStack>
-              <Text className='font-medium'>Tưới nước cho cà chua</Text>
-              <Text className='text-xs text-typography-500'>
-                Hôm nay, 15:00
-              </Text>
-            </VStack>
-          </HStack>
-          <Icon as={CheckCircle2} className='text-success-600' />
+type EventItem = {
+  id: number;
+  month: string;
+  day: string;
+  title: string;
+  description: string;
+};
+
+const TasksList = () => {
+  const tasks: TaskItem[] = [
+    {
+      id: 1,
+      icon: Droplets,
+      iconColor: 'blue',
+      title: 'Tưới nước cho cà chua',
+      time: 'Hôm nay, 15:00',
+      status: 'completed',
+    },
+    {
+      id: 2,
+      icon: Shovel,
+      iconColor: 'amber',
+      title: 'Bón phân hữu cơ',
+      time: 'Ngày mai, 09:00',
+      status: 'pending',
+    },
+    {
+      id: 3,
+      icon: Bug,
+      iconColor: 'red',
+      title: 'Phun thuốc trừ sâu',
+      time: '20/03/2025, 14:00',
+      status: 'pending',
+    },
+  ];
+
+  const renderTaskItem = ({ item }: { item: TaskItem }) => (
+    <VStack>
+      <HStack className='items-center justify-between p-3'>
+        <HStack space='md' className='items-center'>
+          <Box className={`rounded-lg bg-${item.iconColor}-100 p-2`}>
+            <Icon
+              as={item.icon}
+              size='sm'
+              className={`text-${item.iconColor}-600`}
+            />
+          </Box>
+          <VStack>
+            <Text className='font-medium'>{item.title}</Text>
+            <Text className='text-xs text-typography-500'>{item.time}</Text>
+          </VStack>
         </HStack>
+        <Icon
+          as={item.status === 'completed' ? CheckCircle2 : ClipboardList}
+          className={
+            item.status === 'completed'
+              ? 'text-success-600'
+              : 'text-typography-400'
+          }
+        />
+      </HStack>
+      <Divider />
+    </VStack>
+  );
 
-        <Divider />
+  return (
+    <VStack space='md' className='mb-6'>
+      <HStack className='items-center justify-between'>
+        <Text className='font-bold text-typography-900'>Nhiệm vụ gần đây</Text>
+        <Pressable>
+          <Text className='text-sm text-primary-600'>Xem tất cả</Text>
+        </Pressable>
+      </HStack>
 
-        <HStack className='items-center justify-between p-3'>
-          <HStack space='md' className='items-center'>
-            <Box className='rounded-lg bg-amber-100 p-2'>
-              <Icon as={Shovel} size='sm' className='text-amber-600' />
-            </Box>
-            <VStack>
-              <Text className='font-medium'>Bón phân hữu cơ</Text>
-              <Text className='text-xs text-typography-500'>
-                Ngày mai, 09:00
-              </Text>
-            </VStack>
-          </HStack>
-          <Icon as={ClipboardList} className='text-typography-400' />
-        </HStack>
+      <Card className='overflow-hidden rounded-xl px-0'>
+        <FlashList
+          data={tasks}
+          renderItem={renderTaskItem}
+          estimatedItemSize={80}
+          keyExtractor={item => `task_${item.id}`}
+        />
+      </Card>
+    </VStack>
+  );
+};
 
-        <Divider />
+const UpcomingEvents = () => {
+  const events: EventItem[] = [
+    {
+      id: 1,
+      month: 'Tháng 3',
+      day: '18',
+      title: 'Kiểm tra kết quả phân bón',
+      description: 'Kiểm tra hiệu quả của phân bón kali đã áp dụng',
+    },
+    // Add more events as needed
+  ];
 
-        <HStack className='items-center justify-between p-3'>
-          <HStack space='md' className='items-center'>
-            <Box className='rounded-lg bg-red-100 p-2'>
-              <Icon as={Bug} size='sm' className='text-red-600' />
-            </Box>
-            <VStack>
-              <Text className='font-medium'>Phun thuốc trừ sâu</Text>
-              <Text className='text-xs text-typography-500'>
-                20/03/2025, 14:00
-              </Text>
-            </VStack>
-          </HStack>
-          <Icon as={ClipboardList} className='text-typography-400' />
-        </HStack>
-      </VStack>
-    </Card>
-  </VStack>
-);
-
-const UpcomingEvents = () => (
-  <VStack space='md' className='mb-6'>
-    <HStack className='items-center justify-between'>
-      <Text className='font-bold text-typography-900'>Sự kiện sắp tới</Text>
-      <Pressable>
-        <Text className='text-sm text-primary-600'>Xem tất cả</Text>
-      </Pressable>
-    </HStack>
-
+  const renderEventItem = ({ item }: { item: EventItem }) => (
     <Card className='overflow-hidden rounded-xl border border-primary-100'>
       <HStack className='items-center p-4'>
         <Box className='mr-4 rounded-xl bg-primary-100 p-3'>
           <VStack className='items-center'>
             <Text className='text-xs font-medium text-primary-700'>
-              Tháng 3
+              {item.month}
             </Text>
-            <Text className='text-xl font-bold text-primary-700'>18</Text>
+            <Text className='text-xl font-bold text-primary-700'>
+              {item.day}
+            </Text>
           </VStack>
         </Box>
         <VStack className='flex-1'>
-          <Text className='font-semibold'>Kiểm tra kết quả phân bón</Text>
+          <Text className='font-semibold'>{item.title}</Text>
           <Text className='text-sm text-typography-500'>
-            Kiểm tra hiệu quả của phân bón kali đã áp dụng
+            {item.description}
           </Text>
         </VStack>
         <Icon as={ChevronRight} className='text-typography-400' />
       </HStack>
     </Card>
-  </VStack>
-);
-
-const MainContent = () => {
-  const { currentPlan } = useSession();
+  );
 
   return (
-    <Box className='flex-1'>
-      <ScrollView
+    <VStack space='md' className='mb-6'>
+      <HStack className='items-center justify-between'>
+        <Text className='font-bold text-typography-900'>Sự kiện sắp tới</Text>
+        <Pressable>
+          <Text className='text-sm text-primary-600'>Xem tất cả</Text>
+        </Pressable>
+      </HStack>
+
+      <FlashList
+        data={events}
+        renderItem={renderEventItem}
+        estimatedItemSize={100}
+        keyExtractor={item => `event_${item.id}`}
+      />
+    </VStack>
+  );
+};
+
+const MainContent = () => {
+  const { currentPlan, user } = useSession();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Get query hooks
+  const { useFetchByFarmerQuery: useFetchPlansQuery } = usePlan();
+  const { useFetchByParamsQuery: useFetchProblemsQuery } = useProblem();
+
+  // Get query instances
+  const plansQuery = useFetchPlansQuery(user?.id ?? 0);
+  const problemsQuery = useFetchProblemsQuery({
+    farmer_id: user?.id,
+    page_number: 1,
+    page_size: 10,
+  });
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      // Refresh plans
+      await plansQuery.refetch();
+
+      // Refresh problems/tasks
+      await problemsQuery.refetch();
+
+      // Add any additional data refreshes here
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [plansQuery, problemsQuery]);
+
+  return (
+    <Box className='mb-20 flex-1'>
+      <FlashList
+        data={[1]} // Single item to render the main content
+        renderItem={() => (
+          <VStack className='w-full p-4 pb-0' space='lg'>
+            {!currentPlan ? (
+              <NoPlansView />
+            ) : (
+              <>
+                <PlanStatusCard currentPlan={currentPlan} />
+                <TasksList />
+                <UpcomingEvents />
+              </>
+            )}
+          </VStack>
+        )}
+        estimatedItemSize={800}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingBottom: 150,
-          flexGrow: 1,
         }}
-        className='mb-20 flex-1 md:mb-2'
-      >
-        <VStack className='w-full p-4 pb-0' space='lg'>
-          {!currentPlan ? (
-            <NoPlansView />
-          ) : (
-            <>
-              <PlanStatusCard currentPlan={currentPlan} />
-              <TasksList />
-              <UpcomingEvents />
-            </>
-          )}
-        </VStack>
-      </ScrollView>
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={['#4F46E5']}
+            tintColor='#4F46E5'
+            progressViewOffset={20}
+          />
+        }
+      />
     </Box>
   );
 };

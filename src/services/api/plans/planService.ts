@@ -41,7 +41,9 @@ export const PlanServices = {
 
   fetchByFarmer: async (farmerId: number) => {
     try {
-      const response = await instance.get(`plans/farmer/${farmerId}`).json();
+      const response = await instance
+        .get(`plans/farmer/${farmerId}?is_active_in_plan=true`)
+        .json();
       const parsedResponse = planResponseSchema.parse(response);
 
       return parsedResponse;

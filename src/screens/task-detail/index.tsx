@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 import { Image, Alert } from 'react-native';
 
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -26,6 +27,7 @@ import {
   Search,
   Users,
   UserIcon,
+  Sprout,
 } from 'lucide-react-native';
 
 import CompleteTaskModal from '@/components/modal/CompleteTaskModal';
@@ -48,23 +50,39 @@ import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvesting
 import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 import { usePackagingType } from '@/services/api/packaging-types/usePackagingType';
 
+// Add task type constants at the top of the file
+const TASK_TYPES = {
+  Planting: 'Gieo hạt',
+  Nurturing: 'Chăm sóc',
+  Watering: 'Tưới nước',
+  Fertilizing: 'Bón phân',
+  Setup: 'Lắp đặt',
+  Pesticide: 'Phun thuốc',
+  Weeding: 'Làm cỏ',
+  Pruning: 'Cắt tỉa',
+} as const;
+
+type TaskType = keyof typeof TASK_TYPES;
+
 // Helper function to get icon based on task type
 const getTaskTypeIcon = (taskType: string) => {
   switch (taskType) {
-    case 'Spraying':
-      return Shovel;
+    case 'Planting':
+      return Leaf;
+    case 'Nurturing':
+      return Sprout;
     case 'Watering':
       return Droplets;
-    case 'Harvesting':
-      return Scissors;
-    case 'Packaging':
-      return PackageOpen;
-    case 'Setup':
-      return Settings;
     case 'Fertilizing':
       return ShoppingBag;
-    case 'Inspecting':
-      return Search;
+    case 'Setup':
+      return Settings;
+    case 'Pesticide':
+      return Shovel;
+    case 'Weeding':
+      return Scissors;
+    case 'Pruning':
+      return Scissors;
     default:
       return Leaf;
   }
@@ -73,13 +91,12 @@ const getTaskTypeIcon = (taskType: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'Complete':
-    case 'Completed':
       return {
         bg: 'bg-success-100',
         text: 'text-success-700',
         icon: CheckCircle2,
       };
-    case 'InComplete':
+    case 'Incomplete':
       return { bg: 'bg-danger-100', text: 'text-danger-700', icon: XCircle };
     case 'Ongoing':
       return { bg: 'bg-primary-100', text: 'text-primary-700', icon: Clock };
@@ -201,6 +218,7 @@ export const TaskDetailScreen = () => {
   // Get session data
   const { user } = useSession();
   const currentFarmerId = user?.id;
+  const queryClient = useQueryClient();
 
   const {
     useFetchOneQuery: useFetchCaringTask,
@@ -354,6 +372,17 @@ export const TaskDetailScreen = () => {
         });
       }
 
+      // Invalidate queries to trigger refetch
+      await queryClient.invalidateQueries({
+        queryKey: ['fetchByParamsHarvestingTasks'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['fetchByParamsCaringTasks'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['fetchByParamsPackagingTasks'],
+      });
+
       // Refresh the task data
       activeQuery.refetch();
       Alert.alert('Thành công', 'Nhiệm vụ đã được cập nhật thành công');
@@ -451,8 +480,11 @@ export const TaskDetailScreen = () => {
                   </BoxUI>
                   <VStack>
                     <Heading size='sm' className='text-typography-500'>
-                      {task.task_type ||
-                        (taskType === 'harvesting' ? 'Thu hoạch' : 'Đóng gói')}
+                      {task.task_type
+                        ? TASK_TYPES[task.task_type as TaskType]
+                        : taskType === 'harvesting'
+                          ? 'Thu hoạch'
+                          : 'Đóng gói'}
                     </Heading>
                   </VStack>
                 </HStack>
@@ -646,53 +678,41 @@ export const TaskDetailScreen = () => {
           </BoxUI>
         )}
         {/* Actions section */}
-        <Card className='m-4 rounded-xl'>
-          <BoxUI className='p-4'>
-            <VStack space='md'>
-              <>
-                <Text className='font-semibold'>Cập nhật trạng thái</Text>
+        {task.status === 'Ongoing' && (
+          <Card className='m-4 rounded-xl'>
+            <BoxUI className='p-4'>
+              <VStack space='md'>
+                <>
+                  <Text className='font-semibold'>Cập nhật trạng thái</Text>
 
-                <HStack space='md'>
-                  {/* <Button
-                      variant='outline'
-                      className='flex-1'
-                      onPress={() =>
-                        router.push(`/tasks/${task.id}/update?type=${taskType}`)
-                      }
+                  <HStack space='md'>
+                    <Button
+                      variant='solid'
+                      className='flex-1 bg-success-600'
+                      onPress={() => setShowCompleteModal(true)}
                       isDisabled={isSubmitting}
                     >
-                      <ButtonIcon as={Edit3} />
-                      <ButtonText>Chỉnh sửa</ButtonText>
-                    </Button> */}
-
-                  <Button
-                    variant='solid'
-                    className='flex-1 bg-success-600'
-                    onPress={() => setShowCompleteModal(true)}
-                    isDisabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <HStack space='sm' className='items-center'>
-                        <Spinner size='small' color='white' />
-                        <ButtonText>Đang xử lý...</ButtonText>
-                      </HStack>
-                    ) : (
-                      <>
-                        <ButtonIcon as={Check} />
-                        <ButtonText>Hoàn thành</ButtonText>
-                      </>
-                    )}
-                  </Button>
-                </HStack>
-              </>
-            </VStack>
-          </BoxUI>
-        </Card>
+                      {isSubmitting ? (
+                        <HStack space='sm' className='items-center'>
+                          <Spinner size='small' color='white' />
+                          <ButtonText>Đang xử lý...</ButtonText>
+                        </HStack>
+                      ) : (
+                        <>
+                          <ButtonIcon as={Check} />
+                          <ButtonText>Hoàn thành</ButtonText>
+                        </>
+                      )}
+                    </Button>
+                  </HStack>
+                </>
+              </VStack>
+            </BoxUI>
+          </Card>
+        )}
         <BoxUI className='h-10' />
       </ScrollView>
       <CompleteTaskModal
-        packaging_type_id={task?.packaging_type_id}
-        idPlan={task?.plan_id}
         isOpen={showCompleteModal}
         onClose={() => setShowCompleteModal(false)}
         taskType={taskType as 'caring' | 'harvesting' | 'packaging'}

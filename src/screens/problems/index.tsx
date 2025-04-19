@@ -1,41 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
-import {
-  Alert,
-  Pressable,
-  RefreshControl,
-  SafeAreaView,
-  TouchableOpacity,
-} from 'react-native';
+import { Alert, Pressable, RefreshControl, SafeAreaView } from 'react-native';
 
+import { FlashList } from '@shopify/flash-list';
 import dayjs from 'dayjs';
-import { Link, useLocalSearchParams, router, useRouter } from 'expo-router';
-import { navigate } from 'expo-router/build/global-state/routing';
-import { use } from 'i18next';
+import { useLocalSearchParams, router, useRouter } from 'expo-router';
 import {
   AlertCircle,
   ArrowLeft,
-  Bell,
   Calendar,
-  Filter,
-  Leaf,
-  Menu,
   MoreVertical,
-  Scissors,
-  Sprout,
   UserIcon,
   Users,
-  RefreshCw,
   List,
   AlertTriangle,
 } from 'lucide-react-native';
-import { useForm, Controller, Form } from 'react-hook-form';
-import DatePicker from 'react-native-date-picker';
-import { FlatList } from 'react-native-gesture-handler';
+import { useForm, Controller } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
 import RNPickerSelect from 'react-native-picker-select';
 import Carousel from 'react-native-reanimated-carousel';
-import { ICreateProblem, IProblem, ISelectPlan } from 'src/interfaces';
+import { ICreateProblem, ISelectPlan } from 'src/interfaces';
 
 import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
 
@@ -48,54 +32,38 @@ import {
   InputField,
   InputIcon,
   CloseIcon,
-  InputSlot,
   ScrollView,
   VStack,
   Text,
-  CalendarDaysIcon,
   Image,
-  SelectInput,
-  SelectItem,
   View,
   Button,
-  Slider,
-  UISlider,
   ButtonText,
   Icon,
-  Select,
   Card,
   Divider,
   Spinner,
 } from '@/components/ui';
 import { Box as BoxUI } from '@/components/ui/box';
 import { useSession } from '@/context/ctx';
-import { usePlan } from '@/services/api/plans/usePlan';
 import { useProblem } from '@/services/api/problems/useProblem';
-import {
-  createProblem,
-  getProblemsByFarmerId,
-  getProblemsById,
-  planByFarmerId,
-  uploadProblemImage,
-} from '@/services/problems';
-
-import { PlanSelector } from '../home/plan-selector';
+import { createProblem, uploadProblemImage } from '@/services/problems';
 
 const FilterTabs = ({
   activeTab,
   setActiveTab,
 }: {
-  activeTab: 'All' | 'Resolved' | 'Pending';
+  activeTab: 'All' | 'Resolve' | 'Pending';
   setActiveTab: React.Dispatch<
-    React.SetStateAction<'All' | 'Resolved' | 'Pending'>
+    React.SetStateAction<'All' | 'Resolve' | 'Pending'>
   >;
 }) => {
   const tabs: {
-    id: 'All' | 'Resolved' | 'Pending';
+    id: 'All' | 'Resolve' | 'Pending';
     label: string;
   }[] = [
     { id: 'All', label: 'Tất cả' },
-    { id: 'Resolved', label: 'Đã giải quyết' },
+    { id: 'Resolve', label: 'Đã giải quyết' },
     { id: 'Pending', label: 'Chưa giải quyết' },
   ];
 
@@ -128,67 +96,6 @@ const FilterTabs = ({
   );
 };
 
-const ProblemFilter = ({
-  activeCategory,
-  setActiveCategory,
-}: {
-  activeCategory: string;
-  setActiveCategory: (category: string) => void;
-}) => {
-  const categories = [
-    { id: 'Watering', label: 'Thiếu nước', icon: Leaf },
-    { id: 'Resolved', label: 'Đã giải quyết', icon: Sprout },
-    { id: 'Pending', label: 'Chưa giải quyết', icon: Scissors },
-  ];
-
-  return (
-    <HStack className='mb-4 justify-between'>
-      {categories.map(category => (
-        <Pressable
-          key={category.id}
-          className={`flex-1 items-center p-2 ${activeCategory === category.id ? 'border-b-2 border-primary-600' : ''}`}
-          onPress={() => setActiveCategory(category.id)}
-        >
-          <Icon
-            as={category.icon}
-            size='sm'
-            className={
-              activeCategory === category.id
-                ? 'text-primary-600'
-                : 'text-typography-500'
-            }
-          />
-          <Text
-            className={`mt-1 text-xs ${activeCategory === category.id ? 'font-medium text-primary-600' : 'text-typography-500'}`}
-          >
-            {category.label}
-          </Text>
-        </Pressable>
-      ))}
-    </HStack>
-  );
-};
-type FilterProblemByElements = {
-  problems: any[];
-  status: string;
-  name: string;
-};
-const FilterProblemsByElements = ({
-  problems = [],
-  status = 'All',
-  name = '',
-}: FilterProblemByElements) => {
-  let filter = problems;
-  if (status !== 'All') {
-    filter = filter.filter(problem => problem.status === status);
-  }
-  if (name !== '') {
-    filter = filter.filter(problem =>
-      problem.problem_name.toLowerCase().includes(name.toLowerCase()),
-    );
-  }
-  return filter;
-};
 type ProblemCardProps = {
   problem: any;
 };
@@ -245,52 +152,61 @@ export const ProblemCard = ({ problem }: ProblemCardProps) => {
 };
 
 export const ProblemsScreen = () => {
-  const [activeTab, setActiveTab] = useState<'All' | 'Resolved' | 'Pending'>(
+  const [activeTab, setActiveTab] = useState<'All' | 'Resolve' | 'Pending'>(
     'All',
   );
-  const [page, setPage] = useState(1);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [hasMoreData] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
   const [searchName, setSearchName] = useState('');
-  const { user } = useSession();
+  const { user, currentPlan } = useSession();
   const { useFetchByParamsQuery } = useProblem();
-  const [data, setData] = useState<IProblem[]>([]);
-  const problemQuery = useFetchByParamsQuery({
-    farmer_id: Number(user?.id),
-  });
-  const handleRefresh = () => {
-    problemQuery.refetch();
+
+  // Create params for API call
+  const problemParams = {
+    plan_id: currentPlan?.id,
+    farmer_id: user?.id,
+    page_number: pageNumber,
+    page_size: pageSize,
+    ...(activeTab !== 'All' && { status: activeTab }),
+    ...(searchName && { name: searchName }),
   };
+
+  const problemQuery = useFetchByParamsQuery(problemParams);
   const {
     data: problemsData,
     isLoading,
     isError,
-    error,
     isFetching,
     refetch,
   } = problemQuery;
-  const problems = problemsData?.data;
-  useEffect(() => {
-    setData(
-      (problems ?? []).map(problem => ({
-        ...problem,
-      })) as unknown as IProblem[],
-    );
-  }, [problems]);
-  const handleLoadMore = () => {
-    refetch();
-  };
+  const problems = problemsData?.data || [];
 
-  console.log(error);
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    setPageSize(10);
+    setHasMore(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetch]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && hasMore) {
+      setPageSize(prev => prev + 10);
+    }
+  }, [isLoading, hasMore]);
+
+  // Update hasMore based on data length
   useEffect(() => {
-    return setData(
-      FilterProblemsByElements({
-        problems: problems || [],
-        status: activeTab,
-        name: searchName,
-      }),
-    );
-  }, [activeTab, searchName, problems]);
+    if (problems && problems.length < pageSize) {
+      setHasMore(false);
+    }
+  }, [problems, pageSize]);
+
   const renderFooter = () => {
     if (!isLoading) return null;
     return (
@@ -302,82 +218,107 @@ export const ProblemsScreen = () => {
       </VStack>
     );
   };
-  return (
-    <SafeAreaView className='flex-1 bg-background-0'>
-      <BoxUI className='bg-background-0 px-4 py-3'>
-        <Input
-          variant='outline'
-          className='rounded-xl bg-background-50 px-2'
-          size='md'
-        >
-          <InputIcon className='text-typography-400' />
-          <InputField
-            onChangeText={setSearchName}
-            placeholder='Tìm kiếm vấn đề...'
-          />
-        </Input>
-      </BoxUI>
-      <BoxUI className='mt-1 flex-col px-4'>
-        <FilterTabs setActiveTab={setActiveTab} activeTab={activeTab} />
-      </BoxUI>
-      <VStack className='w-full flex-row justify-end p-5' space='2xl'>
-        <Button onPress={() => router.push('/problem/create')}>
-          <ButtonText>Tạo mới</ButtonText>
+
+  const renderEmptyState = () => {
+    if (isLoading || isError) return null;
+    return (
+      <VStack className='flex-1 items-center justify-center py-10'>
+        <Icon as={AlertTriangle} size='lg' className='mb-2 text-gray-500' />
+        <Text className='text-center text-sm text-gray-600'>
+          Không có dữ liệu
+        </Text>
+      </VStack>
+    );
+  };
+
+  const renderErrorState = () => {
+    if (!isError) return null;
+    return (
+      <VStack className='flex-1 items-center justify-center py-10'>
+        <BoxUI className='bg-danger-100 mb-4 rounded-full p-4'>
+          <Icon as={AlertCircle} size='xl' className='text-danger-600' />
+        </BoxUI>
+        <Text className='text-center text-typography-500'>
+          Có lỗi xảy ra khi tải dữ liệu
+        </Text>
+        <Button className='mt-4' onPress={handleRefresh}>
+          <ButtonText>Thử lại</ButtonText>
         </Button>
       </VStack>
-      <Divider />
+    );
+  };
 
-      {!isError && (
-        <FlatList
-          className='h-64 w-full flex-1 md:mb-2'
-          contentContainerStyle={{
-            paddingBottom: isWeb ? 0 : 140,
-          }}
-          showsVerticalScrollIndicator={false}
-          ListFooterComponent={renderFooter}
-          onEndReached={handleLoadMore}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading || isFetching}
-              onRefresh={handleRefresh}
-              colors={['#4F46E5']}
-              tintColor='#4F46E5'
+  return (
+    <SafeAreaView className='flex-1 bg-background-0'>
+      <VStack className='flex-1'>
+        {/* Search and Filter Section */}
+        <VStack className='space-y-3 bg-background-0 px-4 py-3'>
+          <Input
+            variant='outline'
+            className='rounded-xl bg-background-50'
+            size='md'
+          >
+            <InputIcon className='text-typography-400' />
+            <InputField
+              onChangeText={setSearchName}
+              placeholder='Tìm kiếm vấn đề...'
             />
-          }
-          data={problemsData?.data}
-          keyExtractor={item => 'problem_' + item.id}
-          renderItem={({ item }) => (
-            <VStack>
-              <ProblemCard problem={item} />
-              <Divider />
-            </VStack>
-          )}
-          onEndReachedThreshold={0.5}
-        ></FlatList>
-      )}
-      {isError && (
-        <HStack space='2xl' className='h-full w-full flex-1'>
-          <VStack className='flex-1 items-center justify-center py-10'>
-            <BoxUI className='bg-danger-100 mb-4 rounded-full p-4'>
-              <Icon as={AlertCircle} size='xl' className='text-danger-600' />
-            </BoxUI>
-            <Text className='text-center text-typography-500'>
-              Có lỗi xảy ra khi tải dữ liệu
-            </Text>
-            <Button className='mt-4' onPress={handleRefresh}>
-              <ButtonText>Thử lại</ButtonText>
+          </Input>
+
+          <FilterTabs setActiveTab={setActiveTab} activeTab={activeTab} />
+
+          <HStack className='justify-end'>
+            <Button
+              onPress={() => router.push('/problem/create')}
+              className='bg-primary-600'
+            >
+              <ButtonText className='text-white'>Tạo mới</ButtonText>
             </Button>
-          </VStack>
-        </HStack>
-      )}
-      {!isLoading && !isError && data?.length === 0 && (
-        <VStack className='w-full items-center justify-center'>
-          <Icon as={AlertTriangle} size='lg' className='mb-2 text-gray-500' />
-          <Text className='text-center text-sm text-gray-600'>
-            Không có dữ liệu
-          </Text>
+          </HStack>
         </VStack>
-      )}
+
+        <Divider />
+
+        {/* List Section */}
+        {isLoading && !isRefreshing ? (
+          <VStack className='flex-1 items-center justify-center'>
+            <Spinner size='large' color='$primary600' />
+            <Text className='mt-4 text-center text-typography-500'>
+              Đang tải dữ liệu...
+            </Text>
+          </VStack>
+        ) : (
+          <FlashList
+            className='flex-1'
+            contentContainerStyle={{
+              paddingBottom: isWeb ? 0 : 140,
+            }}
+            showsVerticalScrollIndicator={false}
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={renderEmptyState}
+            onEndReached={handleLoadMore}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                colors={['#4F46E5']}
+                tintColor='#4F46E5'
+              />
+            }
+            data={problems}
+            estimatedItemSize={200}
+            keyExtractor={item => 'problem_' + item.id}
+            renderItem={({ item }) => (
+              <VStack className='px-4 py-2'>
+                <ProblemCard problem={item} />
+              </VStack>
+            )}
+            onEndReachedThreshold={0.5}
+          />
+        )}
+
+        {renderErrorState()}
+      </VStack>
     </SafeAreaView>
   );
 };
@@ -424,21 +365,6 @@ export const CreateScreen = () => {
       },
     );
   };
-  useEffect(() => {
-    const fetchPlan = async () => {
-      const { status, data } = await planByFarmerId(user?.id ?? 0);
-      if (status === 200 && data) {
-        setIsLoading(false);
-        setPlan(
-          data.map((item: any) => ({
-            id: item.id,
-            plan_name: item.plan_name,
-          })),
-        );
-      }
-    };
-    fetchPlan();
-  }, []);
   if (!control && isLoading) {
     return (
       <VStack className='items-center justify-center py-10'>
@@ -451,11 +377,7 @@ export const CreateScreen = () => {
   }
   const onSubmit = async (report: ICreateProblem) => {
     const income_data = { ...report, list_of_images: images } as ICreateProblem;
-    console.log('income_data', income_data);
     const { status, data, message } = await createProblem(income_data);
-    console.log('data', data);
-    console.log('status', status);
-    console.log('message', message);
     if (status && data) {
       Alert.alert('Thành công', 'Báo cáo thành công');
       router.push({

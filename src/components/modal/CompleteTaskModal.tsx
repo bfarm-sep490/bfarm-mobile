@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 
-import { Image, RefreshControlComponent, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Alert } from 'react-native';
 
-import * as ImagePicker from 'expo-image-picker';
+import { useMutation } from '@tanstack/react-query';
 import { XCircle, Camera, ImageIcon, X } from 'lucide-react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import RNPickerSelect from 'react-native-picker-select';
 
 import { Box } from '@/components/ui/box';
@@ -31,6 +32,16 @@ import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvesting
 import { useHarvestingProduct } from '@/services/api/harvesting_products/useHarvestingProduct';
 import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 import { usePackagingType } from '@/services/api/packaging-types/usePackagingType';
+
+interface ApiError extends Error {
+  name: string;
+  message: string;
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
 
 export interface CompleteTaskModalProps {
   packaging_type_id?: number;
@@ -142,7 +153,6 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   maxImages = 5,
   onConfirm,
 }) => {
-  const [showingImages, setShowingImages] = useState(false);
   const [resultContent, setResultContent] = useState('');
   const [harvestingQuantity, setHarvestingQuantity] = useState(0);
   const [packagingQuantity, setPackagingQuantity] = useState(0);
@@ -150,159 +160,171 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   const [harvestingProductId, setHarvestingProductId] = useState<number | null>(
     null,
   );
-  const [selectedImages, setSelectedImages] = useState<
-    ImagePicker.ImagePickerAsset[]
-  >([]);
+  const [images, setImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const { useFetchByParamsQuery } = useHarvestingProduct();
   const { data: harvestingProducts } = useFetchByParamsQuery(
     { plan_id: idPlan },
     !!idPlan,
   );
-  const { useUploadImagesMutation: harvestingUplooad } = useHarvestingTask();
   const { useUploadImagesMutation: caringUpload } = useCaringTask();
+  const { useUploadImagesMutation: harvestingUpload } = useHarvestingTask();
   const { useUploadImagesMutation: packagingUpload } = usePackagingTask();
 
   const { useFetchAllQuery: usePackagingTypeAll } = usePackagingType();
   const { data: packagingTypes } = usePackagingTypeAll({
     enabled: true,
   });
+
+  const uploadMutation =
+    taskType === 'caring'
+      ? caringUpload
+      : taskType === 'harvesting'
+        ? harvestingUpload
+        : packagingUpload;
+
+  const { mutateAsync: uploadImages } = useMutation({
+    mutationFn: async (formData: FormData) => {
+      const endpoint =
+        taskType === 'caring'
+          ? 'caring-tasks/images/upload'
+          : taskType === 'harvesting'
+            ? 'harvesting-tasks/images/upload'
+            : 'packaging-tasks/images/upload';
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      try {
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/api/${endpoint}`,
+          {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+            signal: controller.signal,
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Upload failed');
+        }
+
+        const result = await response.json();
+        return result;
+      } catch (error: unknown) {
+        const apiError = error as ApiError;
+        if (apiError.name === 'AbortError') {
+          throw new Error('Request timed out. Please try again.');
+        }
+        if (apiError.message === 'Network request failed') {
+          throw new Error(
+            'Network error. Please check your connection and try again.',
+          );
+        }
+        throw apiError;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+
   const handleClose = () => {
     setResultContent('');
-    setSelectedImages([]);
+    setImages([]);
     setIsUploading(false);
     onClose();
   };
-  // Handle submission
+
   const handleConfirm = async () => {
+    if (isUploading) {
+      Alert.alert('Lỗi', 'Vui lòng đợi quá trình tải ảnh hoàn tất');
+      return;
+    }
+
     try {
       setIsUploading(true);
 
-      // Chỉ lấy uri của hình ảnh
-      const imageUrls = selectedImages.map(image => image.uri);
-
-      // Log data trước khi gửi
-      console.log('===== SUBMITTING TASK DATA =====');
-      console.log('Task Type:', taskType);
-      console.log('Result Content:', resultContent);
-      console.log('Image URLs:', imageUrls);
-      console.log('==============================');
-
-      if (taskType === 'caring')
-        onConfirm({
-          resultContent,
-          images: imageUrls,
-        });
-      if (taskType === 'harvesting')
-        console.log('harvestingQuantity', harvestingQuantity);
       onConfirm({
         resultContent,
-        images: imageUrls,
+        images,
         harvesting_quantity: harvestingQuantity,
+        unpackaging_quantity: unpackagingQuantity,
+        packaging_quantity: packagingQuantity,
       });
-      if (taskType === 'packaging') {
-        onConfirm({
-          harvesting_task_id: harvestingProductId || 0,
-          resultContent,
-          packaged_item_count: packagingQuantity,
-          total_packaged_weight: unpackagingQuantity,
-          images: imageUrls,
-          unpackaging_quantity: unpackagingQuantity,
-          packaging_quantity: packagingQuantity,
-        });
-      }
-    } catch (error) {
-      console.error('Error in handleConfirm:', error);
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error('Error in handleConfirm:', apiError);
+      Alert.alert(
+        'Lỗi',
+        apiError.message || 'Không thể cập nhật nhiệm vụ. Vui lòng thử lại!',
+      );
     } finally {
       setIsUploading(false);
       handleClose();
     }
   };
 
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-
-    if (status !== 'granted') {
-      alert('Cần cấp quyền truy cập camera để chụp ảnh!');
+  const pickImage = () => {
+    if (images.length >= maxImages) {
+      Alert.alert('Lỗi', `Chỉ được tải lên tối đa ${maxImages} ảnh`);
       return;
     }
 
-    ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsEditing: true,
-    })
-      .then(async result => {
-        if (result.canceled) return;
-        setShowingImages(true);
-
-        const file = {
-          uri: result.assets[0].uri,
-          name: result.assets[0].fileName || 'image.jpg',
-          type: result.assets[0].type || 'image/jpeg',
-        } as unknown as File;
-        try {
-          const response = await packagingUpload([file]).mutateAsync();
-          console.log('result', result);
-          console.log('response', response);
-          setSelectedImages([...selectedImages, result.assets[0]]);
-        } catch (error) {
-          alert('Lỗi khi tải ảnh lên: ' + error);
-        } finally {
-          setShowingImages(false);
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        selectionLimit: allowMultipleImages ? maxImages - images.length : 1,
+        quality: 0.8,
+      },
+      async pickerResponse => {
+        if (pickerResponse.errorMessage) {
+          Alert.alert('Lỗi', 'Lỗi tải ảnh: ' + pickerResponse.errorMessage);
+          return;
         }
-      })
-      .catch(error => {
-        alert('Lỗi khi chụp ảnh: ' + error.message);
-        setShowingImages(false);
-      });
+
+        if (!pickerResponse.assets || pickerResponse.assets.length === 0) {
+          return;
+        }
+
+        try {
+          setIsUploading(true);
+
+          const formData = new FormData();
+          pickerResponse.assets.forEach((asset: any, index: number) => {
+            formData.append('image', {
+              uri: asset.uri,
+              type: asset.type || 'image/jpeg',
+              name: asset.fileName || `image_${index}.jpg`,
+            } as any);
+          });
+
+          const result = await uploadImages(formData);
+
+          if (result.data && result.data.length > 0) {
+            setImages(prev => [...prev, ...result.data]);
+          }
+        } catch (err: unknown) {
+          const error = err as Error;
+          console.error('Upload error:', error);
+          Alert.alert(
+            'Lỗi',
+            error.message || 'Không thể tải ảnh lên. Vui lòng thử lại!',
+          );
+        } finally {
+          setIsUploading(false);
+        }
+      },
+    );
   };
 
-  const pickImages = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (status !== 'granted') {
-      alert('Cần cấp quyền truy cập thư viện ảnh!');
-      return;
-    }
-
-    ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-      allowsMultipleSelection: allowMultipleImages,
-      selectionLimit: allowMultipleImages
-        ? maxImages - selectedImages.length
-        : 1,
-    })
-      .then(async result => {
-        if (result.canceled) return;
-        setShowingImages(true);
-
-        const file = {
-          uri: result.assets[0].uri,
-          name: result.assets[0].fileName || 'image.jpg',
-          type: result.assets[0].type || 'image/jpeg',
-        } as unknown as File;
-        try {
-          const response = await packagingUpload([file]).mutateAsync();
-          console.log('result', result);
-          console.log('response', response);
-          setSelectedImages([...selectedImages, result.assets[0]]);
-        } catch (error) {
-          alert('Lỗi khi tải ảnh lên: ' + error);
-        } finally {
-          setShowingImages(false);
-        }
-      })
-      .catch(error => {
-        alert('Lỗi khi chụp ảnh: ' + error.message);
-        setShowingImages(false);
-      });
-  };
-
-  // Remove an image
   const removeImage = (index: number) => {
-    setSelectedImages(selectedImages.filter((_, i) => i !== index));
+    setImages(images.filter((_, i) => i !== index));
   };
 
   return (
@@ -404,7 +426,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
               {showCameraButton && (
                 <Pressable
                   className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
-                  onPress={takePhoto}
+                  onPress={pickImage}
                 >
                   <VStack className='items-center'>
                     <Icon as={Camera} className='text-typography-500' />
@@ -418,7 +440,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
               {showGalleryButton && (
                 <Pressable
                   className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
-                  onPress={pickImages}
+                  onPress={pickImage}
                 >
                   <VStack className='items-center'>
                     <Icon as={ImageIcon} className='text-typography-500' />
@@ -431,18 +453,18 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             </HStack>
 
             {/* Selected images */}
-            {selectedImages.length > 0 && (
+            {images.length > 0 && (
               <Box className='mt-2'>
                 <Text className='mb-2 text-sm font-medium'>Ảnh đã chọn:</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <HStack space='sm'>
-                    {selectedImages.map((image, index) => (
+                    {images.map((image, index) => (
                       <Box
                         key={index}
                         className='relative h-20 w-20 overflow-hidden rounded-md'
                       >
                         <Image
-                          source={{ uri: image.uri }}
+                          source={{ uri: image }}
                           style={styles.previewImage}
                         />
                         <Pressable
@@ -458,9 +480,9 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
               </Box>
             )}
 
-            {selectedImages.length > 0 && allowMultipleImages && (
+            {images.length > 0 && allowMultipleImages && (
               <Text className='text-xs text-typography-500'>
-                {selectedImages.length} / {maxImages} ảnh
+                {images.length} / {maxImages} ảnh
               </Text>
             )}
           </VStack>
@@ -470,7 +492,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             variant='outline'
             size='sm'
             onPress={handleClose}
-            isDisabled={isUploading || showingImages}
+            isDisabled={isUploading}
           >
             <ButtonText>{cancelText}</ButtonText>
           </Button>
@@ -479,7 +501,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             variant='solid'
             className='ml-3'
             onPress={handleConfirm}
-            isDisabled={isUploading || showingImages}
+            isDisabled={isUploading}
           >
             {isUploading ? (
               <HStack space='sm'>

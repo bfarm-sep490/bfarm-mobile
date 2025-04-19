@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
-import { Image, TouchableOpacity } from 'react-native';
+import { Image, TouchableOpacity, RefreshControl } from 'react-native';
 
+import { FlashList } from '@shopify/flash-list';
 import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
 import {
@@ -44,6 +45,20 @@ import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
 import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
 import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 
+// Add task type constants
+const TASK_TYPES = {
+  Planting: 'Gieo hạt',
+  Nurturing: 'Chăm sóc',
+  Watering: 'Tưới nước',
+  Fertilizing: 'Bón phân',
+  Setup: 'Lắp đặt',
+  Pesticide: 'Phun thuốc',
+  Weeding: 'Làm cỏ',
+  Pruning: 'Cắt tỉa',
+} as const;
+
+type TaskType = keyof typeof TASK_TYPES;
+
 const getTaskTypeIcon = (taskType: string) => {
   switch (taskType) {
     case 'Spraying':
@@ -65,16 +80,16 @@ const getTaskTypeIcon = (taskType: string) => {
   }
 };
 
+// Update status filter
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'Complete':
-    case 'Completed':
       return {
         bg: 'bg-success-100',
         text: 'text-success-700',
         icon: CheckCircle2,
       };
-    case 'InComplete':
+    case 'Incomplete':
       return { bg: 'bg-danger-100', text: 'text-danger-700', icon: XCircle };
     case 'Ongoing':
       return { bg: 'bg-primary-100', text: 'text-primary-700', icon: Clock };
@@ -294,7 +309,7 @@ const TaskCard = ({
   );
 };
 
-// Filter tabs component
+// Update FilterTabs component
 const FilterTabs = ({
   activeTab,
   setActiveTab,
@@ -343,7 +358,7 @@ const FilterTabs = ({
   );
 };
 
-// Category filter component
+// Update CategoryFilter component
 const CategoryFilter = ({
   activeCategory,
   setActiveCategory,
@@ -393,6 +408,9 @@ export const FarmerTasksScreen = () => {
   >('all');
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [pageSize, setPageSize] = useState(10);
+  const [hasMore, setHasMore] = useState(true);
 
   // Get current user and plan from session
   const { currentPlan, user } = useSession();
@@ -405,17 +423,50 @@ export const FarmerTasksScreen = () => {
     useHarvestingTask();
   const { useFetchByParamsQuery: useFetchPackagingTasks } = usePackagingTask();
 
-  // Create params for API calls - only using planId now
+  // Create params for API calls with pagination and filters
   const caringParams = {
+    farmer_id: currentFarmerId,
     plan_id: currentPlanId,
+    page_number: 1,
+    page_size: pageSize,
+    ...(activeTab !== 'all' && {
+      status:
+        activeTab === 'completed'
+          ? 'Complete'
+          : activeTab === 'incomplete'
+            ? 'Incomplete'
+            : 'Ongoing',
+    }),
   };
 
   const harvestingParams = {
+    farmer_id: currentFarmerId,
     plan_id: currentPlanId,
+    page_number: 1,
+    page_size: pageSize,
+    ...(activeTab !== 'all' && {
+      status:
+        activeTab === 'completed'
+          ? 'Complete'
+          : activeTab === 'incomplete'
+            ? 'Incomplete'
+            : 'Ongoing',
+    }),
   };
 
   const packagingParams = {
+    farmer_id: currentFarmerId,
     plan_id: currentPlanId,
+    page_number: 1,
+    page_size: pageSize,
+    ...(activeTab !== 'all' && {
+      status:
+        activeTab === 'completed'
+          ? 'Complete'
+          : activeTab === 'incomplete'
+            ? 'Incomplete'
+            : 'Ongoing',
+    }),
   };
 
   // Fetch tasks using React Query
@@ -483,8 +534,8 @@ export const FarmerTasksScreen = () => {
     if (activeTab !== 'all') {
       const statusMap: Record<string, string[]> = {
         ongoing: ['Ongoing'],
-        completed: ['Complete', 'Completed'],
-        incomplete: ['InComplete'],
+        completed: ['Complete'],
+        incomplete: ['Incomplete'],
       };
 
       filteredTasks = filteredTasks.filter(task =>
@@ -507,17 +558,75 @@ export const FarmerTasksScreen = () => {
   const filteredTasks = getFilteredTasks();
 
   // Handle refresh
-  const handleRefresh = () => {
-    if (activeCategory === 'all' || activeCategory === 'caring') {
-      caringQuery.refetch();
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setPageSize(10);
+    setHasMore(true);
+
+    try {
+      if (activeCategory === 'all' || activeCategory === 'caring') {
+        await caringQuery.refetch();
+      }
+      if (activeCategory === 'all' || activeCategory === 'harvesting') {
+        await harvestingQuery.refetch();
+      }
+      if (activeCategory === 'all' || activeCategory === 'packaging') {
+        await packagingQuery.refetch();
+      }
+    } finally {
+      setRefreshing(false);
     }
-    if (activeCategory === 'all' || activeCategory === 'harvesting') {
-      harvestingQuery.refetch();
+  }, [activeCategory, caringQuery, harvestingQuery, packagingQuery]);
+
+  // Handle load more
+  const onEndReached = useCallback(() => {
+    if (!isLoading && hasMore) {
+      setPageSize(prev => prev + 10);
     }
-    if (activeCategory === 'all' || activeCategory === 'packaging') {
-      packagingQuery.refetch();
+  }, [isLoading, hasMore]);
+
+  // Update hasMore based on data length
+  useEffect(() => {
+    const currentData = getFilteredTasks();
+    if (currentData.length < pageSize) {
+      setHasMore(false);
     }
-  };
+  }, [pageSize, getFilteredTasks]);
+
+  // Render task item
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => (
+      <TaskCard
+        key={`${item.taskType}-${item.id}`}
+        task={item}
+        taskType={item.taskType || 'caring'}
+        currentFarmerId={currentFarmerId}
+      />
+    ),
+    [currentFarmerId],
+  );
+
+  // Render list footer
+  const renderFooter = useCallback(() => {
+    if (isLoading) {
+      return (
+        <VStack className='items-center justify-center py-4'>
+          <Spinner size='small' color='$primary600' />
+        </VStack>
+      );
+    }
+
+    if (!hasMore && getFilteredTasks().length > 0) {
+      return (
+        <VStack className='items-center justify-center py-4'>
+          <Text className='text-sm text-typography-500'>Đã hết dữ liệu</Text>
+        </VStack>
+      );
+    }
+
+    return null;
+  }, [isLoading, hasMore, getFilteredTasks]);
+
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
       {/* Header */}
@@ -526,7 +635,7 @@ export const FarmerTasksScreen = () => {
           <HStack space='md' className='items-center'>
             <Heading size='lg'>Quản lý nhiệm vụ</Heading>
           </HStack>
-          <TouchableOpacity onPress={handleRefresh}>
+          <TouchableOpacity onPress={onRefresh}>
             <Icon as={RefreshCw} size='lg' />
           </TouchableOpacity>
         </HStack>
@@ -564,17 +673,7 @@ export const FarmerTasksScreen = () => {
       </BoxUI>
 
       {/* Task list */}
-      <ScrollView className='flex-1 px-4'>
-        {/* Loading state */}
-        {isLoading && (
-          <VStack className='items-center justify-center py-10'>
-            <Spinner size='large' color='$primary600' />
-            <Text className='mt-4 text-center text-typography-500'>
-              Đang tải dữ liệu...
-            </Text>
-          </VStack>
-        )}
-
+      <BoxUI className='flex-1'>
         {hasError && !isLoading && (
           <VStack className='items-center justify-center py-10'>
             <BoxUI className='bg-danger-100 mb-4 rounded-full p-4'>
@@ -583,53 +682,57 @@ export const FarmerTasksScreen = () => {
             <Text className='text-center text-typography-500'>
               Có lỗi xảy ra khi tải dữ liệu
             </Text>
-            <Button className='mt-4' onPress={handleRefresh}>
+            <Button className='mt-4' onPress={onRefresh}>
               <ButtonText>Thử lại</ButtonText>
             </Button>
           </VStack>
         )}
 
-        {/* Empty state */}
-        {!isLoading && !hasError && filteredTasks.length === 0 && (
-          <VStack className='items-center justify-center py-10'>
-            <BoxUI className='mb-4 rounded-full bg-typography-100 p-4'>
-              <Icon as={ListFilter} size='xl' className='text-typography-400' />
-            </BoxUI>
-            <Text className='text-center text-typography-500'>
-              Không tìm thấy nhiệm vụ phù hợp
-            </Text>
-            <Text className='mt-1 text-center text-xs text-typography-400'>
-              Thử thay đổi bộ lọc hoặc tìm kiếm
-            </Text>
-            <Button
-              className='mt-4'
-              variant='outline'
-              onPress={() => {
-                setActiveTab('all');
-                setActiveCategory('all');
-                setSearchQuery('');
-              }}
-            >
-              <ButtonText>Xóa bộ lọc</ButtonText>
-            </Button>
-          </VStack>
+        {!hasError && (
+          <FlashList
+            data={filteredTasks}
+            renderItem={renderItem}
+            keyExtractor={item => `${item.taskType}-${item.id}`}
+            estimatedItemSize={200}
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            ListEmptyComponent={
+              !isLoading ? (
+                <VStack className='items-center justify-center py-10'>
+                  <BoxUI className='mb-4 rounded-full bg-typography-100 p-4'>
+                    <Icon
+                      as={ListFilter}
+                      size='xl'
+                      className='text-typography-400'
+                    />
+                  </BoxUI>
+                  <Text className='text-center text-typography-500'>
+                    Không tìm thấy nhiệm vụ phù hợp
+                  </Text>
+                  <Text className='mt-1 text-center text-xs text-typography-400'>
+                    Thử thay đổi bộ lọc hoặc tìm kiếm
+                  </Text>
+                  <Button
+                    className='mt-4'
+                    variant='outline'
+                    onPress={() => {
+                      setActiveTab('all');
+                      setActiveCategory('all');
+                      setSearchQuery('');
+                    }}
+                  >
+                    <ButtonText>Xóa bộ lọc</ButtonText>
+                  </Button>
+                </VStack>
+              ) : null
+            }
+          />
         )}
-
-        {/* Task list */}
-        {!isLoading &&
-          !hasError &&
-          filteredTasks.length > 0 &&
-          filteredTasks?.map(task => (
-            <TaskCard
-              key={`${task.taskType}-${task.id}`}
-              task={task}
-              taskType={task.taskType || 'caring'}
-              currentFarmerId={currentFarmerId}
-            />
-          ))}
-
-        <BoxUI className='h-20' />
-      </ScrollView>
+      </BoxUI>
     </SafeAreaView>
   );
 };
