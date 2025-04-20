@@ -1,4 +1,15 @@
 {
   "title": "Profile",
-  "signOut": "Sign out"
+  "signOut": "Sign out",
+  "account": "Account",
+  "language": "Language",
+  "selectLanguage": "Select Language",
+  "preferences": "Preferences",
+  "logout": "Logout",
+  "notifications": "Notifications",
+  "manageNotifications": "Manage your notification settings",
+  "privacy": "Privacy",
+  "managePrivacy": "Manage your privacy settings",
+  "helpAndSupport": "Help & Support",
+  "getHelp": "Get help and support"
 }

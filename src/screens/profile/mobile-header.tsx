@@ -3,7 +3,7 @@ import React from 'react';
 import { Pressable } from 'react-native';
 
 import { useRouter } from 'expo-router';
-import { Bell, ChevronLeft, Settings } from 'lucide-react-native';
+import { Bell, ChevronLeft } from 'lucide-react-native';
 
 import { HStack, Text } from '@/components/ui';
 
@@ -48,12 +48,6 @@ const MobileHeader = ({
             <Bell className='text-gray-700' size={20} />
           </Pressable>
         )}
-        <Pressable
-          onPress={onSettingsPress}
-          className='rounded-full p-2 transition-colors hover:bg-gray-100 active:bg-gray-200'
-        >
-          <Settings className='text-gray-700' size={20} />
-        </Pressable>
       </HStack>
     </HStack>
   );

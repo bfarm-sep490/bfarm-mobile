@@ -1,4 +1,15 @@
 {
-  "title": "Profil",
-  "signOut": "Abmelden"
+  "title": "Hồ sơ",
+  "signOut": "Đăng xuất",
+  "account": "Tài khoản",
+  "language": "Ngôn ngữ",
+  "selectLanguage": "Chọn ngôn ngữ",
+  "preferences": "Tùy chọn",
+  "logout": "Đăng xuất",
+  "notifications": "Thông báo",
+  "manageNotifications": "Quản lý cài đặt thông báo",
+  "privacy": "Quyền riêng tư",
+  "managePrivacy": "Quản lý cài đặt quyền riêng tư",
+  "helpAndSupport": "Trợ giúp & Hỗ trợ",
+  "getHelp": "Nhận trợ giúp và hỗ trợ"
 }

@@ -1,12 +1,6 @@
 import React, { ReactNode } from 'react';
 
-import { useColorScheme } from 'react-native';
-
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -44,11 +38,9 @@ interface ProvidersWrapperProps {
 }
 
 const ProvidersWrapper = ({ children }: ProvidersWrapperProps) => {
-  const colorScheme = useColorScheme();
-
   return (
-    <GluestackUIProvider mode={(colorScheme ?? 'light') as 'light' | 'dark'}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <GluestackUIProvider mode='light'>
+      <ThemeProvider value={DefaultTheme}>
         <SafeAreaProvider>
           <GestureWrapper>
             <NotificationProvider>
