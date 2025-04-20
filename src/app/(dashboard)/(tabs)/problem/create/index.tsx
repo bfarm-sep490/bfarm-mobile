@@ -1,4 +1,4 @@
-import { CreateScreen, ProblemDetailScreen } from '@/screens/problems';
+import { CreateScreen } from '@/screens/problems';
 
 const index = () => {
   return <CreateScreen />;

@@ -635,9 +635,6 @@ export const FarmerTasksScreen = () => {
           <HStack space='md' className='items-center'>
             <Heading size='lg'>Quản lý nhiệm vụ</Heading>
           </HStack>
-          <TouchableOpacity onPress={onRefresh}>
-            <Icon as={RefreshCw} size='lg' />
-          </TouchableOpacity>
         </HStack>
       </BoxUI>
 

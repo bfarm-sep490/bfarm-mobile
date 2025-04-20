@@ -12,16 +12,16 @@ import {
   MoreVertical,
   UserIcon,
   Users,
-  List,
   AlertTriangle,
+  Search,
+  XCircle,
+  CheckCircle2,
+  Info,
 } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { launchImageLibrary } from 'react-native-image-picker';
-import RNPickerSelect from 'react-native-picker-select';
 import Carousel from 'react-native-reanimated-carousel';
-import { ICreateProblem, ISelectPlan } from 'src/interfaces';
-
-import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
+import { ICreateProblem } from 'src/interfaces';
 
 import { StatusProblem } from '@/components/status-tag/problem-tag';
 import {
@@ -47,8 +47,135 @@ import {
 import { Box as BoxUI } from '@/components/ui/box';
 import { useSession } from '@/context/ctx';
 import { useProblem } from '@/services/api/problems/useProblem';
-import { createProblem, uploadProblemImage } from '@/services/problems';
 
+// Update status filter
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'Resolve':
+      return {
+        bg: 'bg-success-100',
+        text: 'text-success-700',
+        icon: CheckCircle2,
+      };
+    case 'Pending':
+      return {
+        bg: 'bg-danger-100',
+        text: 'text-danger-700',
+        icon: AlertCircle,
+      };
+    default:
+      return {
+        bg: 'bg-typography-100',
+        text: 'text-typography-700',
+        icon: Info,
+      };
+  }
+};
+
+const ProblemCard = ({ problem }: { problem: any }) => {
+  const router = useRouter();
+  const statusStyle = getStatusColor(problem.status);
+
+  return (
+    <Card className='mb-3 overflow-hidden rounded-xl'>
+      <BoxUI>
+        <VStack space='md'>
+          {/* Problem header with name and status */}
+          <HStack className='items-center justify-between'>
+            <HStack space='sm' className='flex-1 items-center pr-2'>
+              <BoxUI className='rounded-lg bg-primary-100 p-2'>
+                <Icon as={AlertCircle} size='sm' className='text-primary-700' />
+              </BoxUI>
+              <VStack className='flex-1'>
+                <Text
+                  className='text-base font-semibold'
+                  numberOfLines={1}
+                  ellipsizeMode='tail'
+                >
+                  {problem.problem_name}
+                </Text>
+                <Text className='text-xs text-typography-500'>
+                  {problem.plan_name}
+                </Text>
+              </VStack>
+            </HStack>
+
+            <BoxUI className={`rounded-full px-3 py-1 ${statusStyle.bg}`}>
+              <HStack space='xs' className='items-center'>
+                <Icon
+                  as={statusStyle.icon}
+                  size='xs'
+                  className={statusStyle.text}
+                />
+                <Text className={`text-xs font-medium ${statusStyle.text}`}>
+                  {problem.status === 'Resolve'
+                    ? 'Đã giải quyết'
+                    : 'Chưa giải quyết'}
+                </Text>
+              </HStack>
+            </BoxUI>
+          </HStack>
+
+          {/* Farmer information */}
+          <BoxUI className='rounded-lg border border-typography-200 p-2'>
+            <HStack space='xs' className='items-center'>
+              <VStack className='text-xs font-medium text-typography-600'>
+                <HStack space='xs' className='items-center'>
+                  <Icon
+                    as={UserIcon}
+                    size='xs'
+                    className='text-typography-500'
+                  />
+                  <Text className='text-xs text-typography-600'>
+                    {problem.farmer_name || `Nông dân #${problem.farmer_id}`}
+                  </Text>
+                </HStack>
+              </VStack>
+            </HStack>
+          </BoxUI>
+
+          {/* Problem description */}
+          <Text className='text-sm text-typography-700'>
+            {problem.description || 'Không có mô tả'}
+          </Text>
+
+          {/* Problem details */}
+          <VStack space='xs'>
+            <HStack space='sm' className='items-center'>
+              <Icon as={Calendar} size='xs' className='text-typography-500' />
+              <Text className='text-xs text-typography-500'>
+                {dayjs(problem.created_date).format('DD/MM/YYYY HH:mm')}
+              </Text>
+            </HStack>
+
+            {/* Show result if available */}
+            {problem.result_content && (
+              <BoxUI className='mt-2 rounded-lg bg-typography-50 p-2'>
+                <Text className='text-xs text-typography-700'>
+                  {problem.result_content}
+                </Text>
+              </BoxUI>
+            )}
+          </VStack>
+
+          {/* Action buttons */}
+          <HStack space='sm' className='mt-2'>
+            <Button
+              className='flex-1'
+              variant='outline'
+              size='sm'
+              onPress={() => router.push(`/problem/${problem.id}`)}
+            >
+              <ButtonText>Chi tiết</ButtonText>
+            </Button>
+          </HStack>
+        </VStack>
+      </BoxUI>
+    </Card>
+  );
+};
+
+// Update FilterTabs component
 const FilterTabs = ({
   activeTab,
   setActiveTab,
@@ -96,61 +223,6 @@ const FilterTabs = ({
   );
 };
 
-type ProblemCardProps = {
-  problem: any;
-};
-export const ProblemCard = ({ problem }: ProblemCardProps) => {
-  return (
-    <VStack className='w-full'>
-      <Card className='border-1 overflow-hidden rounded-xl'>
-        <BoxUI className='w-full flex-row justify-center rounded-lg'>
-          <VStack className='p-2'>
-            <HStack className='w-full justify-between'>
-              <Heading size='lg'>{problem.problem_name}</Heading>
-              <StatusProblem status={problem.status} />
-            </HStack>
-            <BoxUI className='mt-2 rounded-lg border border-typography-200 p-2'>
-              <HStack space='xs' className='items-center'>
-                <VStack className='text-xs font-medium text-typography-600'>
-                  <HStack space='xs' className='items-center'>
-                    <Icon
-                      as={UserIcon}
-                      size='xs'
-                      className='text-typography-500'
-                    />
-                    <Text className='text-xs text-typography-600'>
-                      {problem.farmer_name || `Nông dân #${problem.farmer_id}`}
-                    </Text>
-                  </HStack>
-                </VStack>
-              </HStack>
-            </BoxUI>
-            <VStack className='ml-2 w-full' space='md'>
-              <Text className='mt-4 text-sm'>
-                <Icon as={Calendar} size='xs' className='text-typography-500' />{' '}
-                {dayjs(problem.created_date).format('hh:mm DD/MM/YYYY') ||
-                  'Không có'}
-              </Text>
-
-              <Text className='line-clamp-2 text-sm'>
-                <Icon as={List} size='xs' className='text-typography-500' />
-                {problem?.plan_name}
-              </Text>
-            </VStack>
-
-            <Button
-              className='mt-4 h-8 w-full'
-              onPress={() => router.push(`/problem/${problem.id}`)}
-            >
-              <ButtonText>Chi tiết</ButtonText>
-            </Button>
-          </VStack>
-        </BoxUI>
-      </Card>
-    </VStack>
-  );
-};
-
 export const ProblemsScreen = () => {
   const [activeTab, setActiveTab] = useState<'All' | 'Resolve' | 'Pending'>(
     'All',
@@ -159,7 +231,7 @@ export const ProblemsScreen = () => {
   const [pageSize, setPageSize] = useState(10);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [searchName, setSearchName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const { user, currentPlan } = useSession();
   const { useFetchByParamsQuery } = useProblem();
 
@@ -170,7 +242,7 @@ export const ProblemsScreen = () => {
     page_number: pageNumber,
     page_size: pageSize,
     ...(activeTab !== 'All' && { status: activeTab }),
-    ...(searchName && { name: searchName }),
+    ...(searchQuery && { name: searchQuery }),
   };
 
   const problemQuery = useFetchByParamsQuery(problemParams);
@@ -208,134 +280,170 @@ export const ProblemsScreen = () => {
   }, [problems, pageSize]);
 
   const renderFooter = () => {
-    if (!isLoading) return null;
-    return (
-      <VStack className='items-center justify-center py-4'>
-        <Spinner size='small' color='$primary600' />
-        <Text className='mt-2 text-center text-typography-500'>
-          Đang tải thêm...
-        </Text>
-      </VStack>
-    );
-  };
+    if (isLoading) {
+      return (
+        <VStack className='items-center justify-center py-4'>
+          <Spinner size='small' color='$primary600' />
+        </VStack>
+      );
+    }
 
-  const renderEmptyState = () => {
-    if (isLoading || isError) return null;
-    return (
-      <VStack className='flex-1 items-center justify-center py-10'>
-        <Icon as={AlertTriangle} size='lg' className='mb-2 text-gray-500' />
-        <Text className='text-center text-sm text-gray-600'>
-          Không có dữ liệu
-        </Text>
-      </VStack>
-    );
-  };
+    if (!hasMore && problems.length > 0) {
+      return (
+        <VStack className='items-center justify-center py-4'>
+          <Text className='text-sm text-typography-500'>Đã hết dữ liệu</Text>
+        </VStack>
+      );
+    }
 
-  const renderErrorState = () => {
-    if (!isError) return null;
-    return (
-      <VStack className='flex-1 items-center justify-center py-10'>
-        <BoxUI className='bg-danger-100 mb-4 rounded-full p-4'>
-          <Icon as={AlertCircle} size='xl' className='text-danger-600' />
-        </BoxUI>
-        <Text className='text-center text-typography-500'>
-          Có lỗi xảy ra khi tải dữ liệu
-        </Text>
-        <Button className='mt-4' onPress={handleRefresh}>
-          <ButtonText>Thử lại</ButtonText>
-        </Button>
-      </VStack>
-    );
+    return null;
   };
 
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
-      <VStack className='flex-1'>
-        {/* Search and Filter Section */}
-        <VStack className='space-y-3 bg-background-0 px-4 py-3'>
-          <Input
-            variant='outline'
-            className='rounded-xl bg-background-50'
-            size='md'
-          >
-            <InputIcon className='text-typography-400' />
-            <InputField
-              onChangeText={setSearchName}
-              placeholder='Tìm kiếm vấn đề...'
-            />
-          </Input>
-
-          <FilterTabs setActiveTab={setActiveTab} activeTab={activeTab} />
-
-          <HStack className='justify-end'>
-            <Button
-              onPress={() => router.push('/problem/create')}
-              className='bg-primary-600'
-            >
-              <ButtonText className='text-white'>Tạo mới</ButtonText>
-            </Button>
+      {/* Header */}
+      <BoxUI className='px-4 py-4'>
+        <HStack className='items-center justify-between'>
+          <HStack space='md' className='items-center'>
+            <Heading size='lg'>Quản lý vấn đề</Heading>
           </HStack>
-        </VStack>
+        </HStack>
+      </BoxUI>
 
+      {/* Search bar */}
+      <BoxUI className='bg-background-0 px-4 py-3'>
+        <Input
+          variant='outline'
+          className='rounded-xl bg-background-50 px-2'
+          size='md'
+        >
+          <InputIcon as={Search} className='text-typography-400' />
+          <InputField
+            placeholder='Tìm kiếm vấn đề...'
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery ? (
+            <Pressable onPress={() => setSearchQuery('')}>
+              <InputIcon as={XCircle} className='text-typography-400' />
+            </Pressable>
+          ) : null}
+        </Input>
+      </BoxUI>
+
+      {/* Filter tabs */}
+      <BoxUI className='px-4'>
+        <FilterTabs activeTab={activeTab} setActiveTab={setActiveTab} />
         <Divider />
+      </BoxUI>
 
-        {/* List Section */}
-        {isLoading && !isRefreshing ? (
-          <VStack className='flex-1 items-center justify-center'>
-            <Spinner size='large' color='$primary600' />
-            <Text className='mt-4 text-center text-typography-500'>
-              Đang tải dữ liệu...
+      {/* Create button */}
+      <BoxUI className='px-4 py-3'>
+        <Button
+          onPress={() => router.push('/problem/create')}
+          className='bg-primary-600'
+        >
+          <ButtonText className='text-white'>Tạo mới</ButtonText>
+        </Button>
+      </BoxUI>
+
+      {/* List Section */}
+      <BoxUI className='flex-1'>
+        {isError && !isLoading && (
+          <VStack className='items-center justify-center py-10'>
+            <BoxUI className='bg-danger-100 mb-4 rounded-full p-4'>
+              <Icon as={AlertCircle} size='xl' className='text-danger-600' />
+            </BoxUI>
+            <Text className='text-center text-typography-500'>
+              Có lỗi xảy ra khi tải dữ liệu
             </Text>
+            <Button className='mt-4' onPress={handleRefresh}>
+              <ButtonText>Thử lại</ButtonText>
+            </Button>
           </VStack>
-        ) : (
+        )}
+
+        {!isError && (
           <FlashList
-            className='flex-1'
-            contentContainerStyle={{
-              paddingBottom: isWeb ? 0 : 140,
-            }}
-            showsVerticalScrollIndicator={false}
-            ListFooterComponent={renderFooter}
-            ListEmptyComponent={renderEmptyState}
+            data={problems}
+            renderItem={({ item }) => (
+              <BoxUI className='px-4 py-2'>
+                <ProblemCard problem={item} />
+              </BoxUI>
+            )}
+            keyExtractor={item => 'problem_' + item.id}
+            estimatedItemSize={200}
             onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
-                colors={['#4F46E5']}
-                tintColor='#4F46E5'
               />
             }
-            data={problems}
-            estimatedItemSize={200}
-            keyExtractor={item => 'problem_' + item.id}
-            renderItem={({ item }) => (
-              <VStack className='px-4 py-2'>
-                <ProblemCard problem={item} />
-              </VStack>
-            )}
-            onEndReachedThreshold={0.5}
+            ListEmptyComponent={
+              !isLoading ? (
+                <VStack className='items-center justify-center py-10'>
+                  <BoxUI className='mb-4 rounded-full bg-typography-100 p-4'>
+                    <Icon
+                      as={AlertTriangle}
+                      size='xl'
+                      className='text-typography-400'
+                    />
+                  </BoxUI>
+                  <Text className='text-center text-typography-500'>
+                    Không tìm thấy vấn đề phù hợp
+                  </Text>
+                  <Text className='mt-1 text-center text-xs text-typography-400'>
+                    Thử thay đổi bộ lọc hoặc tìm kiếm
+                  </Text>
+                  <Button
+                    className='mt-4'
+                    variant='outline'
+                    onPress={() => {
+                      setActiveTab('All');
+                      setSearchQuery('');
+                    }}
+                  >
+                    <ButtonText>Xóa bộ lọc</ButtonText>
+                  </Button>
+                </VStack>
+              ) : null
+            }
           />
         )}
-
-        {renderErrorState()}
-      </VStack>
+      </BoxUI>
     </SafeAreaView>
   );
 };
 
 export const CreateScreen = () => {
-  const { user } = useSession();
-  const [plan, setPlan] = useState<ISelectPlan[] | null>(null);
+  const { user, currentPlan } = useSession();
+  const { useCreateProblemMutation, useUploadImagesMutation } = useProblem();
+  const createProblemMutation = useCreateProblemMutation({
+    id: 0,
+    problem_name: '',
+    date: new Date(),
+    status: 'pending',
+    farmer_id: user?.id ?? 0,
+    plan_id: currentPlan?.id ?? 0,
+    description: '',
+    list_of_images: [],
+  });
+  const uploadImagesMutation = useUploadImagesMutation();
+
   const [isLoading, setIsLoading] = useState(true);
   const {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ICreateProblem>({
     defaultValues: {
       farmer_id: user?.id ?? 0,
       problem_name: '',
-      plan_id: 0,
+      plan_id: currentPlan?.id ?? 0,
       description: '',
     },
   });
@@ -352,12 +460,23 @@ export const CreateScreen = () => {
           Alert.alert('Lỗi', 'Lỗi tải ảnh: ' + response.errorMessage);
         } else {
           if (response.assets) {
-            const { message, status, data } = await uploadProblemImage(
-              response.assets[0],
-            );
-            if (status === 200 && data) {
-              setImages([...images, ...data]);
-            } else {
+            try {
+              const file = response.assets[0];
+              const formData = new FormData();
+              const fileData = {
+                uri: file.uri,
+                type: file.type || 'image/jpeg',
+                name: file.fileName || 'image.jpg',
+              };
+              formData.append('image', fileData as any);
+
+              const result = await uploadImagesMutation.mutateAsync([
+                fileData as any,
+              ]);
+              if (result.data) {
+                setImages([...images, ...result.data]);
+              }
+            } catch (error) {
               Alert.alert('Lỗi', 'Không thể tải ảnh lên. Hãy thử lại!');
             }
           }
@@ -365,6 +484,7 @@ export const CreateScreen = () => {
       },
     );
   };
+
   if (!control && isLoading) {
     return (
       <VStack className='items-center justify-center py-10'>
@@ -375,32 +495,46 @@ export const CreateScreen = () => {
       </VStack>
     );
   }
+
   const onSubmit = async (report: ICreateProblem) => {
-    const income_data = { ...report, list_of_images: images } as ICreateProblem;
-    const { status, data, message } = await createProblem(income_data);
-    if (status && data) {
-      Alert.alert('Thành công', 'Báo cáo thành công');
-      router.push({
-        pathname: '/problem/[id]',
-        params: { id: data?.id?.toString() },
+    try {
+      const result = await createProblemMutation.mutateAsync({
+        data: {
+          ...report,
+          list_of_images: images,
+          description: report.description || '',
+        },
       });
-    } else {
-      Alert.alert(
-        'Lỗi',
-        (message as string) ?? 'Có lỗi xảy ra. Vui lòng thử lại!',
-      );
+
+      if (result.data) {
+        Alert.alert('Thành công', 'Báo cáo thành công');
+        reset({
+          farmer_id: user?.id ?? 0,
+          problem_name: '',
+          plan_id: currentPlan?.id ?? 0,
+          description: '',
+        });
+        setImages([]);
+        router.push({
+          pathname: '/problem/[id]',
+          params: { id: result.data.id?.toString() },
+        });
+      }
+    } catch (error) {
+      Alert.alert('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại!');
     }
   };
 
   const removeImage = (index: string) => {
     setImages(images.filter(image => image !== index));
   };
+
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
       <Box className='p-4'>
         <HStack className='items-center'>
           <HStack space='md' className='flex-1 items-center justify-between'>
-            <Pressable onPress={() => router.back()}>
+            <Pressable onPress={() => router.push('/problem')}>
               <Icon as={ArrowLeft} />
             </Pressable>
             <Heading size='md'>{'Tạo vấn đề'}</Heading>
@@ -501,32 +635,6 @@ export const CreateScreen = () => {
                   )}
                 </VStack>
                 <VStack>
-                  <Text className='ml-2 font-bold'>Kế hoạch</Text>
-                  <Controller
-                    control={control}
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <RNPickerSelect
-                        textInputProps={{
-                          textAlign: 'center',
-                          textAlignVertical: 'center',
-                        }}
-                        onValueChange={onChange}
-                        items={(plan || []).map(item => ({
-                          label: item.plan_name,
-                          value: item.id,
-                        }))}
-                      />
-                    )}
-                    name='plan_id'
-                    rules={{ required: 'Kế hoạch không được để trống' }}
-                  />
-                  {errors.plan_id && (
-                    <Text className='text-red-500'>
-                      {errors.plan_id.message}
-                    </Text>
-                  )}
-                </VStack>
-                <VStack>
                   <Text className='ml-2 font-bold'>Mô tả</Text>
                   <Controller
                     control={control}
@@ -556,6 +664,7 @@ export const CreateScreen = () => {
     </SafeAreaView>
   );
 };
+
 const FarmerCard = ({ farmer }: { farmer: any }) => {
   return (
     <Card className='mb-4 overflow-hidden rounded-lg'>
@@ -601,7 +710,7 @@ export const ProblemDetailScreen = () => {
       <Box className='p-4'>
         <HStack className='items-center'>
           <HStack space='md' className='flex-1 items-center justify-between'>
-            <Pressable onPress={() => router.back()}>
+            <Pressable onPress={() => router.push('/problem')}>
               <Icon as={ArrowLeft} />
             </Pressable>
             <Heading size='md'>Chi tiết vấn đề</Heading>

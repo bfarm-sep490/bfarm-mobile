@@ -45,6 +45,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name='problem/index'
         options={{
+          headerShown: false,
           title: t('problem:title'),
           tabBarIcon: ({ focused }) => (
             <SvgXml
@@ -89,6 +90,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name='problem/[id]/index'
         options={{
+          headerShown: false,
           href: null,
           tabBarStyle: {
             display: 'none',
@@ -99,6 +101,7 @@ export default function TabLayout() {
         name='problem/create/index'
         options={{
           href: null,
+          headerShown: false,
           tabBarStyle: {
             display: 'none',
           },
