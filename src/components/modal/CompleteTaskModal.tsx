@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { Image, StyleSheet, Alert } from 'react-native';
 
 import { useMutation } from '@tanstack/react-query';
+import * as ImagePicker from 'expo-image-picker';
 import { XCircle, Camera, ImageIcon, X } from 'lucide-react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
 import RNPickerSelect from 'react-native-picker-select';
 
 import { Box } from '@/components/ui/box';
@@ -270,57 +270,96 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
     }
   };
 
-  const pickImage = () => {
+  const pickImageFromGallery = async () => {
     if (images.length >= maxImages) {
       Alert.alert('Lỗi', `Chỉ được tải lên tối đa ${maxImages} ảnh`);
       return;
     }
 
-    launchImageLibrary(
-      {
-        mediaType: 'photo',
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: allowMultipleImages,
         selectionLimit: allowMultipleImages ? maxImages - images.length : 1,
         quality: 0.8,
-      },
-      async pickerResponse => {
-        if (pickerResponse.errorMessage) {
-          Alert.alert('Lỗi', 'Lỗi tải ảnh: ' + pickerResponse.errorMessage);
-          return;
-        }
+        allowsEditing: true,
+      });
 
-        if (!pickerResponse.assets || pickerResponse.assets.length === 0) {
-          return;
-        }
+      if (result.canceled) {
+        return;
+      }
 
-        try {
-          setIsUploading(true);
+      setIsUploading(true);
 
-          const formData = new FormData();
-          pickerResponse.assets.forEach((asset: any, index: number) => {
-            formData.append('image', {
-              uri: asset.uri,
-              type: asset.type || 'image/jpeg',
-              name: asset.fileName || `image_${index}.jpg`,
-            } as any);
-          });
+      const formData = new FormData();
+      result.assets.forEach((asset, index) => {
+        formData.append('image', {
+          uri: asset.uri,
+          type: 'image/jpeg',
+          name: `image_${index}.jpg`,
+        } as any);
+      });
 
-          const result = await uploadImages(formData);
+      const uploadResult = await uploadImages(formData);
 
-          if (result.data && result.data.length > 0) {
-            setImages(prev => [...prev, ...result.data]);
-          }
-        } catch (err: unknown) {
-          const error = err as Error;
-          console.error('Upload error:', error);
-          Alert.alert(
-            'Lỗi',
-            error.message || 'Không thể tải ảnh lên. Vui lòng thử lại!',
-          );
-        } finally {
-          setIsUploading(false);
-        }
-      },
-    );
+      if (uploadResult.data && uploadResult.data.length > 0) {
+        setImages(prev => [...prev, ...uploadResult.data]);
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error('Upload error:', error);
+      Alert.alert(
+        'Lỗi',
+        error.message || 'Không thể tải ảnh lên. Vui lòng thử lại!',
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const takePhoto = async () => {
+    if (images.length >= maxImages) {
+      Alert.alert('Lỗi', `Chỉ được tải lên tối đa ${maxImages} ảnh`);
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      setIsUploading(true);
+
+      const formData = new FormData();
+      result.assets.forEach((asset, index) => {
+        formData.append('image', {
+          uri: asset.uri,
+          type: 'image/jpeg',
+          name: `image_${index}.jpg`,
+        } as any);
+      });
+
+      const uploadResult = await uploadImages(formData);
+
+      if (uploadResult.data && uploadResult.data.length > 0) {
+        setImages(prev => [...prev, ...uploadResult.data]);
+      }
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error('Upload error:', error);
+      Alert.alert(
+        'Lỗi',
+        error.message || 'Không thể tải ảnh lên. Vui lòng thử lại!',
+      );
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -426,7 +465,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
               {showCameraButton && (
                 <Pressable
                   className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
-                  onPress={pickImage}
+                  onPress={takePhoto}
                 >
                   <VStack className='items-center'>
                     <Icon as={Camera} className='text-typography-500' />
@@ -440,7 +479,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
               {showGalleryButton && (
                 <Pressable
                   className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
-                  onPress={pickImage}
+                  onPress={pickImageFromGallery}
                 >
                   <VStack className='items-center'>
                     <Icon as={ImageIcon} className='text-typography-500' />

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react-native';
 
 import CompleteTaskModal from '@/components/modal/CompleteTaskModal';
+import { SubmitReportProgressModal } from '@/components/modal/SubmitReportProgressModal';
 import { Box as BoxUI } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -319,6 +320,9 @@ export const TaskDetailScreen = () => {
     }
   }
   items = items.concat(fertilizers).concat(pesticides);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState(0);
+
   const handleCompleteTask = async (data: {
     resultContent: string;
     images: string[];
@@ -331,6 +335,17 @@ export const TaskDetailScreen = () => {
 
     try {
       setIsSubmitting(true);
+      setShowProgressModal(true);
+      setSubmitProgress(0);
+
+      // Start progress tracking
+      const startTime = Date.now();
+      const progressInterval = setInterval(() => {
+        const elapsedTime = Date.now() - startTime;
+        // Update progress every 100ms, but don't exceed 95% until completion
+        setSubmitProgress(prev => Math.min(95, prev + 1));
+      }, 100);
+
       if (taskType === 'caring') {
         await updateTaskMutation.mutateAsync({
           id: task.id,
@@ -369,6 +384,10 @@ export const TaskDetailScreen = () => {
         });
       }
 
+      // Set to 100% when complete
+      setSubmitProgress(100);
+      clearInterval(progressInterval);
+
       // Invalidate queries to trigger refetch
       await queryClient.invalidateQueries({
         queryKey: ['fetchByParamsHarvestingTasks'],
@@ -391,6 +410,8 @@ export const TaskDetailScreen = () => {
       );
     } finally {
       setIsSubmitting(false);
+      setShowProgressModal(false);
+      setSubmitProgress(0);
     }
   };
 
@@ -709,6 +730,16 @@ export const TaskDetailScreen = () => {
         )}
         <BoxUI className='h-10' />
       </ScrollView>
+      <SubmitReportProgressModal
+        isOpen={showProgressModal}
+        onClose={() => {
+          setShowProgressModal(false);
+          setSubmitProgress(0);
+        }}
+        progress={submitProgress}
+        title='Đang cập nhật báo cáo'
+        description='Vui lòng đợi trong giây lát, quá trình này có thể mất khoảng 30 giây...'
+      />
       <CompleteTaskModal
         isOpen={showCompleteModal}
         onClose={() => setShowCompleteModal(false)}

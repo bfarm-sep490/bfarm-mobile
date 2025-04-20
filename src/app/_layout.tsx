@@ -90,6 +90,22 @@ function RootLayoutNav() {
             animation: 'fade',
           }}
         />
+        <Stack.Screen
+          name='forgot-password/index'
+          options={{
+            title: 'Forgot Password',
+            gestureEnabled: false,
+            animation: 'fade',
+          }}
+        />
+        <Stack.Screen
+          name='reset-password/index'
+          options={{
+            title: 'Reset Password',
+            gestureEnabled: false,
+            animation: 'fade',
+          }}
+        />
       </Stack>
     </ProvidersWrapper>
   );

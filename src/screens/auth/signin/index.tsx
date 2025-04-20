@@ -226,6 +226,9 @@ const Login = () => {
                 </Checkbox>
               )}
             />
+            <Pressable onPress={() => router.push('/forgot-password')}>
+              <Text className='text-sm text-primary-600'>Quên mật khẩu?</Text>
+            </Pressable>
           </HStack>
         </VStack>
         <VStack className='my-7 w-full' space='lg'>

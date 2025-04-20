@@ -195,6 +195,13 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
             </HStack>
           </HStack>
 
+          <HStack space='xs' className='items-center'>
+            <Icon as={Shovel} size='sm' className='text-amber-600' />
+            <Text className='text-sm text-typography-600'>
+              Đất: {currentPlan.yield_name || 'N/A'}
+            </Text>
+          </HStack>
+
           <VStack space='xs'>
             <HStack className='justify-between'>
               <Text className='text-sm text-typography-500'>Tiến độ</Text>
@@ -312,7 +319,7 @@ const TasksList = () => {
   return (
     <VStack space='md' className='mb-6'>
       <HStack className='items-center justify-between'>
-        <Text className='font-bold text-typography-900'>Nhiệm vụ gần đây</Text>
+        <Text className='font-bold text-typography-900'>Nhiệm vụ hôm nay</Text>
         <Pressable>
           <Text className='text-sm text-primary-600'>Xem tất cả</Text>
         </Pressable>

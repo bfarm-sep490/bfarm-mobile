@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 
-import { Image, TouchableOpacity, RefreshControl } from 'react-native';
+import { Image, RefreshControl, Alert } from 'react-native';
 
 import { FlashList } from '@shopify/flash-list';
 import dayjs from 'dayjs';
@@ -23,9 +23,10 @@ import {
   Info,
   UserIcon,
   Sprout,
-  RefreshCw,
 } from 'lucide-react-native';
 
+import CompleteTaskModal from '@/components/modal/CompleteTaskModal';
+import { SubmitReportProgressModal } from '@/components/modal/SubmitReportProgressModal';
 import { Box as BoxUI } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -41,6 +42,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useSession } from '@/context/ctx';
+import { queryClient } from '@/context/providers';
 import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
 import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
 import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
@@ -106,10 +108,12 @@ const TaskCard = ({
   task,
   taskType = 'caring',
   currentFarmerId,
+  onQuickReport,
 }: {
   task: any;
   taskType?: string;
   currentFarmerId?: number;
+  onQuickReport?: (task: any, taskType: string) => void;
 }) => {
   const router = useRouter();
   const statusStyle = getStatusColor(task.status);
@@ -302,6 +306,16 @@ const TaskCard = ({
             >
               <ButtonText>Chi tiết</ButtonText>
             </Button>
+            {task.status === 'Ongoing' && (
+              <Button
+                className='flex-1'
+                variant='solid'
+                size='sm'
+                onPress={() => onQuickReport?.(task, taskType)}
+              >
+                <ButtonText>Báo cáo nhanh</ButtonText>
+              </Button>
+            )}
           </HStack>
         </VStack>
       </BoxUI>
@@ -411,6 +425,12 @@ export const FarmerTasksScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [pageSize, setPageSize] = useState(10);
   const [hasMore, setHasMore] = useState(true);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState(0);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [selectedTaskType, setSelectedTaskType] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get current user and plan from session
   const { currentPlan, user } = useSession();
@@ -422,6 +442,14 @@ export const FarmerTasksScreen = () => {
   const { useFetchByParamsQuery: useFetchHarvestingTasks } =
     useHarvestingTask();
   const { useFetchByParamsQuery: useFetchPackagingTasks } = usePackagingTask();
+
+  // Add mutation hooks
+  const { mutateAsync: updateCaringTask } =
+    useCaringTask().useUpdateTaskReportMutation();
+  const { mutateAsync: updateHarvestingTask } =
+    useHarvestingTask().useUpdateTaskReportMutation();
+  const { mutateAsync: updatePackagingTask } =
+    usePackagingTask().useUpdateTaskReportMutation();
 
   // Create params for API calls with pagination and filters
   const caringParams = {
@@ -593,6 +621,103 @@ export const FarmerTasksScreen = () => {
     }
   }, [pageSize, getFilteredTasks]);
 
+  const handleQuickReport = (task: any, taskType: string) => {
+    setSelectedTask(task);
+    setSelectedTaskType(taskType);
+    setShowCompleteModal(true);
+  };
+
+  const handleCompleteTask = async (data: {
+    resultContent: string;
+    images: string[];
+    harvesting_task_id?: number;
+    harvesting_quantity?: number;
+    packaged_item_count?: number;
+    total_packaged_weight?: number;
+  }) => {
+    if (!selectedTask) return;
+
+    try {
+      setIsSubmitting(true);
+      setShowProgressModal(true);
+      setSubmitProgress(0);
+
+      // Start progress tracking
+      const startTime = Date.now();
+      const progressInterval = setInterval(() => {
+        const elapsedTime = Date.now() - startTime;
+        setSubmitProgress(prev => Math.min(95, prev + 1));
+      }, 100);
+
+      if (selectedTaskType === 'caring') {
+        await updateCaringTask({
+          id: selectedTask.id,
+          data: {
+            status: 'Complete',
+            result_content: data.resultContent,
+            list_of_image_urls: data.images,
+            report_by: user?.name ?? 'Unknown',
+          },
+        });
+      } else if (selectedTaskType === 'harvesting') {
+        await updateHarvestingTask({
+          id: selectedTask.id,
+          data: {
+            status: 'Complete',
+            result_content: data.resultContent,
+            list_of_image_urls: data.images,
+            report_by: user?.name ?? 'Unknown',
+            harvested_quantity: data.harvesting_quantity || 0,
+          },
+        });
+      } else if (selectedTaskType === 'packaging') {
+        await updatePackagingTask({
+          id: selectedTask.id,
+          data: {
+            status: 'Complete',
+            harvesting_task_id: data.harvesting_task_id,
+            packaged_item_count: data.packaged_item_count || 0,
+            total_packaged_weight: data.total_packaged_weight || 0,
+            result_content: data.resultContent,
+            list_of_image_urls: data.images,
+            report_by: user?.name ?? 'Unknown',
+          },
+        });
+      }
+
+      // Set to 100% when complete
+      setSubmitProgress(100);
+      clearInterval(progressInterval);
+
+      // Invalidate queries to trigger refetch
+      await queryClient.invalidateQueries({
+        queryKey: ['fetchByParamsHarvestingTasks'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['fetchByParamsCaringTasks'],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['fetchByParamsPackagingTasks'],
+      });
+
+      // Refresh the task data
+      onRefresh();
+      Alert.alert('Thành công', 'Nhiệm vụ đã được cập nhật thành công');
+    } catch (error) {
+      console.error('Error updating task:', error);
+      Alert.alert(
+        'Lỗi',
+        'Đã có lỗi xảy ra khi cập nhật nhiệm vụ. Vui lòng thử lại.',
+      );
+    } finally {
+      setIsSubmitting(false);
+      setShowProgressModal(false);
+      setSubmitProgress(0);
+      setSelectedTask(null);
+      setSelectedTaskType('');
+    }
+  };
+
   // Render task item
   const renderItem = useCallback(
     ({ item }: { item: any }) => (
@@ -601,6 +726,7 @@ export const FarmerTasksScreen = () => {
         task={item}
         taskType={item.taskType || 'caring'}
         currentFarmerId={currentFarmerId}
+        onQuickReport={handleQuickReport}
       />
     ),
     [currentFarmerId],
@@ -730,6 +856,31 @@ export const FarmerTasksScreen = () => {
           />
         )}
       </BoxUI>
+
+      <SubmitReportProgressModal
+        isOpen={showProgressModal}
+        onClose={() => {
+          setShowProgressModal(false);
+          setSubmitProgress(0);
+        }}
+        progress={submitProgress}
+        title='Đang cập nhật báo cáo'
+        description='Vui lòng đợi trong giây lát...'
+      />
+      <CompleteTaskModal
+        isOpen={showCompleteModal}
+        onClose={() => {
+          setShowCompleteModal(false);
+          setSelectedTask(null);
+          setSelectedTaskType('');
+        }}
+        taskType={selectedTaskType as 'caring' | 'harvesting' | 'packaging'}
+        title='Báo cáo nhanh'
+        description={`Vui lòng nhập kết quả thực hiện nhiệm vụ "${selectedTask?.task_name}"`}
+        allowMultipleImages={true}
+        maxImages={3}
+        onConfirm={handleCompleteTask}
+      />
     </SafeAreaView>
   );
 };

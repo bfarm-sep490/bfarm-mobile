@@ -1,9 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
-import { Alert, Pressable, RefreshControl, SafeAreaView } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  RefreshControl,
+  SafeAreaView,
+  StyleSheet,
+} from 'react-native';
 
 import { FlashList } from '@shopify/flash-list';
 import dayjs from 'dayjs';
+import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, router, useRouter } from 'expo-router';
 import {
   AlertCircle,
@@ -17,9 +24,11 @@ import {
   XCircle,
   CheckCircle2,
   Info,
+  Camera,
+  ImageIcon,
+  X,
 } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
-import { launchImageLibrary } from 'react-native-image-picker';
 import Carousel from 'react-native-reanimated-carousel';
 import { ICreateProblem } from 'src/interfaces';
 
@@ -43,6 +52,13 @@ import {
   Card,
   Divider,
   Spinner,
+  FormControl,
+  FormControlLabel,
+  FormControlLabelText,
+  FormControlHelper,
+  FormControlHelperText,
+  FormControlError,
+  FormControlErrorText,
 } from '@/components/ui';
 import { Box as BoxUI } from '@/components/ui/box';
 import { useSession } from '@/context/ctx';
@@ -434,11 +450,13 @@ export const CreateScreen = () => {
   const uploadImagesMutation = useUploadImagesMutation();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const {
     control,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<ICreateProblem>({
     defaultValues: {
       farmer_id: user?.id ?? 0,
@@ -448,41 +466,91 @@ export const CreateScreen = () => {
     },
   });
   const [images, setImages] = useState<string[]>([]);
-  const pickImage = () => {
+
+  // Update form values when plan changes
+  useEffect(() => {
+    if (currentPlan?.id) {
+      setValue('plan_id', currentPlan.id);
+    }
+  }, [currentPlan, setValue]);
+
+  const pickImageFromGallery = async () => {
     if (images.length >= 3) {
       Alert.alert('Lỗi', 'Chỉ được tải lên tối đa 3 ảnh');
       return;
     }
-    launchImageLibrary(
-      { mediaType: 'photo', selectionLimit: 1 },
-      async response => {
-        if (response.errorMessage) {
-          Alert.alert('Lỗi', 'Lỗi tải ảnh: ' + response.errorMessage);
-        } else {
-          if (response.assets) {
-            try {
-              const file = response.assets[0];
-              const formData = new FormData();
-              const fileData = {
-                uri: file.uri,
-                type: file.type || 'image/jpeg',
-                name: file.fileName || 'image.jpg',
-              };
-              formData.append('image', fileData as any);
 
-              const result = await uploadImagesMutation.mutateAsync([
-                fileData as any,
-              ]);
-              if (result.data) {
-                setImages([...images, ...result.data]);
-              }
-            } catch (error) {
-              Alert.alert('Lỗi', 'Không thể tải ảnh lên. Hãy thử lại!');
-            }
-          }
-        }
-      },
-    );
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: false,
+        quality: 0.8,
+        allowsEditing: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      setIsUploading(true);
+
+      const file = result.assets[0];
+      const fileData = {
+        uri: file.uri,
+        type: 'image/jpeg',
+        name: 'image.jpg',
+      };
+
+      const uploadResult = await uploadImagesMutation.mutateAsync([
+        fileData as any,
+      ]);
+      if (uploadResult.data) {
+        setImages(prev => [...prev, ...uploadResult.data]);
+      }
+    } catch (error) {
+      Alert.alert('Lỗi', 'Không thể tải ảnh lên. Hãy thử lại!');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const takePhoto = async () => {
+    if (images.length >= 3) {
+      Alert.alert('Lỗi', 'Chỉ được tải lên tối đa 3 ảnh');
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      setIsUploading(true);
+
+      const file = result.assets[0];
+      const fileData = {
+        uri: file.uri,
+        type: 'image/jpeg',
+        name: 'image.jpg',
+      };
+
+      const uploadResult = await uploadImagesMutation.mutateAsync([
+        fileData as any,
+      ]);
+      if (uploadResult.data) {
+        setImages(prev => [...prev, ...uploadResult.data]);
+      }
+    } catch (error) {
+      Alert.alert('Lỗi', 'Không thể tải ảnh lên. Hãy thử lại!');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   if (!control && isLoading) {
@@ -498,9 +566,17 @@ export const CreateScreen = () => {
 
   const onSubmit = async (report: ICreateProblem) => {
     try {
+      // Ensure we're using the current plan
+      const currentPlanId = currentPlan?.id;
+      if (!currentPlanId) {
+        Alert.alert('Lỗi', 'Vui lòng chọn kế hoạch trước khi tạo vấn đề');
+        return;
+      }
+
       const result = await createProblemMutation.mutateAsync({
         data: {
           ...report,
+          plan_id: currentPlanId, // Use current plan ID
           list_of_images: images,
           description: report.description || '',
         },
@@ -511,7 +587,7 @@ export const CreateScreen = () => {
         reset({
           farmer_id: user?.id ?? 0,
           problem_name: '',
-          plan_id: currentPlan?.id ?? 0,
+          plan_id: currentPlanId,
           description: '',
         });
         setImages([]);
@@ -544,126 +620,187 @@ export const CreateScreen = () => {
           </HStack>
         </HStack>
       </Box>
+
       <ScrollView className='h-full w-full flex-1'>
-        <VStack className='w-full items-center justify-center'>
-          <VStack className='w-5/6 gap-1' space='2xl'>
-            {images.length > 0 && (
-              <Box className='h-60 flex-row'>
-                <Carousel
-                  autoPlayInterval={2000}
-                  height={320}
-                  width={320}
-                  loop={true}
-                  pagingEnabled={true}
-                  snapEnabled={true}
-                  mode='parallax'
-                  modeConfig={{
-                    parallaxScrollingScale: 0.9,
-                    parallaxScrollingOffset: 50,
-                  }}
-                  data={images || []}
-                  renderItem={({ item }) => (
-                    <View>
-                      {item ? (
-                        <View key={`image-${item}`} className='relative'>
-                          <Image
-                            resizeMode='cover'
-                            source={{ uri: item }}
-                            alt={`image-${item}`}
-                            className='mx-2 h-60 w-full rounded-lg object-cover'
-                          />
-
-                          <CloseIcon
-                            style={{
-                              position: 'absolute',
-                              bottom: '90%',
-                              left: '90%',
-                              backgroundColor: 'black',
-                            }}
-                            color='white'
-                            width={30}
-                            height={30}
-                            onPress={() => removeImage(item)}
-                          />
-                        </View>
-                      ) : (
-                        <Text>No Image</Text>
-                      )}
-                    </View>
-                  )}
-                />
+        <VStack className='w-full items-center justify-center p-4' space='lg'>
+          {/* Current Plan Info */}
+          <Card className='w-full p-4'>
+            <VStack space='sm'>
+              <Heading size='sm'>Kế hoạch hiện tại</Heading>
+              <Box className='rounded-lg border border-primary-200 bg-primary-50 p-3'>
+                <Text className='text-sm font-medium text-primary-800'>
+                  {currentPlan?.plan_name || 'Chưa chọn kế hoạch'}
+                </Text>
+                {!currentPlan && (
+                  <Text className='mt-1 text-xs text-typography-500'>
+                    Vui lòng chọn kế hoạch trước khi tạo vấn đề
+                  </Text>
+                )}
               </Box>
-            )}
-            <Text style={{ color: 'red', fontSize: 12 }}>
-              * Chú ý bạn chỉ đươc tải 3 ảnh
-            </Text>
-            <Button onPress={pickImage}>
-              <ButtonText>Chọn ảnh</ButtonText>
-            </Button>
-          </VStack>
+            </VStack>
+          </Card>
 
-          <VStack
-            className='mt-4 w-5/6 flex-col gap-4 rounded-lg border p-4'
-            space='2xl'
-          >
-            <Text className='mb-5 text-center text-2xl font-bold'>
-              Tạo mới vấn đề
-            </Text>
-            {control && (
-              <View>
-                <VStack>
-                  <Text className='ml-2 font-bold'>Tên vấn đề</Text>
-                  <Controller
-                    control={control}
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <Input className='rounded'>
-                        <InputField
-                          onBlur={onBlur}
-                          onChangeText={onChange}
-                          value={value ?? ''}
-                          placeholder='Tên vấn đề'
-                        />
-                      </Input>
-                    )}
-                    name='problem_name'
-                    rules={{ required: 'Tên vấn đề không được để trống' }}
-                  />
-                  {errors.problem_name && (
-                    <Text className='text-red-500'>
-                      {errors.problem_name.message}
+          {/* Image Section */}
+          <Card className='w-full p-4'>
+            <VStack space='md'>
+              <Heading size='sm'>Hình ảnh</Heading>
+              <Text className='text-xs text-typography-500'>
+                Tối đa 3 ảnh (bắt buộc)
+              </Text>
+
+              {/* Selected images */}
+              {images.length > 0 && (
+                <Box className='mt-2'>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <HStack space='sm'>
+                      {images.map((image, index) => (
+                        <Box
+                          key={index}
+                          className='relative h-20 w-20 overflow-hidden rounded-md'
+                        >
+                          <Image
+                            source={{ uri: image }}
+                            style={styles.previewImage}
+                          />
+                          <Pressable
+                            className='absolute right-1 top-1 rounded-full bg-black/50 p-1'
+                            onPress={() => removeImage(image)}
+                          >
+                            <Icon as={X} size='xs' color='white' />
+                          </Pressable>
+                        </Box>
+                      ))}
+                    </HStack>
+                  </ScrollView>
+                </Box>
+              )}
+
+              {/* Image picker buttons */}
+              <HStack className='mt-2 flex-wrap items-center'>
+                <Pressable
+                  className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
+                  onPress={takePhoto}
+                >
+                  <VStack className='items-center'>
+                    <Icon as={Camera} className='text-typography-500' />
+                    <Text className='text-xs text-typography-500'>
+                      Chụp ảnh
                     </Text>
+                  </VStack>
+                </Pressable>
+
+                <Pressable
+                  className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
+                  onPress={pickImageFromGallery}
+                >
+                  <VStack className='items-center'>
+                    <Icon as={ImageIcon} className='text-typography-500' />
+                    <Text className='text-xs text-typography-500'>
+                      Thư viện
+                    </Text>
+                  </VStack>
+                </Pressable>
+              </HStack>
+            </VStack>
+          </Card>
+
+          {/* Form Section */}
+          <Card className='w-full p-4'>
+            <VStack space='lg'>
+              <Heading size='sm'>Thông tin vấn đề</Heading>
+
+              <FormControl isInvalid={!!errors.problem_name}>
+                <FormControlLabel>
+                  <FormControlLabelText>Tên vấn đề</FormControlLabelText>
+                </FormControlLabel>
+                <Controller
+                  control={control}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <Input>
+                      <InputField
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value ?? ''}
+                        placeholder='Nhập tên vấn đề'
+                      />
+                    </Input>
                   )}
-                </VStack>
-                <VStack>
-                  <Text className='ml-2 font-bold'>Mô tả</Text>
-                  <Controller
-                    control={control}
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <Input className='rounded'>
-                        <InputField
-                          onBlur={onBlur}
-                          multiline
-                          numberOfLines={5}
-                          onChangeText={onChange}
-                          value={value ?? ''}
-                          placeholder='Mô tả'
-                        />
-                      </Input>
-                    )}
-                    name='description'
-                  />
-                </VStack>
-                <Button className='mt-2' onPress={handleSubmit(onSubmit)}>
-                  <ButtonText>Gửi</ButtonText>
-                </Button>
-              </View>
-            )}
-          </VStack>
+                  name='problem_name'
+                  rules={{ required: 'Tên vấn đề không được để trống' }}
+                />
+                {errors.problem_name && (
+                  <FormControlError>
+                    <FormControlErrorText>
+                      {errors.problem_name.message}
+                    </FormControlErrorText>
+                  </FormControlError>
+                )}
+              </FormControl>
+
+              <FormControl>
+                <FormControlLabel>
+                  <FormControlLabelText>Mô tả</FormControlLabelText>
+                </FormControlLabel>
+                <Controller
+                  control={control}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <Input>
+                      <InputField
+                        onBlur={onBlur}
+                        multiline
+                        numberOfLines={4}
+                        onChangeText={onChange}
+                        value={value ?? ''}
+                        placeholder='Nhập mô tả vấn đề'
+                      />
+                    </Input>
+                  )}
+                  name='description'
+                />
+                <FormControlHelper>
+                  <FormControlHelperText>
+                    Mô tả chi tiết về vấn đề bạn gặp phải
+                  </FormControlHelperText>
+                </FormControlHelper>
+              </FormControl>
+
+              <Button
+                size='lg'
+                variant='solid'
+                onPress={handleSubmit(onSubmit)}
+                isDisabled={isUploading || images.length === 0 || !currentPlan}
+              >
+                {isUploading ? (
+                  <HStack space='sm'>
+                    <Spinner size='small' color='white' />
+                    <ButtonText>Đang tải lên...</ButtonText>
+                  </HStack>
+                ) : !currentPlan ? (
+                  <ButtonText>Vui lòng chọn kế hoạch</ButtonText>
+                ) : (
+                  <ButtonText>Tạo vấn đề</ButtonText>
+                )}
+              </Button>
+            </VStack>
+          </Card>
         </VStack>
       </ScrollView>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  previewImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 4,
+  },
+  detailImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+});
 
 const FarmerCard = ({ farmer }: { farmer: any }) => {
   return (
@@ -704,6 +841,7 @@ export const ProblemDetailScreen = () => {
   };
   const { data: problems, isLoading, isError, error } = problemQuery;
   const problem = problems?.data;
+
   return (
     <SafeAreaView className='flex-1 bg-background-0'>
       {/* Header */}
@@ -720,6 +858,7 @@ export const ProblemDetailScreen = () => {
           </HStack>
         </HStack>
       </Box>
+
       {isLoading && (
         <VStack className='items-center justify-center py-10'>
           <Spinner size='large' color='$primary600' />
@@ -728,6 +867,7 @@ export const ProblemDetailScreen = () => {
           </Text>
         </VStack>
       )}
+
       {isError && (
         <VStack className='items-center justify-center py-10'>
           <BoxUI className='bg-danger-100 mb-4 rounded-full p-4'>
@@ -741,104 +881,113 @@ export const ProblemDetailScreen = () => {
           </Button>
         </VStack>
       )}
-      {!isError && (
+
+      {!isError && problem && (
         <ScrollView className='flex-1'>
-          <Card className='overflow-hidden rounded-xl'>
-            <Box>
+          <VStack className='p-4' space='lg'>
+            {/* Problem Header */}
+            <Card className='w-full p-4'>
               <VStack space='md'>
                 <HStack className='items-center justify-between'>
-                  <HStack space='sm' className='items-center'>
-                    <VStack>
-                      <Heading size='sm' className='text-typography-500'>
-                        {problem?.problem_name}
-                      </Heading>
-                    </VStack>
-                  </HStack>
-                  <Box className={'rounded-full px-3 py-1'}>
-                    <StatusProblem status={problem?.status || 'Pending'} />
+                  <VStack space='xs'>
+                    <Heading size='lg'>{problem.problem_name}</Heading>
+                    <Text className='text-sm text-typography-500'>
+                      {problem.plan_name}
+                    </Text>
+                  </VStack>
+                  <Box className='rounded-full px-3 py-1'>
+                    <StatusProblem status={problem.status || 'Pending'} />
                   </Box>
                 </HStack>
 
                 <Divider />
 
-                <VStack space='sm'>
-                  <Text className='font-semibold'>Thời gian</Text>
-                  <Text className='text-sm text-typography-700'>
-                    {dayjs(problem?.created_date).format('hh:mm DD/MM/YYYY')}
-                  </Text>
-                  <Text className='font-semibold'>Mô tả</Text>
-                  <Text className='text-sm text-typography-700'>
-                    {problem?.description}
-                  </Text>
-                  <Text className='font-semibold'>Kế hoạch</Text>
-                  <Text className='text-sm text-typography-700'>
-                    {problem?.plan_name}
-                  </Text>
-                  {problem?.result_content && (
-                    <>
-                      <Text className='mt-2 font-semibold'>Kết quả</Text>
-                      <Box className='rounded-lg border border-success-200 bg-success-50 p-3'>
-                        <Text className='text-sm text-success-800'>
-                          {problem?.result_content}
-                        </Text>
-                      </Box>
-                    </>
-                  )}
-                </VStack>
+                {/* Farmer Info */}
+                <Box className='rounded-lg border border-typography-200 p-3'>
+                  <HStack space='sm' className='items-center'>
+                    <Icon
+                      as={UserIcon}
+                      size='sm'
+                      className='text-primary-600'
+                    />
+                    <VStack space='xs'>
+                      <Text className='font-medium'>Người báo cáo</Text>
+                      <Text className='text-sm text-typography-600'>
+                        {problem.farmer_name ||
+                          `Nông dân #${problem.farmer_id}`}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Box>
 
-                <Card className='rounded-lg bg-typography-50 p-3'>
-                  <VStack space='sm'>
-                    {problem?.farmer_id && (
-                      <Box>
-                        <FarmerCard
-                          farmer={{
-                            farmer_id: problem?.farmer_id,
-                            farmer_name: problem?.farmer_name,
-                          }}
-                        />
-                      </Box>
-                    )}
+                {/* Problem Details */}
+                <VStack space='md'>
+                  <HStack space='sm' className='items-center'>
+                    <Icon
+                      as={Calendar}
+                      size='sm'
+                      className='text-typography-500'
+                    />
+                    <Text className='text-sm text-typography-600'>
+                      {dayjs(problem.created_date).format('DD/MM/YYYY HH:mm')}
+                    </Text>
+                  </HStack>
 
-                    {problem?.problem_images &&
-                      problem?.problem_images?.length > 0 && (
-                        <Box className='mx-4 mb-4'>
-                          <HStack className='mb-2 items-center justify-between'>
-                            <Text className='font-semibold'>Hình ảnh</Text>
-                            {problem?.problem_images?.length > 1 && (
-                              <Pressable>
-                                <Text className='text-xs text-primary-600'>
-                                  Xem tất cả
-                                </Text>
-                              </Pressable>
-                            )}
-                          </HStack>
-
-                          <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                          >
-                            <HStack space='sm'>
-                              {problem?.problem_images?.map((image, index) => (
-                                <Box
-                                  key={index}
-                                  className='h-48 w-48 overflow-hidden rounded-xl'
-                                >
-                                  <Image
-                                    size='full'
-                                    source={{ uri: image.url }}
-                                    resizeMode='cover'
-                                  />
-                                </Box>
-                              ))}
-                            </HStack>
-                          </ScrollView>
-                        </Box>
-                      )}
+                  <VStack space='xs'>
+                    <Text className='font-medium'>Mô tả vấn đề</Text>
+                    <Text className='text-sm text-typography-600'>
+                      {problem.description || 'Không có mô tả'}
+                    </Text>
                   </VStack>
-                </Card>
+                </VStack>
               </VStack>
-            </Box>
-          </Card>
+            </Card>
+
+            {/* Problem Images */}
+            {problem.problem_images && problem.problem_images.length > 0 && (
+              <Card className='w-full p-4'>
+                <VStack space='md'>
+                  <Heading size='sm'>Hình ảnh</Heading>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <HStack space='sm'>
+                      {problem.problem_images.map((image, index) => (
+                        <Box
+                          key={index}
+                          className='h-48 w-48 overflow-hidden rounded-xl'
+                        >
+                          <Image
+                            source={{ uri: image.url }}
+                            style={styles.detailImage}
+                          />
+                        </Box>
+                      ))}
+                    </HStack>
+                  </ScrollView>
+                </VStack>
+              </Card>
+            )}
+
+            {/* Problem Result */}
+            {problem.result_content && (
+              <Card className='w-full p-4'>
+                <VStack space='md'>
+                  <HStack space='sm' className='items-center'>
+                    <Icon
+                      as={CheckCircle2}
+                      size='sm'
+                      className='text-success-600'
+                    />
+                    <Heading size='sm'>Kết quả xử lý</Heading>
+                  </HStack>
+                  <Box className='rounded-lg border border-success-200 bg-success-50 p-3'>
+                    <Text className='text-sm text-success-800'>
+                      {problem.result_content}
+                    </Text>
+                  </Box>
+                </VStack>
+              </Card>
+            )}
+          </VStack>
         </ScrollView>
       )}
     </SafeAreaView>

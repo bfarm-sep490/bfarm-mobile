@@ -11,6 +11,7 @@ import {
   Leaf,
   Clock,
   BarChart3,
+  Shovel,
 } from 'lucide-react-native';
 
 import {
@@ -139,6 +140,13 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
                 {item.estimated_product} kg
               </Text>
             </HStack>
+          </HStack>
+
+          <HStack space='xs' className='items-center'>
+            <Icon as={Shovel} size='sm' className='text-amber-600' />
+            <Text className='text-sm text-typography-500'>
+              Đất: {item.yield_name || 'N/A'}
+            </Text>
           </HStack>
 
           <Box
