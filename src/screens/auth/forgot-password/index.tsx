@@ -24,7 +24,16 @@ import {
   Spinner,
   Text,
   VStack,
+  useToast,
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
 } from '@/components/ui';
+import { AuthService } from '@/services/api/auth/authService';
 
 import { AuthLayout } from '../layout';
 
@@ -35,6 +44,9 @@ type ForgotPasswordForm = {
 const ForgotPassword = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showSuccessModal, setShowSuccessModal] = React.useState(false);
+  const [successMessage, setSuccessMessage] = React.useState('');
+  const toast = useToast();
 
   const {
     control,
@@ -49,17 +61,32 @@ const ForgotPassword = () => {
   const onSubmit = async (data: ForgotPasswordForm) => {
     try {
       setIsLoading(true);
-      // TODO: Implement forgot password logic
-      console.log('Forgot password data:', data);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // Show success message and redirect
-      router.push('/auth/reset-password');
+      const response = await AuthService.forgotPassword(data.email);
+
+      if (response.status === 200) {
+        setSuccessMessage(response.message);
+        setShowSuccessModal(true);
+      }
     } catch (error) {
       console.error('Forgot password error:', error);
+      toast.show({
+        placement: 'top',
+        render: () => (
+          <Box className='mb-5 rounded-sm bg-error-500 px-4 py-3'>
+            <Text className='text-white'>
+              Có lỗi xảy ra. Vui lòng thử lại sau.
+            </Text>
+          </Box>
+        ),
+      });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleModalClose = () => {
+    setShowSuccessModal(false);
+    router.push('/sign-in');
   };
 
   return (
@@ -128,6 +155,39 @@ const ForgotPassword = () => {
           </Button>
         </VStack>
       </VStack>
+
+      <Modal isOpen={showSuccessModal} onClose={handleModalClose}>
+        <ModalBackdrop />
+        <ModalContent>
+          <ModalHeader>
+            <Heading size='lg'>Thông báo</Heading>
+            <ModalCloseButton />
+          </ModalHeader>
+          <ModalBody>
+            <VStack space='md'>
+              <Text className='text-center'>{successMessage}</Text>
+              <Text className='text-center text-gray-500'>
+                Vui lòng kiểm tra email của bạn và làm theo hướng dẫn để đặt lại
+                mật khẩu.
+              </Text>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              className='mr-3'
+              variant='outline'
+              size='sm'
+              action='secondary'
+              onPress={handleModalClose}
+            >
+              <ButtonText>Đóng</ButtonText>
+            </Button>
+            <Button size='sm' action='positive' onPress={handleModalClose}>
+              <ButtonText>Đăng nhập</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </VStack>
   );
 };

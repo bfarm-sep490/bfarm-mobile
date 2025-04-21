@@ -20,6 +20,15 @@ export const AuthService = {
       .json<LoginResponse>();
     return response;
   },
+
+  forgotPassword: async (
+    email: string,
+  ): Promise<{ status: number; message: string }> => {
+    const response = await instance
+      .post(`auth/password-forgotten?email=${encodeURIComponent(email)}`)
+      .json<{ status: number; message: string }>();
+    return response;
+  },
 };
 
 export function safelyDecodeJwt(token: string) {

@@ -1,5 +1,4 @@
 import { Tabs } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { SvgXml } from 'react-native-svg';
 
 import {
@@ -15,7 +14,6 @@ import {
 import TabBar from '@/components/tab-bar';
 
 export default function TabLayout() {
-  const { t } = useTranslation();
   return (
     <Tabs
       tabBar={props => <TabBar {...props} />}
@@ -29,7 +27,7 @@ export default function TabLayout() {
         name='home/index'
         options={{
           headerShown: false,
-          title: t('home:title'),
+          title: 'Trang chủ',
           tabBarIcon: ({ focused }) => (
             <SvgXml
               height={24}
@@ -46,7 +44,7 @@ export default function TabLayout() {
         name='todo/index'
         options={{
           headerShown: false,
-          title: t('todo:title'),
+          title: 'Lịch trình',
           tabBarIcon: ({ focused }) => (
             <SvgXml
               height={24}
@@ -64,7 +62,7 @@ export default function TabLayout() {
         name='farmer-tasks/index'
         options={{
           headerShown: false,
-          title: t('farmerTask:title'),
+          title: 'Công việc',
           tabBarIcon: ({ focused }) => (
             <SvgXml
               height={24}
@@ -91,7 +89,7 @@ export default function TabLayout() {
         name='problem/index'
         options={{
           headerShown: false,
-          title: t('problem:title'),
+          title: 'Vấn đề',
           tabBarIcon: ({ focused }) => (
             <SvgXml
               height={24}

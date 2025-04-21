@@ -34,6 +34,20 @@ const config: ExpoConfig = {
       backgroundColor: '#ffffff',
     },
     package: 'com.bfarmx.app',
+    intentFilters: [
+      {
+        action: 'VIEW',
+        autoVerify: true,
+        data: [
+          {
+            scheme: 'https',
+            host: '*.bfarmx.space',
+            pathPrefix: '/reset-password',
+          },
+        ],
+        category: ['BROWSABLE', 'DEFAULT'],
+      },
+    ],
   },
   web: {
     bundler: 'metro',
