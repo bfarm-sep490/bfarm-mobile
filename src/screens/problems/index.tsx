@@ -409,10 +409,10 @@ export const ProblemsScreen = () => {
                     />
                   </BoxUI>
                   <Text className='text-center text-typography-500'>
-                    Không tìm thấy vấn đề phù hợp
+                    Không tìm thấy vấn đề
                   </Text>
                   <Text className='mt-1 text-center text-xs text-typography-400'>
-                    Thử thay đổi bộ lọc hoặc tìm kiếm
+                    Tạo vấn đề mới hoặc thử thay đổi bộ lọc hoặc tìm kiếm
                   </Text>
                   <Button
                     className='mt-4'

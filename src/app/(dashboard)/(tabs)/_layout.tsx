@@ -43,15 +43,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name='problem/index'
+        name='todo/index'
         options={{
           headerShown: false,
-          title: t('problem:title'),
+          title: t('todo:title'),
           tabBarIcon: ({ focused }) => (
             <SvgXml
               height={24}
               width={24}
-              xml={focused ? problemActiveIcon : problemIcon}
+              xml={focused ? todoActiveIcon : todoIcon}
             />
           ),
           tabBarStyle: {
@@ -88,6 +88,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name='problem/index'
+        options={{
+          headerShown: false,
+          title: t('problem:title'),
+          tabBarIcon: ({ focused }) => (
+            <SvgXml
+              height={24}
+              width={24}
+              xml={focused ? problemActiveIcon : problemIcon}
+            />
+          ),
+          tabBarStyle: {
+            display: 'flex',
+          },
+        }}
+      />
+
+      <Tabs.Screen
         name='problem/[id]/index'
         options={{
           headerShown: false,
@@ -104,22 +122,6 @@ export default function TabLayout() {
           headerShown: false,
           tabBarStyle: {
             display: 'none',
-          },
-        }}
-      />
-      <Tabs.Screen
-        name='todo/index'
-        options={{
-          title: t('todo:title'),
-          tabBarIcon: ({ focused }) => (
-            <SvgXml
-              height={24}
-              width={24}
-              xml={focused ? todoActiveIcon : todoIcon}
-            />
-          ),
-          tabBarStyle: {
-            display: 'flex',
           },
         }}
       />

@@ -323,6 +323,21 @@ export const TaskDetailScreen = () => {
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [submitProgress, setSubmitProgress] = useState(0);
 
+  // Check if current date is within task's date range
+  const isCurrentDateInRange = () => {
+    if (!task) return false;
+    const currentDate = dayjs();
+    const taskStartDate = dayjs(task.start_date);
+    const taskEndDate = dayjs(task.end_date);
+    return (
+      currentDate.isSameOrAfter(taskStartDate, 'day') &&
+      currentDate.isSameOrBefore(taskEndDate, 'day')
+    );
+  };
+
+  // Check if task is ongoing and current date is in range
+  const canCompleteTask = task?.status === 'Ongoing' && isCurrentDateInRange();
+
   const handleCompleteTask = async (data: {
     resultContent: string;
     images: string[];
@@ -586,6 +601,23 @@ export const TaskDetailScreen = () => {
                     </Text>
                   </HStack>
 
+                  <HStack className='items-center justify-between'>
+                    <HStack space='sm' className='items-center'>
+                      <Icon
+                        as={Clock}
+                        size='sm'
+                        className='text-typography-500'
+                      />
+                      <Text className='text-sm text-typography-700'>
+                        Giờ thực hiện
+                      </Text>
+                    </HStack>
+                    <Text className='text-sm font-medium'>
+                      {dayjs(task.start_date).format('HH:mm')} -{' '}
+                      {dayjs(task.end_date).format('HH:mm')}
+                    </Text>
+                  </HStack>
+
                   {/* Current farmer status if available */}
                   {currentFarmerInfo && (
                     <HStack className='items-center justify-between'>
@@ -696,38 +728,33 @@ export const TaskDetailScreen = () => {
           </BoxUI>
         )}
         {/* Actions section */}
-        {task.status === 'Ongoing' && (
-          <Card className='m-4 rounded-xl'>
-            <BoxUI className='p-4'>
-              <VStack space='md'>
-                <>
-                  <Text className='font-semibold'>Cập nhật trạng thái</Text>
-
-                  <HStack space='md'>
-                    <Button
-                      variant='solid'
-                      className='flex-1 bg-success-600'
-                      onPress={() => setShowCompleteModal(true)}
-                      isDisabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <HStack space='sm' className='items-center'>
-                          <Spinner size='small' color='white' />
-                          <ButtonText>Đang xử lý...</ButtonText>
-                        </HStack>
-                      ) : (
-                        <>
-                          <ButtonIcon as={Check} />
-                          <ButtonText>Hoàn thành</ButtonText>
-                        </>
-                      )}
-                    </Button>
-                  </HStack>
-                </>
-              </VStack>
-            </BoxUI>
-          </Card>
-        )}
+        <Card className='m-4 rounded-xl'>
+          <BoxUI className='p-4'>
+            <VStack space='md'>
+              <Text className='font-semibold'>Cập nhật trạng thái</Text>
+              <HStack space='md'>
+                <Button
+                  variant='solid'
+                  className='flex-1 bg-success-600'
+                  onPress={() => setShowCompleteModal(true)}
+                  isDisabled={!canCompleteTask || isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <HStack space='sm' className='items-center'>
+                      <Spinner size='small' color='white' />
+                      <ButtonText>Đang xử lý...</ButtonText>
+                    </HStack>
+                  ) : (
+                    <>
+                      <ButtonIcon as={Check} />
+                      <ButtonText>Hoàn thành</ButtonText>
+                    </>
+                  )}
+                </Button>
+              </HStack>
+            </VStack>
+          </BoxUI>
+        </Card>
         <BoxUI className='h-10' />
       </ScrollView>
       <SubmitReportProgressModal

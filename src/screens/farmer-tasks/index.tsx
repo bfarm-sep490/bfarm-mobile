@@ -135,6 +135,20 @@ const TaskCard = ({
     imageUrl = task.packaging_images[0].url;
   }
 
+  // Check if current date is within task's date range
+  const isCurrentDateInRange = () => {
+    const currentDate = dayjs();
+    const taskStartDate = dayjs(task.start_date);
+    const taskEndDate = dayjs(task.end_date);
+    return (
+      currentDate.isSameOrAfter(taskStartDate, 'day') &&
+      currentDate.isSameOrBefore(taskEndDate, 'day')
+    );
+  };
+
+  // Check if task is ongoing and current date is in range
+  const canQuickReport = task.status === 'Ongoing' && isCurrentDateInRange();
+
   return (
     <Card className='mb-3 overflow-hidden rounded-xl'>
       <BoxUI>
@@ -258,6 +272,15 @@ const TaskCard = ({
               </Text>
             </HStack>
 
+            {/* Time information */}
+            <HStack space='sm' className='items-center'>
+              <Icon as={Clock} size='xs' className='text-typography-500' />
+              <Text className='text-xs text-typography-500'>
+                {dayjs(task.start_date).format('HH:mm')} -{' '}
+                {dayjs(task.end_date).format('HH:mm')}
+              </Text>
+            </HStack>
+
             {/* Show items if available */}
             {(task.care_items?.length > 0 ||
               task.harvesting_items?.length > 0 ||
@@ -306,16 +329,15 @@ const TaskCard = ({
             >
               <ButtonText>Chi tiết</ButtonText>
             </Button>
-            {task.status === 'Ongoing' && (
-              <Button
-                className='flex-1'
-                variant='solid'
-                size='sm'
-                onPress={() => onQuickReport?.(task, taskType)}
-              >
-                <ButtonText>Báo cáo nhanh</ButtonText>
-              </Button>
-            )}
+            <Button
+              className='flex-1'
+              variant='solid'
+              size='sm'
+              onPress={() => onQuickReport?.(task, taskType)}
+              isDisabled={!canQuickReport}
+            >
+              <ButtonText>Báo cáo nhanh</ButtonText>
+            </Button>
           </HStack>
         </VStack>
       </BoxUI>
@@ -457,14 +479,14 @@ export const FarmerTasksScreen = () => {
     plan_id: currentPlanId,
     page_number: 1,
     page_size: pageSize,
-    ...(activeTab !== 'all' && {
-      status:
-        activeTab === 'completed'
+    status:
+      activeTab === 'all'
+        ? ['Ongoing', 'Pending', 'Complete', 'Incomplete']
+        : activeTab === 'completed'
           ? 'Complete'
           : activeTab === 'incomplete'
             ? 'Incomplete'
-            : 'Ongoing',
-    }),
+            : ['Ongoing', 'Pending'],
   };
 
   const harvestingParams = {
@@ -472,14 +494,14 @@ export const FarmerTasksScreen = () => {
     plan_id: currentPlanId,
     page_number: 1,
     page_size: pageSize,
-    ...(activeTab !== 'all' && {
-      status:
-        activeTab === 'completed'
+    status:
+      activeTab === 'all'
+        ? ['Ongoing', 'Pending', 'Complete', 'Incomplete']
+        : activeTab === 'completed'
           ? 'Complete'
           : activeTab === 'incomplete'
             ? 'Incomplete'
-            : 'Ongoing',
-    }),
+            : ['Ongoing', 'Pending'],
   };
 
   const packagingParams = {
@@ -487,14 +509,14 @@ export const FarmerTasksScreen = () => {
     plan_id: currentPlanId,
     page_number: 1,
     page_size: pageSize,
-    ...(activeTab !== 'all' && {
-      status:
-        activeTab === 'completed'
+    status:
+      activeTab === 'all'
+        ? ['Ongoing', 'Pending', 'Complete', 'Incomplete']
+        : activeTab === 'completed'
           ? 'Complete'
           : activeTab === 'incomplete'
             ? 'Incomplete'
-            : 'Ongoing',
-    }),
+            : ['Ongoing', 'Pending'],
   };
 
   // Fetch tasks using React Query
@@ -580,7 +602,12 @@ export const FarmerTasksScreen = () => {
       );
     }
 
-    return filteredTasks;
+    // Sort tasks by start date (oldest first)
+    return filteredTasks.sort((a, b) => {
+      const dateA = dayjs(a.start_date);
+      const dateB = dayjs(b.start_date);
+      return dateA.diff(dateB);
+    });
   };
 
   const filteredTasks = getFilteredTasks();
@@ -865,7 +892,7 @@ export const FarmerTasksScreen = () => {
         }}
         progress={submitProgress}
         title='Đang cập nhật báo cáo'
-        description='Vui lòng đợi trong giây lát...'
+        description='Vui lòng đợi trong giây lát, quá trình này có thể mất khoảng 30 giây...'
       />
       <CompleteTaskModal
         isOpen={showCompleteModal}

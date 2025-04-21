@@ -4,13 +4,12 @@ import {
   caringTaskListResponseSchema,
   caringTaskDetailResponseSchema,
   taskReportUpdateResponseSchema,
-  imageUploadResponseSchema,
 } from './caringTaskSchema';
 
 export type CaringTaskParams = {
   plan_id?: number;
   farmer_id?: number;
-  status?: string;
+  status?: string | string[];
   task_type?: string;
   [key: string]: any;
 };
@@ -46,7 +45,13 @@ export const CaringTaskServices = {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        searchParams.append(key, value.toString());
+        if (key === 'status' && Array.isArray(value)) {
+          value.forEach(status => {
+            searchParams.append('status', status);
+          });
+        } else {
+          searchParams.append(key, value.toString());
+        }
       }
     });
 

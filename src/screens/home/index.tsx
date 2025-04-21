@@ -1,15 +1,16 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 
-import { RefreshControl } from 'react-native';
+import { RefreshControl, Alert } from 'react-native';
 
+import { Calendar } from '@marceloterreiro/flash-calendar';
 import { FlashList } from '@shopify/flash-list';
 import dayjs from 'dayjs';
-import { useRouter } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import {
   User2,
   AlertCircle,
   Leaf,
-  Calendar,
+  Calendar as CalendarIcon,
   CheckCircle2,
   Clock,
   BarChart3,
@@ -19,6 +20,8 @@ import {
   Droplets,
   Bug,
   Shovel,
+  Search,
+  XCircle,
 } from 'lucide-react-native';
 
 import { Box } from '@/components/ui/box';
@@ -28,16 +31,22 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useSession } from '@/context/ctx';
+import { queryClient } from '@/context/providers';
+import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
+import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
+import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 import { Plan } from '@/services/api/plans/planSchema';
 import { usePlan } from '@/services/api/plans/usePlan';
 import { useProblem } from '@/services/api/problems/useProblem';
 
+import { CalendarSheet } from './calendar-sheet';
 import { PlanSelector } from './plan-selector';
 
 type MobileHeaderProps = {
@@ -181,7 +190,7 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
             </HStack>
 
             <HStack space='xs' className='items-center'>
-              <Icon as={Calendar} size='sm' className='text-primary-600' />
+              <Icon as={CalendarIcon} size='sm' className='text-primary-600' />
               <Text className='text-sm'>
                 {dayjs(currentPlan.start_date).format('DD/MM/YYYY')}
               </Text>
@@ -242,152 +251,230 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
   );
 };
 
-type TaskItem = {
-  id: number;
-  icon: any;
-  iconColor: string;
-  title: string;
-  time: string;
-  status: 'completed' | 'pending';
-};
-
-type EventItem = {
-  id: number;
-  month: string;
-  day: string;
-  title: string;
-  description: string;
-};
-
 const TasksList = () => {
-  const tasks: TaskItem[] = [
-    {
-      id: 1,
-      icon: Droplets,
-      iconColor: 'blue',
-      title: 'Tưới nước cho cà chua',
-      time: 'Hôm nay, 15:00',
-      status: 'completed',
-    },
-    {
-      id: 2,
-      icon: Shovel,
-      iconColor: 'amber',
-      title: 'Bón phân hữu cơ',
-      time: 'Ngày mai, 09:00',
-      status: 'pending',
-    },
-    {
-      id: 3,
-      icon: Bug,
-      iconColor: 'red',
-      title: 'Phun thuốc trừ sâu',
-      time: '20/03/2025, 14:00',
-      status: 'pending',
-    },
-  ];
+  const { currentPlan, user } = useSession();
+  const currentFarmerId = user?.id;
+  const currentPlanId = currentPlan?.id;
+  const [refreshing, setRefreshing] = useState(false);
+  const today = dayjs();
 
-  const renderTaskItem = ({ item }: { item: TaskItem }) => (
-    <VStack>
-      <HStack className='items-center justify-between p-3'>
-        <HStack space='md' className='items-center'>
-          <Box className={`rounded-lg bg-${item.iconColor}-100 p-2`}>
-            <Icon
-              as={item.icon}
-              size='sm'
-              className={`text-${item.iconColor}-600`}
-            />
-          </Box>
-          <VStack>
-            <Text className='font-medium'>{item.title}</Text>
-            <Text className='text-xs text-typography-500'>{item.time}</Text>
-          </VStack>
+  // Use API hooks
+  const { useFetchByParamsQuery: useFetchCaringTasks } = useCaringTask();
+  const { useFetchByParamsQuery: useFetchHarvestingTasks } =
+    useHarvestingTask();
+  const { useFetchByParamsQuery: useFetchPackagingTasks } = usePackagingTask();
+
+  // Create params for API calls
+  const caringParams = {
+    farmer_id: currentFarmerId,
+    plan_id: currentPlanId,
+    page_number: 1,
+    page_size: 10,
+    start_date: today.startOf('day').format('YYYY-MM-DD HH:mm:ss'),
+    end_date: today.endOf('day').format('YYYY-MM-DD HH:mm:ss'),
+  };
+
+  const harvestingParams = {
+    farmer_id: currentFarmerId,
+    plan_id: currentPlanId,
+    page_number: 1,
+    page_size: 10,
+    start_date: today.startOf('day').format('YYYY-MM-DD HH:mm:ss'),
+    end_date: today.endOf('day').format('YYYY-MM-DD HH:mm:ss'),
+  };
+
+  const packagingParams = {
+    farmer_id: currentFarmerId,
+    plan_id: currentPlanId,
+    page_number: 1,
+    page_size: 10,
+    start_date: today.startOf('day').format('YYYY-MM-DD HH:mm:ss'),
+    end_date: today.endOf('day').format('YYYY-MM-DD HH:mm:ss'),
+  };
+
+  // Fetch tasks using React Query
+  const caringQuery = useFetchCaringTasks(caringParams, !!currentPlanId);
+  const harvestingQuery = useFetchHarvestingTasks(
+    harvestingParams,
+    !!currentPlanId,
+  );
+  const packagingQuery = useFetchPackagingTasks(
+    packagingParams,
+    !!currentPlanId,
+  );
+
+  // Check if any query is loading
+  const isLoading =
+    caringQuery.isLoading ||
+    harvestingQuery.isLoading ||
+    packagingQuery.isLoading;
+
+  // Check if any query has error
+  const hasError =
+    caringQuery.isError || harvestingQuery.isError || packagingQuery.isError;
+
+  // Get tasks for today
+  const getTasksForToday = () => {
+    let tasks: any[] = [];
+
+    // Add caring tasks
+    if (caringQuery.data?.data) {
+      tasks = [
+        ...tasks,
+        ...caringQuery.data.data.map(t => ({ ...t, taskType: 'caring' })),
+      ];
+    }
+
+    // Add harvesting tasks
+    if (harvestingQuery.data?.data) {
+      tasks = [
+        ...tasks,
+        ...harvestingQuery.data.data.map(t => ({
+          ...t,
+          taskType: 'harvesting',
+        })),
+      ];
+    }
+
+    // Add packaging tasks
+    if (packagingQuery.data?.data) {
+      tasks = [
+        ...tasks,
+        ...packagingQuery.data.data.map(t => ({ ...t, taskType: 'packaging' })),
+      ];
+    }
+
+    return tasks;
+  };
+
+  const tasksForToday = getTasksForToday();
+
+  // Handle refresh
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await caringQuery.refetch();
+      await harvestingQuery.refetch();
+      await packagingQuery.refetch();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [caringQuery, harvestingQuery, packagingQuery]);
+
+  const getTaskIcon = (taskType: string) => {
+    switch (taskType) {
+      case 'caring':
+        return Leaf;
+      case 'harvesting':
+        return Shovel;
+      case 'packaging':
+        return ClipboardList;
+      default:
+        return Leaf;
+    }
+  };
+
+  const getTaskIconColor = (taskType: string) => {
+    switch (taskType) {
+      case 'caring':
+        return 'green';
+      case 'harvesting':
+        return 'amber';
+      case 'packaging':
+        return 'blue';
+      default:
+        return 'green';
+    }
+  };
+
+  const renderTaskItem = ({ item }: { item: any }) => (
+    <Pressable
+      onPress={() =>
+        router.push(`/farmer-tasks/${item.id}?type=${item.taskType}`)
+      }
+    >
+      <VStack>
+        <HStack className='items-center justify-between p-3'>
+          <HStack space='md' className='items-center'>
+            <Box
+              className={`rounded-lg bg-${getTaskIconColor(item.taskType)}-100 p-2`}
+            >
+              <Icon
+                as={getTaskIcon(item.taskType)}
+                size='sm'
+                className={`text-${getTaskIconColor(item.taskType)}-600`}
+              />
+            </Box>
+            <VStack>
+              <Text className='font-medium'>{item.task_name}</Text>
+              <Text className='text-xs text-typography-500'>
+                {dayjs(item.start_date).format('HH:mm')}
+              </Text>
+            </VStack>
+          </HStack>
+          <Icon
+            as={item.status === 'Complete' ? CheckCircle2 : ClipboardList}
+            className={
+              item.status === 'Complete'
+                ? 'text-success-600'
+                : 'text-typography-400'
+            }
+          />
         </HStack>
-        <Icon
-          as={item.status === 'completed' ? CheckCircle2 : ClipboardList}
-          className={
-            item.status === 'completed'
-              ? 'text-success-600'
-              : 'text-typography-400'
-          }
-        />
-      </HStack>
-      <Divider />
-    </VStack>
+        <Divider />
+      </VStack>
+    </Pressable>
   );
 
   return (
     <VStack space='md' className='mb-6'>
       <HStack className='items-center justify-between'>
         <Text className='font-bold text-typography-900'>Nhiệm vụ hôm nay</Text>
-        <Pressable>
-          <Text className='text-sm text-primary-600'>Xem tất cả</Text>
-        </Pressable>
       </HStack>
 
       <Card className='overflow-hidden rounded-xl px-0'>
-        <FlashList
-          data={tasks}
-          renderItem={renderTaskItem}
-          estimatedItemSize={80}
-          keyExtractor={item => `task_${item.id}`}
-        />
-      </Card>
-    </VStack>
-  );
-};
-
-const UpcomingEvents = () => {
-  const events: EventItem[] = [
-    {
-      id: 1,
-      month: 'Tháng 3',
-      day: '18',
-      title: 'Kiểm tra kết quả phân bón',
-      description: 'Kiểm tra hiệu quả của phân bón kali đã áp dụng',
-    },
-    // Add more events as needed
-  ];
-
-  const renderEventItem = ({ item }: { item: EventItem }) => (
-    <Card className='overflow-hidden rounded-xl border border-primary-100'>
-      <HStack className='items-center p-4'>
-        <Box className='mr-4 rounded-xl bg-primary-100 p-3'>
-          <VStack className='items-center'>
-            <Text className='text-xs font-medium text-primary-700'>
-              {item.month}
+        {hasError && !isLoading && (
+          <VStack className='items-center justify-center py-10'>
+            <Box className='bg-danger-100 mb-4 rounded-full p-4'>
+              <Icon as={AlertCircle} size='xl' className='text-danger-600' />
+            </Box>
+            <Text className='text-center text-typography-500'>
+              Có lỗi xảy ra khi tải dữ liệu
             </Text>
-            <Text className='text-xl font-bold text-primary-700'>
-              {item.day}
-            </Text>
+            <Button className='mt-4' onPress={onRefresh}>
+              <ButtonText>Thử lại</ButtonText>
+            </Button>
           </VStack>
-        </Box>
-        <VStack className='flex-1'>
-          <Text className='font-semibold'>{item.title}</Text>
-          <Text className='text-sm text-typography-500'>
-            {item.description}
-          </Text>
-        </VStack>
-        <Icon as={ChevronRight} className='text-typography-400' />
-      </HStack>
-    </Card>
-  );
+        )}
 
-  return (
-    <VStack space='md' className='mb-6'>
-      <HStack className='items-center justify-between'>
-        <Text className='font-bold text-typography-900'>Sự kiện sắp tới</Text>
-        <Pressable>
-          <Text className='text-sm text-primary-600'>Xem tất cả</Text>
-        </Pressable>
-      </HStack>
-
-      <FlashList
-        data={events}
-        renderItem={renderEventItem}
-        estimatedItemSize={100}
-        keyExtractor={item => `event_${item.id}`}
-      />
+        {!hasError && (
+          <FlashList
+            data={tasksForToday}
+            renderItem={renderTaskItem}
+            estimatedItemSize={80}
+            keyExtractor={item => `${item.taskType}-${item.id}`}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            ListEmptyComponent={
+              !isLoading ? (
+                <VStack className='items-center justify-center py-10'>
+                  <Box className='mb-4 rounded-full bg-typography-100 p-4'>
+                    <Icon
+                      as={ClipboardList}
+                      size='xl'
+                      className='text-typography-400'
+                    />
+                  </Box>
+                  <Text className='text-center text-typography-500'>
+                    Không có nhiệm vụ nào hôm nay
+                  </Text>
+                </VStack>
+              ) : null
+            }
+          />
+        )}
+      </Card>
     </VStack>
   );
 };
@@ -424,7 +511,7 @@ const MainContent = () => {
   }, [plansQuery, problemsQuery]);
 
   return (
-    <Box className='mb-20 flex-1'>
+    <Box className='mb-28 flex-1'>
       <FlashList
         data={[1]} // Single item to render the main content
         renderItem={() => (
@@ -435,7 +522,6 @@ const MainContent = () => {
               <>
                 <PlanStatusCard currentPlan={currentPlan} />
                 <TasksList />
-                <UpcomingEvents />
               </>
             )}
           </VStack>
