@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import Animated, {
   interpolate,
@@ -13,6 +13,8 @@ import { SvgXml } from 'react-native-svg';
 import {
   homeActiveIcon,
   homeIcon,
+  notificationActiveIcon,
+  notificationIcon,
   problemActiveIcon,
   problemIcon,
   taskActiveIcon,
@@ -20,6 +22,7 @@ import {
   todoActiveIcon,
   todoIcon,
 } from '@/assets/svg';
+import { Text } from '@/components/ui/text';
 
 interface TabBarButtonProps {
   isFocused: boolean;
@@ -28,6 +31,7 @@ interface TabBarButtonProps {
   color: string;
   onPress: () => void;
   onLongPress: () => void;
+  badgeCount?: number;
 }
 
 const getIcon = (routeName: string, focused: boolean) => {
@@ -40,13 +44,15 @@ const getIcon = (routeName: string, focused: boolean) => {
       return focused ? taskActiveIcon : taskIcon;
     case 'todo/index':
       return focused ? todoActiveIcon : todoIcon;
+    case 'notification/index':
+      return focused ? notificationActiveIcon : notificationIcon;
     default:
       return null;
   }
 };
 
 const TabBarButton = (props: TabBarButtonProps) => {
-  const { isFocused, label, routeName, color } = props;
+  const { isFocused, label, routeName, color, badgeCount = 0 } = props;
 
   const scale = useSharedValue(0);
 
@@ -81,9 +87,16 @@ const TabBarButton = (props: TabBarButtonProps) => {
 
   return (
     <Pressable {...props} style={styles.container}>
-      <Animated.View style={[animatedIconStyle]}>
-        {icon && <SvgXml height={24} width={24} xml={icon} />}
-      </Animated.View>
+      <View>
+        <Animated.View style={[animatedIconStyle]}>
+          {icon && <SvgXml height={24} width={24} xml={icon} />}
+        </Animated.View>
+        {badgeCount > 0 && routeName === 'notification/index' && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{badgeCount}</Text>
+          </View>
+        )}
+      </View>
 
       <Animated.Text style={[styles.label, { color }, animatedTextStyle]}>
         {label}
@@ -102,6 +115,25 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 11,
     fontWeight: '500',
+  },
+  badge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });
 

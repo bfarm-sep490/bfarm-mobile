@@ -11,5 +11,19 @@
   "privacy": "Privacy",
   "managePrivacy": "Manage your privacy settings",
   "helpAndSupport": "Help & Support",
-  "getHelp": "Get help and support"
+  "getHelp": "Get help and support",
+  "performance": {
+    "completeTasks": "Completed",
+    "incompleteTasks": "In Progress",
+    "performanceScore": "Score"
+  },
+  "colors": {
+    "success": "Success",
+    "warning": "Warning",
+    "primary": "Primary"
+  },
+  "uploadSuccess": "Success",
+  "imageUpdated": "Profile image updated successfully",
+  "uploadError": "Error",
+  "tryAgain": "Failed to upload image. Please try again"
 }

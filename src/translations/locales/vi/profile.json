@@ -11,5 +11,19 @@
   "privacy": "Quyền riêng tư",
   "managePrivacy": "Quản lý cài đặt quyền riêng tư",
   "helpAndSupport": "Trợ giúp & Hỗ trợ",
-  "getHelp": "Nhận trợ giúp và hỗ trợ"
+  "getHelp": "Nhận trợ giúp và hỗ trợ",
+  "performance": {
+    "completeTasks": "Đã hoàn thành",
+    "incompleteTasks": "Đang thực hiện",
+    "performanceScore": "Điểm"
+  },
+  "colors": {
+    "success": "Thành công",
+    "warning": "Cảnh báo",
+    "primary": "Chính"
+  },
+  "uploadSuccess": "Thành công",
+  "imageUpdated": "Cập nhật ảnh đại diện thành công",
+  "uploadError": "Lỗi",
+  "tryAgain": "Tải lên ảnh thất bại. Vui lòng thử lại"
 }

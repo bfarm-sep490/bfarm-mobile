@@ -29,7 +29,6 @@ import {
   X,
 } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
-import Carousel from 'react-native-reanimated-carousel';
 import { ICreateProblem } from 'src/interfaces';
 
 import { StatusProblem } from '@/components/status-tag/problem-tag';
@@ -40,12 +39,10 @@ import {
   Input,
   InputField,
   InputIcon,
-  CloseIcon,
   ScrollView,
   VStack,
   Text,
   Image,
-  View,
   Button,
   ButtonText,
   Icon,
@@ -614,9 +611,7 @@ export const CreateScreen = () => {
               <Icon as={ArrowLeft} />
             </Pressable>
             <Heading size='md'>{'Tạo vấn đề'}</Heading>
-            <Pressable onPress={() => {}}>
-              <Icon as={MoreVertical} size='sm' className='text-primary-900' />
-            </Pressable>
+            <Pressable onPress={() => {}}></Pressable>
           </HStack>
         </HStack>
       </Box>
@@ -852,9 +847,7 @@ export const ProblemDetailScreen = () => {
               <Icon as={ArrowLeft} />
             </Pressable>
             <Heading size='md'>Chi tiết vấn đề</Heading>
-            <Pressable onPress={() => {}}>
-              <Icon as={MoreVertical} size='sm' className='text-primary-900' />
-            </Pressable>
+            <Pressable onPress={() => {}}></Pressable>
           </HStack>
         </HStack>
       </Box>

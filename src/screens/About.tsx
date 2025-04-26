@@ -8,10 +8,10 @@ import { useTranslation } from 'react-i18next';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/Themed';
+import { useUser } from '@/services/api';
 
 import { Skeleton } from '../components/atoms';
 import { SafeScreen } from '../components/templates';
-import { useUser } from '../hooks/domain';
 import { useAppDispatch } from '../store';
 import { setAppLanguage } from '../store/slices/appSlice';
 

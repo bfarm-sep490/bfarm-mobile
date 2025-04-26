@@ -1,8 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { UserServices } from './userService';
 
-import type { User } from './schema';
+import type { UpdateUser, User } from './schema';
 
 const enum UserQueryKey {
   fetchOne = 'fetchOneUser',
@@ -15,6 +15,20 @@ const useFetchOneQuery = (currentId: User['id']) =>
     queryKey: [UserQueryKey.fetchOne, currentId],
   });
 
+const useUpdateMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: User['id']; data: UpdateUser }) =>
+      UserServices.update(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: [UserQueryKey.fetchOne, id],
+      });
+    },
+  });
+};
+
 export const useUser = () => {
   const client = useQueryClient();
 
@@ -26,5 +40,6 @@ export const useUser = () => {
   return {
     invalidateQuery,
     useFetchOneQuery,
+    useUpdateMutation,
   };
 };

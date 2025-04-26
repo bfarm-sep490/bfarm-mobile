@@ -1,16 +1,5 @@
 import { Tabs } from 'expo-router';
-import { SvgXml } from 'react-native-svg';
 
-import {
-  homeActiveIcon,
-  homeIcon,
-  problemActiveIcon,
-  problemIcon,
-  taskActiveIcon,
-  taskIcon,
-  todoActiveIcon,
-  todoIcon,
-} from '@/assets/svg';
 import TabBar from '@/components/tab-bar';
 
 export default function TabLayout() {
@@ -28,13 +17,6 @@ export default function TabLayout() {
         options={{
           headerShown: false,
           title: 'Trang chủ',
-          tabBarIcon: ({ focused }) => (
-            <SvgXml
-              height={24}
-              width={24}
-              xml={focused ? homeActiveIcon : homeIcon}
-            />
-          ),
           tabBarStyle: {
             display: 'flex',
           },
@@ -45,13 +27,6 @@ export default function TabLayout() {
         options={{
           headerShown: false,
           title: 'Lịch trình',
-          tabBarIcon: ({ focused }) => (
-            <SvgXml
-              height={24}
-              width={24}
-              xml={focused ? todoActiveIcon : todoIcon}
-            />
-          ),
           tabBarStyle: {
             display: 'flex',
           },
@@ -63,13 +38,6 @@ export default function TabLayout() {
         options={{
           headerShown: false,
           title: 'Công việc',
-          tabBarIcon: ({ focused }) => (
-            <SvgXml
-              height={24}
-              width={24}
-              xml={focused ? taskActiveIcon : taskIcon}
-            />
-          ),
           tabBarStyle: {
             display: 'flex',
           },
@@ -90,13 +58,6 @@ export default function TabLayout() {
         options={{
           headerShown: false,
           title: 'Vấn đề',
-          tabBarIcon: ({ focused }) => (
-            <SvgXml
-              height={24}
-              width={24}
-              xml={focused ? problemActiveIcon : problemIcon}
-            />
-          ),
           tabBarStyle: {
             display: 'flex',
           },
@@ -120,6 +81,16 @@ export default function TabLayout() {
           headerShown: false,
           tabBarStyle: {
             display: 'none',
+          },
+        }}
+      />
+      <Tabs.Screen
+        name='notification/index'
+        options={{
+          headerShown: false,
+          title: 'Thông báo',
+          tabBarStyle: {
+            display: 'flex',
           },
         }}
       />

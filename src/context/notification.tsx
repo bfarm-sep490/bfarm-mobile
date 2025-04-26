@@ -18,7 +18,13 @@ import {
   onTokenRefresh,
   deleteToken,
 } from '@react-native-firebase/messaging';
+import { useQueryClient, UseMutationResult } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
+
+import { NotificationServices } from '@/services/api/notifications/notificationService';
+import { useNotification as useNotificationApi } from '@/services/api/notifications/useNotification';
+
+import { useSession } from './ctx';
 
 try {
   getApp();
@@ -42,31 +48,56 @@ Notifications.setNotificationHandler({
   }),
 });
 
-interface NotificationContextType {
+export type NotificationContextType = {
   deviceToken: string | null;
+  permissionGranted: boolean;
+  requestNotificationPermission: () => Promise<boolean>;
+  saveDeviceTokenMutation: UseMutationResult<
+    unknown,
+    Error,
+    { userId: number; token: string },
+    unknown
+  >;
   requestPermission: () => Promise<boolean>;
   refreshToken: () => Promise<string | null>;
   removeToken: () => Promise<void>;
-}
+};
 
 export const NotificationContext = createContext<NotificationContextType>({
   deviceToken: null,
+  permissionGranted: false,
+  requestNotificationPermission: async () => false,
+  saveDeviceTokenMutation: {} as UseMutationResult<
+    unknown,
+    Error,
+    { userId: number; token: string },
+    unknown
+  >,
   requestPermission: async () => false,
   refreshToken: async () => null,
   removeToken: async () => {},
 });
 
-export const useNotification = () => useContext(NotificationContext);
+export const useNotificationContext = () => useContext(NotificationContext);
 
-const showForegroundNotification = async (remoteMessage: any) => {
+const showForegroundNotification = async (
+  remoteMessage: any,
+  queryClient: any,
+) => {
   try {
     if (remoteMessage?.notification) {
-      await Notifications.presentNotificationAsync({
-        sound: 'default',
-        title: remoteMessage.notification.title || 'New Notification',
-        body: remoteMessage.notification.body || 'You have a new message.',
-        data: remoteMessage.data || {},
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          sound: 'default',
+          title: remoteMessage.notification.title || 'New Notification',
+          body: remoteMessage.notification.body || 'You have a new message.',
+          data: remoteMessage.data || {},
+        },
+        trigger: null,
       });
+
+      // Invalidate the correct query key
+      queryClient.invalidateQueries({ queryKey: ['fetchAllNotification'] });
     }
   } catch (error) {
     console.error('Error displaying notification:', error);
@@ -90,7 +121,7 @@ const requestNotificationPermission = async (): Promise<boolean> => {
         ios: {
           allowAlert: true,
           allowBadge: true,
-          allowSound: true,
+          allowSound: false,
           allowDisplayInCarPlay: false,
           allowCriticalAlerts: false,
           provideAppNotificationSettings: true,
@@ -108,6 +139,16 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [deviceToken, setDeviceToken] = useState<string | null>(null);
   const [permissionGranted, setPermissionGranted] = useState<boolean>(false);
   const messaging = getMessaging();
+  const queryClient = useQueryClient();
+  const { user } = useSession();
+  const { saveDeviceTokenMutation } = useNotificationApi();
+
+  // Add effect to refresh token when user changes
+  useEffect(() => {
+    if (user?.id && permissionGranted) {
+      getFCMToken();
+    }
+  }, [user?.id, permissionGranted]);
 
   const unsubscribeRefs = useRef({
     onMessage: () => {},
@@ -115,13 +156,23 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     tokenRefresh: () => {},
   });
 
+  const saveDeviceTokenToServer = async (token: string) => {
+    try {
+      if (user?.id) {
+        await saveDeviceTokenMutation.mutateAsync({ userId: user.id, token });
+      }
+    } catch (error) {
+      console.error('Error saving device token to server:', error);
+    }
+  };
+
   const getFCMToken = async (): Promise<string | null> => {
     try {
       const fcmToken = await getToken(messaging);
       if (fcmToken) {
         setDeviceToken(fcmToken);
-        console.log('FCM Token:', fcmToken);
         await AsyncStorage.setItem('fcmToken', fcmToken);
+        await saveDeviceTokenToServer(fcmToken);
         return fcmToken;
       }
     } catch (error) {
@@ -134,6 +185,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     try {
       if (deviceToken) {
         await deleteToken(messaging);
+        if (user?.id) {
+          await NotificationServices.saveDeviceToken(user.id, '');
+        }
       }
 
       await AsyncStorage.removeItem('fcmToken');
@@ -159,20 +213,32 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     unsubscribeRefs.current.onMessage = onMessage(
       messaging,
       async remoteMessage => {
-        await showForegroundNotification(remoteMessage);
+        await showForegroundNotification(remoteMessage, queryClient);
       },
     );
 
     unsubscribeRefs.current.onOpen = messaging.onNotificationOpenedApp(
-      remoteMessage => {},
+      async remoteMessage => {
+        if (remoteMessage) {
+          // Invalidate queries when notification is opened
+          queryClient.invalidateQueries({ queryKey: ['fetchAllNotification'] });
+        }
+      },
     );
 
     messaging.getInitialNotification().then(remoteMessage => {
       if (remoteMessage) {
+        // Invalidate queries when app is opened from notification
+        queryClient.invalidateQueries({ queryKey: ['fetchAllNotification'] });
       }
     });
 
-    messaging.setBackgroundMessageHandler(async remoteMessage => {});
+    messaging.setBackgroundMessageHandler(async remoteMessage => {
+      if (remoteMessage) {
+        // Invalidate queries when notification is received in background
+        queryClient.invalidateQueries({ queryKey: ['fetchAllNotification'] });
+      }
+    });
 
     unsubscribeRefs.current.tokenRefresh = onTokenRefresh(messaging, token => {
       setDeviceToken(token);
@@ -223,7 +289,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const contextValue: NotificationContextType = {
     deviceToken,
-    requestPermission: async () => {
+    permissionGranted,
+    requestNotificationPermission: async () => {
       const granted = await requestNotificationPermission();
       setPermissionGranted(granted);
       if (granted) {
@@ -231,8 +298,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       }
       return granted;
     },
-    refreshToken: getFCMToken,
-    removeToken: removeFCMToken,
+    saveDeviceTokenMutation,
+    requestPermission: async () => requestNotificationPermission(),
+    refreshToken: async () => getFCMToken(),
+    removeToken: async () => removeFCMToken(),
   };
 
   return (

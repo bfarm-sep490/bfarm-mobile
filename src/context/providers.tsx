@@ -43,13 +43,13 @@ const ProvidersWrapper = ({ children }: ProvidersWrapperProps) => {
       <ThemeProvider value={DefaultTheme}>
         <SafeAreaProvider>
           <GestureWrapper>
-            <NotificationProvider>
-              <SessionProvider>
-                <QueryClientProvider client={queryClient}>
+            <SessionProvider>
+              <QueryClientProvider client={queryClient}>
+                <NotificationProvider>
                   <Provider store={store}>{children}</Provider>
-                </QueryClientProvider>
-              </SessionProvider>
-            </NotificationProvider>
+                </NotificationProvider>
+              </QueryClientProvider>
+            </SessionProvider>
           </GestureWrapper>
         </SafeAreaProvider>
       </ThemeProvider>

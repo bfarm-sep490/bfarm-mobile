@@ -2,6 +2,7 @@ import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+import { store, persistor } from '../store';
 import { reduxStorage } from '../store/storage';
 import enError from './locales/en/error.json';
 import enFarmerTask from './locales/en/farmer-task.json';
@@ -47,35 +48,43 @@ const resources: any = {
     splash: viSplash,
   },
 } as const;
-// This is for situations where the user can change the language in the app.
-const rootStorage: string = reduxStorage.getItem('persist:root')?.[
-  '_j'
-] as string;
-let lng: string | null = null;
-
-try {
-  lng = rootStorage ? JSON.parse(JSON.parse(rootStorage).app).language : null;
-} catch (e) {
-  console.error(e);
-}
 
 // Generally, we should use the locale language as the default language.
 const localeLng = getLocales()[0].languageCode as string;
 const isLocaleLngSupported = resources?.[localeLng];
-
 const defaultLocale = 'en';
-export const currentLanguage = i18next.language || defaultLocale;
 
+// Initialize i18n with default language
 i18next.use(initReactI18next).init({
   fallbackLng: 'en',
   resources,
-  lng: lng ? lng : isLocaleLngSupported ? localeLng : defaultLocale,
-
+  lng: defaultLocale,
   keySeparator: false,
-
   interpolation: {
     escapeValue: false,
   },
+});
+
+// Wait for Redux store to be rehydrated
+persistor.subscribe(() => {
+  const state = store.getState();
+  const language = state.app.language;
+
+  if (language && language !== i18next.language) {
+    i18next.changeLanguage(language);
+  }
+});
+
+// Subscribe to language changes in Redux store
+let currentLanguage = store.getState().app.language;
+store.subscribe(() => {
+  const newLanguage = store.getState().app.language;
+  if (newLanguage !== currentLanguage) {
+    currentLanguage = newLanguage;
+    if (newLanguage) {
+      i18next.changeLanguage(newLanguage);
+    }
+  }
 });
 
 const t = i18next.t.bind(i18next);

@@ -5,6 +5,9 @@ import { StyleSheet } from 'react-native';
 import { NavigationState, Route } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
+import { useSession } from '@/context/ctx';
+import { useNotification } from '@/services/api/notifications/useNotification';
+
 import TabBarButton from './tab-bar-button';
 
 const TabBar = ({
@@ -16,6 +19,12 @@ const TabBar = ({
   descriptors: any;
   navigation: any;
 }) => {
+  const { user } = useSession();
+  const { useFetchAllByUserIdQuery } = useNotification();
+  const query = user?.id ? useFetchAllByUserIdQuery(user.id) : null;
+  const notifications = query?.data?.data ?? [];
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+
   const primaryColor = '#0891b2';
   const greyColor = '#737373';
 
@@ -77,6 +86,7 @@ const TabBar = ({
             routeName={route.name}
             color={isFocused ? primaryColor : greyColor}
             label={label}
+            badgeCount={route.name === 'notification/index' ? unreadCount : 0}
           />
         );
 

@@ -176,13 +176,6 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
     enabled: true,
   });
 
-  const uploadMutation =
-    taskType === 'caring'
-      ? caringUpload
-      : taskType === 'harvesting'
-        ? harvestingUpload
-        : packagingUpload;
-
   const { mutateAsync: uploadImages } = useMutation({
     mutationFn: async (formData: FormData) => {
       const endpoint =

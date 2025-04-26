@@ -20,8 +20,30 @@ export const useNotification = () => {
       queryKey: [NotificationQueryKey.fetchAll],
     });
 
+  const markAsReadMutation = useMutation({
+    mutationFn: (id: number) => NotificationServices.markAsRead(id),
+    onSuccess: () => {
+      invalidateQuery([NotificationQueryKey.fetchAll]);
+    },
+  });
+
+  const markAllAsReadMutation = useMutation({
+    mutationFn: (id: number) => NotificationServices.markAllAsRead(id),
+    onSuccess: () => {
+      invalidateQuery([NotificationQueryKey.fetchAll]);
+    },
+  });
+
+  const saveDeviceTokenMutation = useMutation({
+    mutationFn: ({ userId, token }: { userId: number; token: string }) =>
+      NotificationServices.saveDeviceToken(userId, token),
+  });
+
   return {
     invalidateQuery,
     useFetchAllByUserIdQuery,
+    markAsReadMutation,
+    markAllAsReadMutation,
+    saveDeviceTokenMutation,
   };
 };

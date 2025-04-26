@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import { useMutation } from '@tanstack/react-query';
+import * as ImagePicker from 'expo-image-picker';
 import {
   ChevronRightIcon,
   X,
@@ -10,10 +12,10 @@ import {
   type LucideIcon,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import LogoutAlertDialog from '@/components/logout-alert-dialog';
-import { Image } from '@/components/ui';
+import { Image as ImageComponent, Spinner } from '@/components/ui';
 import { Avatar, AvatarBadge, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -22,6 +24,7 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
+import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -34,8 +37,11 @@ import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
+import { useToast, Toast, ToastTitle } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
 import { useSession } from '@/context/ctx';
+import { useUser } from '@/services/api';
+import { useAppDispatch } from '@/store/index';
 import { setAppLanguage } from '@/store/slices/appSlice';
 
 import MobileHeader from './mobile-header';
@@ -105,13 +111,62 @@ const MenuItem = ({
   </Pressable>
 );
 
+const PerformanceCard = ({ user }: { user: any }) => {
+  const { t } = useTranslation();
+  const performanceData = [
+    {
+      value: user['complete-tasks'],
+      label: t('profile:performance:completeTasks'),
+      color: 'success',
+    },
+    {
+      value: user['incomplete-tasks'],
+      label: t('profile:performance:incompleteTasks'),
+      color: 'warning',
+    },
+    {
+      value: user['performance-score'],
+      label: t('profile:performance:performanceScore'),
+      color: 'primary',
+    },
+  ];
+
+  return (
+    <Box className='w-full'>
+      <HStack className='w-full items-center justify-between'>
+        {performanceData.map((item, index) => (
+          <React.Fragment key={index}>
+            <VStack className='flex-1 items-center' space='xs'>
+              <Text
+                className={`text-${item.color}-600 font-roboto text-lg font-semibold`}
+              >
+                {item.value}
+              </Text>
+              <Text className='text-dark text-center font-roboto text-xs'>
+                {item.label}
+              </Text>
+            </VStack>
+            {index < performanceData.length - 1 && (
+              <Divider orientation='vertical' className='mx-2 h-12' />
+            )}
+          </React.Fragment>
+        ))}
+      </HStack>
+    </Box>
+  );
+};
+
 const MainContent = () => {
   const [openLogoutAlertDialog, setOpenLogoutAlertDialog] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
-  const { user } = useSession();
-  const dispatch = useDispatch();
+
+  const { user: sessionUser } = useSession();
+  const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation();
   const currentLanguage = useSelector((state: any) => state.app.language);
+  const { useFetchOneQuery } = useUser();
+  const userId = sessionUser?.id ? Number(sessionUser.id) : -1;
+  const { data: user, isLoading } = useFetchOneQuery(userId);
 
   const handleLanguageChange = async (language: string) => {
     try {
@@ -122,6 +177,22 @@ const MainContent = () => {
       console.error('Error changing language:', err);
     }
   };
+
+  if (isLoading) {
+    return (
+      <Center className='flex-1'>
+        <Text>Loading...</Text>
+      </Center>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Center className='flex-1'>
+        <Text>User not found</Text>
+      </Center>
+    );
+  }
 
   return (
     <VStack className='mb-16 h-full w-full md:mb-0'>
@@ -138,7 +209,7 @@ const MainContent = () => {
       >
         <VStack className='h-full w-full pb-8' space='2xl'>
           <Box className='relative h-[165px] w-full'>
-            <Image
+            <ImageComponent
               source={require('@/assets/images/bg-profile.png')}
               className='h-full w-full rounded-2xl object-contain'
               height={200}
@@ -153,19 +224,25 @@ const MainContent = () => {
                   alt='Profile Image'
                   height={100}
                   width={100}
-                  source={require('@/assets/images/profile.png')}
+                  source={{ uri: user?.avatar_image }}
                 />
                 <AvatarBadge />
               </Avatar>
               <VStack className='w-full items-center gap-1'>
                 <Text size='2xl' className='text-foreground font-bold'>
-                  {user?.name}
+                  {user.name}
                 </Text>
-                <Text className='text-muted-foreground'>{user?.email}</Text>
+                <Text className='text-muted-foreground'>{user.email}</Text>
+                <Text className='text-muted-foreground'>{user.phone}</Text>
               </VStack>
             </VStack>
           </Center>
+
           <VStack className='mx-6 mt-24' space='2xl'>
+            <Box className='w-full rounded-xl bg-white p-6 shadow-sm'>
+              <PerformanceCard user={user} />
+            </Box>
+
             <Heading className='font-bold' size='xl'>
               {t('profile:account')}
             </Heading>

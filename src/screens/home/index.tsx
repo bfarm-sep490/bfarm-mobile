@@ -91,14 +91,6 @@ function MobileHeader(props: MobileHeaderProps) {
           <Pressable
             className='rounded-full border-2 border-primary-500 bg-primary-700 p-2.5'
             onPress={() => {
-              router.push('/notification');
-            }}
-          >
-            <Icon as={Bell} color='white' />
-          </Pressable>
-          <Pressable
-            className='rounded-full border-2 border-primary-500 bg-primary-700 p-2.5'
-            onPress={() => {
               router.push('/profile');
             }}
           >

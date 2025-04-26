@@ -5,6 +5,7 @@ export const notifcationSchema = z.object({
   title: z.string(),
   message: z.string().optional().nullable(),
   created_date: z.string(),
+  is_read: z.boolean(),
   image: z.string().optional().nullable(),
 });
 export const notifcationResponseSchema = z.object({
