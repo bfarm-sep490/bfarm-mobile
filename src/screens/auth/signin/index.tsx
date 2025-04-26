@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import * as z from 'zod';
 
 import { Button, ButtonText } from '@/components/ui/button';
@@ -43,14 +44,18 @@ import { AuthService, safelyDecodeJwt } from '@/services/api/auth/authService';
 import { AuthLayout } from '../layout';
 
 const loginSchema = z.object({
-  email: z.string().min(1, 'Email is required').email(),
-  password: z.string().min(1, 'Password is required'),
+  email: z
+    .string()
+    .min(1, 'signIn:form:email:required')
+    .email('signIn:form:email:invalid'),
+  password: z.string().min(1, 'signIn:form:password:required'),
   rememberme: z.boolean().optional(),
 });
 
 type LoginSchemaType = z.infer<typeof loginSchema>;
 
 const Login = () => {
+  const { t } = useTranslation();
   const { signIn }: Session = useSession();
   const {
     control,
@@ -101,7 +106,7 @@ const Login = () => {
           placement: 'bottom right',
           render: ({ id }) => (
             <Toast nativeID={id} variant='outline' action='success'>
-              <ToastTitle>Logged in successfully!</ToastTitle>
+              <ToastTitle>{t('signIn:toast:success:title')}</ToastTitle>
             </Toast>
           ),
         });
@@ -115,7 +120,7 @@ const Login = () => {
         placement: 'bottom right',
         render: ({ id }) => (
           <Toast nativeID={id} variant='outline' action='error'>
-            <ToastTitle>Login failed. Check your credentials.</ToastTitle>
+            <ToastTitle>{t('signIn:toast:error:title')}</ToastTitle>
           </Toast>
         ),
       });
@@ -140,15 +145,17 @@ const Login = () => {
           <Icon as={ArrowLeftIcon} className='text-background-800' size='xl' />
         </Pressable>
         <VStack>
-          <Heading size='3xl'>Log in</Heading>
-          <Text>BfarmX</Text>
+          <Heading size='3xl'>{t('signIn:title')}</Heading>
+          <Text>{t('signIn:subtitle')}</Text>
         </VStack>
       </VStack>
       <VStack className='w-full'>
         <VStack space='xl' className='w-full'>
           <FormControl isInvalid={!!errors?.email} className='w-full'>
             <FormControlLabel>
-              <FormControlLabelText>Email</FormControlLabelText>
+              <FormControlLabelText>
+                {t('signIn:form:email:label')}
+              </FormControlLabelText>
             </FormControlLabel>
             <Controller
               defaultValue=''
@@ -157,7 +164,7 @@ const Login = () => {
               render={({ field: { onChange, onBlur, value } }) => (
                 <Input>
                   <InputField
-                    placeholder='Enter email'
+                    placeholder={t('signIn:form:email:placeholder')}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
@@ -176,7 +183,9 @@ const Login = () => {
           </FormControl>
           <FormControl isInvalid={!!errors.password} className='w-full'>
             <FormControlLabel>
-              <FormControlLabelText>Password</FormControlLabelText>
+              <FormControlLabelText>
+                {t('signIn:form:password:label')}
+              </FormControlLabelText>
             </FormControlLabel>
             <Controller
               defaultValue=''
@@ -186,7 +195,7 @@ const Login = () => {
                 <Input>
                   <InputField
                     type={showPassword ? 'text' : 'password'}
-                    placeholder='Enter password'
+                    placeholder={t('signIn:form:password:placeholder')}
                     value={value}
                     onChangeText={onChange}
                     onBlur={onBlur}
@@ -217,17 +226,21 @@ const Login = () => {
                   value='Remember me'
                   isChecked={value}
                   onChange={onChange}
-                  aria-label='Remember me'
+                  aria-label={t('signIn:form:rememberMe:label')}
                 >
                   <CheckboxIndicator>
                     <CheckboxIcon as={CheckIcon} />
                   </CheckboxIndicator>
-                  <CheckboxLabel>Remember me</CheckboxLabel>
+                  <CheckboxLabel>
+                    {t('signIn:form:rememberMe:label')}
+                  </CheckboxLabel>
                 </Checkbox>
               )}
             />
             <Pressable onPress={() => router.push('/forgot-password')}>
-              <Text className='text-sm text-primary-600'>Quên mật khẩu?</Text>
+              <Text className='text-sm text-primary-600'>
+                {t('signIn:form:forgotPassword')}
+              </Text>
             </Pressable>
           </HStack>
         </VStack>
@@ -238,7 +251,9 @@ const Login = () => {
             isDisabled={isLoading}
           >
             <ButtonText className='font-medium'>
-              {isLoading ? 'Logging in...' : 'Log in'}
+              {isLoading
+                ? t('signIn:button:loggingIn')
+                : t('signIn:button:login')}
             </ButtonText>
           </Button>
         </VStack>

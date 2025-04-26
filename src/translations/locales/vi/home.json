@@ -3,5 +3,52 @@
   "goToAboutScreen": "Gehe zum überbildschirm",
   "changeLang": "Sprache ändern",
   "english": "Englisch",
-  "vietnam": "Tiếng Việt"
+  "vietnam": "Tiếng Việt",
+  "greeting": "Xin chào",
+  "noPlans": {
+    "title": "Chưa có kế hoạch",
+    "description": "Bạn chưa được gán kế hoạch nào. Vui lòng liên hệ với quản trị viên để bắt đầu các hoạt động canh tác của bạn.",
+    "contactAdmin": "Liên hệ quản trị viên"
+  },
+  "currentPlan": {
+    "title": "Kế hoạch hiện tại",
+    "plant": "Cây trồng",
+    "startDate": "Ngày bắt đầu",
+    "estimatedProduct": "Sản lượng dự kiến",
+    "soil": "Đất",
+    "progress": "Tiến độ",
+    "daysRemaining": {
+      "positive": "Còn {{count}} ngày",
+      "zero": "Kết thúc hôm nay",
+      "negative": "Đã kết thúc"
+    }
+  },
+  "todayTasks": {
+    "title": "Nhiệm vụ hôm nay",
+    "noTasks": "Không có nhiệm vụ nào hôm nay",
+    "error": "Có lỗi xảy ra khi tải dữ liệu",
+    "tryAgain": "Thử lại",
+    "time": "{{time}}"
+  },
+  "status": {
+    "complete": "Hoàn thành",
+    "inProgress": "Đang thực hiện",
+    "pending": "Chưa bắt đầu",
+    "ongoing": "Đang diễn ra"
+  },
+  "planSelector": {
+    "currentPlan": "Kế hoạch hiện tại",
+    "selectPlan": "Chọn kế hoạch",
+    "noPlans": {
+      "title": "Chưa có kế hoạch",
+      "description": "Bạn chưa được gán kế hoạch nào. Vui lòng liên hệ với quản trị viên để bắt đầu.",
+      "contactAdmin": "Liên hệ quản trị viên"
+    },
+    "error": {
+      "title": "Không thể tải kế hoạch",
+      "noPlans": "Bạn chưa được gán kế hoạch nào."
+    },
+    "loading": "Đang tải kế hoạch...",
+    "availablePlans": "Kế hoạch hiện có ({{count}})"
+  }
 }

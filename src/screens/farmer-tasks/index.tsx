@@ -24,6 +24,7 @@ import {
   UserIcon,
   Sprout,
 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import CompleteTaskModal from '@/components/modal/CompleteTaskModal';
 import { SubmitReportProgressModal } from '@/components/modal/SubmitReportProgressModal';
@@ -45,6 +46,7 @@ import { useSession } from '@/context/ctx';
 import { queryClient } from '@/context/providers';
 import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
 import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
+import { useHarvestingProduct } from '@/services/api/harvesting_products/useHarvestingProduct';
 import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 
 // Add task type constants
@@ -115,6 +117,7 @@ const TaskCard = ({
   currentFarmerId?: number;
   onQuickReport?: (task: any, taskType: string) => void;
 }) => {
+  const { t } = useTranslation();
   const router = useRouter();
   const statusStyle = getStatusColor(task.status);
   const TaskIcon = getTaskTypeIcon(task.task_type || '');
@@ -213,7 +216,7 @@ const TaskCard = ({
                   ))
                 ) : (
                   <Text className='text-xs text-typography-600'>
-                    Chưa có ai được giao nhiệm vụ này
+                    {t('farmerTask:task:noAssigned')}
                   </Text>
                 )}
               </VStack>
@@ -240,7 +243,10 @@ const TaskCard = ({
                 <Text
                   className={`text-xs ${currentFarmerInfo.status === 'Active' ? 'text-success-700' : 'text-typography-700'}`}
                 >
-                  Trạng thái của bạn: {currentFarmerInfo.status}
+                  {t('farmerTask:task:yourStatus')}:{' '}
+                  {t(
+                    `farmerTask:status:${currentFarmerInfo.status.toLowerCase()}`,
+                  )}
                 </Text>
               </HStack>
             </BoxUI>
@@ -248,7 +254,7 @@ const TaskCard = ({
 
           {/* Task description */}
           <Text className='text-sm text-typography-700'>
-            {task.description || 'Không có mô tả'}
+            {task.description || t('farmerTask:task:noDescription')}
           </Text>
 
           {/* Task image if available */}
@@ -289,10 +295,16 @@ const TaskCard = ({
                 <Icon as={Box} size='xs' className='text-typography-500' />
                 <Text className='text-xs text-typography-500'>
                   {task.care_items?.length > 0
-                    ? `${task.care_items.length} công cụ cần thiết`
+                    ? t('farmerTask:task:requiredTools', {
+                        count: task.care_items.length,
+                      })
                     : task.harvesting_items?.length > 0
-                      ? `${task.harvesting_items.length} dụng cụ thu hoạch`
-                      : `${task.packaging_items.length} vật liệu đóng gói`}
+                      ? t('farmerTask:task:harvestingTools', {
+                          count: task.harvesting_items.length,
+                        })
+                      : t('farmerTask:task:packagingMaterials', {
+                          count: task.packaging_items.length,
+                        })}
                 </Text>
               </HStack>
             )}
@@ -302,7 +314,8 @@ const TaskCard = ({
               <HStack space='sm' className='items-center'>
                 <Icon as={Scissors} size='xs' className='text-typography-500' />
                 <Text className='text-xs text-typography-500'>
-                  Số lượng thu hoạch: {task.harvested_quantity}
+                  {t('farmerTask:task:harvestedQuantity')}:{' '}
+                  {task.harvested_quantity}
                   {task.harvested_unit ? ` ${task.harvested_unit}` : ''}
                 </Text>
               </HStack>
@@ -311,7 +324,7 @@ const TaskCard = ({
             {task.result_content && (
               <BoxUI className='mt-2 rounded-lg bg-typography-50 p-2'>
                 <Text className='text-xs text-typography-700'>
-                  {task.result_content}
+                  {t('farmerTask:task:result')}: {task.result_content}
                 </Text>
               </BoxUI>
             )}
@@ -327,7 +340,7 @@ const TaskCard = ({
                 router.push(`/farmer-tasks/${task.id}?type=${taskType}`)
               }
             >
-              <ButtonText>Chi tiết</ButtonText>
+              <ButtonText>{t('farmerTask:task:details')}</ButtonText>
             </Button>
             <Button
               className='flex-1'
@@ -336,7 +349,7 @@ const TaskCard = ({
               onPress={() => onQuickReport?.(task, taskType)}
               isDisabled={!canQuickReport}
             >
-              <ButtonText>Báo cáo nhanh</ButtonText>
+              <ButtonText>{t('farmerTask:task:quickReport')}</ButtonText>
             </Button>
           </HStack>
         </VStack>
@@ -355,14 +368,15 @@ const FilterTabs = ({
     React.SetStateAction<'all' | 'ongoing' | 'completed' | 'incomplete'>
   >;
 }) => {
+  const { t } = useTranslation();
   const tabs: {
     id: 'all' | 'ongoing' | 'completed' | 'incomplete';
     label: string;
   }[] = [
-    { id: 'all', label: 'Tất cả' },
-    { id: 'ongoing', label: 'Đang thực hiện' },
-    { id: 'completed', label: 'Hoàn thành' },
-    { id: 'incomplete', label: 'Chưa hoàn thành' },
+    { id: 'all', label: t('farmerTask:tabs:all') },
+    { id: 'ongoing', label: t('farmerTask:tabs:ongoing') },
+    { id: 'completed', label: t('farmerTask:tabs:completed') },
+    { id: 'incomplete', label: t('farmerTask:tabs:incomplete') },
   ];
 
   return (
@@ -402,11 +416,20 @@ const CategoryFilter = ({
   activeCategory: string;
   setActiveCategory: (category: string) => void;
 }) => {
+  const { t } = useTranslation();
   const categories = [
-    { id: 'all', label: 'Tất cả', icon: Leaf },
-    { id: 'caring', label: 'Chăm sóc', icon: Sprout },
-    { id: 'harvesting', label: 'Thu hoạch', icon: Scissors },
-    { id: 'packaging', label: 'Đóng gói', icon: PackageOpen },
+    { id: 'all', label: t('farmerTask:categories:all'), icon: Leaf },
+    { id: 'caring', label: t('farmerTask:categories:caring'), icon: Sprout },
+    {
+      id: 'harvesting',
+      label: t('farmerTask:categories:harvesting'),
+      icon: Scissors,
+    },
+    {
+      id: 'packaging',
+      label: t('farmerTask:categories:packaging'),
+      icon: PackageOpen,
+    },
   ];
 
   return (
@@ -439,6 +462,7 @@ const CategoryFilter = ({
 
 // Main task screen component
 export const FarmerTasksScreen = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<
     'all' | 'ongoing' | 'completed' | 'incomplete'
   >('all');
@@ -464,6 +488,8 @@ export const FarmerTasksScreen = () => {
   const { useFetchByParamsQuery: useFetchHarvestingTasks } =
     useHarvestingTask();
   const { useFetchByParamsQuery: useFetchPackagingTasks } = usePackagingTask();
+  const { useFetchByParamsQuery: useFetchHarvestingProducts } =
+    useHarvestingProduct();
 
   // Add mutation hooks
   const { mutateAsync: updateCaringTask } =
@@ -536,6 +562,11 @@ export const FarmerTasksScreen = () => {
     packagingParams,
     !!currentPlanId &&
       (activeCategory === 'all' || activeCategory === 'packaging'),
+  );
+
+  const harvestingProductsQuery = useFetchHarvestingProducts(
+    { plan_id: currentPlanId },
+    !!currentPlanId,
   );
 
   // Check if any query is loading
@@ -624,14 +655,22 @@ export const FarmerTasksScreen = () => {
       }
       if (activeCategory === 'all' || activeCategory === 'harvesting') {
         await harvestingQuery.refetch();
+        await harvestingProductsQuery.refetch();
       }
       if (activeCategory === 'all' || activeCategory === 'packaging') {
         await packagingQuery.refetch();
+        await harvestingProductsQuery.refetch();
       }
     } finally {
       setRefreshing(false);
     }
-  }, [activeCategory, caringQuery, harvestingQuery, packagingQuery]);
+  }, [
+    activeCategory,
+    caringQuery,
+    harvestingQuery,
+    packagingQuery,
+    harvestingProductsQuery,
+  ]);
 
   // Handle load more
   const onEndReached = useCallback(() => {
@@ -729,12 +768,15 @@ export const FarmerTasksScreen = () => {
 
       // Refresh the task data
       onRefresh();
-      Alert.alert('Thành công', 'Nhiệm vụ đã được cập nhật thành công');
+      Alert.alert(
+        t('farmerTask:report:success'),
+        t('farmerTask:report:successMessage'),
+      );
     } catch (error) {
       console.error('Error updating task:', error);
       Alert.alert(
-        'Lỗi',
-        'Đã có lỗi xảy ra khi cập nhật nhiệm vụ. Vui lòng thử lại.',
+        t('farmerTask:report:error'),
+        t('farmerTask:report:errorMessage'),
       );
     } finally {
       setIsSubmitting(false);
@@ -786,7 +828,7 @@ export const FarmerTasksScreen = () => {
       <BoxUI className='px-4 py-4'>
         <HStack className='items-center justify-between'>
           <HStack space='md' className='items-center'>
-            <Heading size='lg'>Quản lý nhiệm vụ</Heading>
+            <Heading size='lg'>{t('farmerTask:title')}</Heading>
           </HStack>
         </HStack>
       </BoxUI>
@@ -800,7 +842,7 @@ export const FarmerTasksScreen = () => {
         >
           <InputIcon as={Search} className='text-typography-400' />
           <InputField
-            placeholder='Tìm kiếm nhiệm vụ...'
+            placeholder={t('farmerTask:search:placeholder')}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -830,10 +872,10 @@ export const FarmerTasksScreen = () => {
               <Icon as={AlertCircle} size='xl' className='text-danger-600' />
             </BoxUI>
             <Text className='text-center text-typography-500'>
-              Có lỗi xảy ra khi tải dữ liệu
+              {t('farmerTask:error:title')}
             </Text>
             <Button className='mt-4' onPress={onRefresh}>
-              <ButtonText>Thử lại</ButtonText>
+              <ButtonText>{t('farmerTask:error:tryAgain')}</ButtonText>
             </Button>
           </VStack>
         )}
@@ -861,10 +903,10 @@ export const FarmerTasksScreen = () => {
                     />
                   </BoxUI>
                   <Text className='text-center text-typography-500'>
-                    Không tìm thấy nhiệm vụ phù hợp
+                    {t('farmerTask:filters:noResults')}
                   </Text>
                   <Text className='mt-1 text-center text-xs text-typography-400'>
-                    Thử thay đổi bộ lọc hoặc tìm kiếm
+                    {t('farmerTask:filters:noResultsHint')}
                   </Text>
                   <Button
                     className='mt-4'
@@ -875,7 +917,7 @@ export const FarmerTasksScreen = () => {
                       setSearchQuery('');
                     }}
                   >
-                    <ButtonText>Xóa bộ lọc</ButtonText>
+                    <ButtonText>{t('farmerTask:filters:clear')}</ButtonText>
                   </Button>
                 </VStack>
               ) : null
@@ -891,8 +933,8 @@ export const FarmerTasksScreen = () => {
           setSubmitProgress(0);
         }}
         progress={submitProgress}
-        title='Đang cập nhật báo cáo'
-        description='Vui lòng đợi trong giây lát, quá trình này có thể mất khoảng 30 giây...'
+        title={t('farmerTask:report:updating')}
+        description={t('farmerTask:report:updatingDescription')}
       />
       <CompleteTaskModal
         isOpen={showCompleteModal}
@@ -902,11 +944,14 @@ export const FarmerTasksScreen = () => {
           setSelectedTaskType('');
         }}
         taskType={selectedTaskType as 'caring' | 'harvesting' | 'packaging'}
-        title='Báo cáo nhanh'
-        description={`Vui lòng nhập kết quả thực hiện nhiệm vụ "${selectedTask?.task_name}"`}
+        title={t('farmerTask:report:title')}
+        description={t('farmerTask:report:description', {
+          taskName: selectedTask?.task_name,
+        })}
         allowMultipleImages={true}
         maxImages={3}
         onConfirm={handleCompleteTask}
+        idPlan={currentPlan?.id}
       />
     </SafeAreaView>
   );

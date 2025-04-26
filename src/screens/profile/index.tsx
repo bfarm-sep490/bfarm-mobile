@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 
-import { useMutation } from '@tanstack/react-query';
-import * as ImagePicker from 'expo-image-picker';
 import {
   ChevronRightIcon,
   X,
@@ -15,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import LogoutAlertDialog from '@/components/logout-alert-dialog';
-import { Image as ImageComponent, Spinner } from '@/components/ui';
+import { Image as ImageComponent } from '@/components/ui';
 import { Avatar, AvatarBadge, AvatarImage } from '@/components/ui/avatar';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
@@ -24,7 +22,6 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -37,7 +34,6 @@ import { Pressable } from '@/components/ui/pressable';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { ScrollView } from '@/components/ui/scroll-view';
 import { Text } from '@/components/ui/text';
-import { useToast, Toast, ToastTitle } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
 import { useSession } from '@/context/ctx';
 import { useUser } from '@/services/api';
@@ -57,6 +53,7 @@ const DashboardLayout = (props: any) => {
           onNotificationPress={() => {
             // Handle notification press
           }}
+          showNotifications={false}
           title={props.title}
         />
       </Box>
@@ -181,7 +178,7 @@ const MainContent = () => {
   if (isLoading) {
     return (
       <Center className='flex-1'>
-        <Text>Loading...</Text>
+        <Text>{t('profile:loading')}</Text>
       </Center>
     );
   }
@@ -189,7 +186,7 @@ const MainContent = () => {
   if (!user) {
     return (
       <Center className='flex-1'>
-        <Text>User not found</Text>
+        <Text>{t('profile:userNotFound')}</Text>
       </Center>
     );
   }
@@ -315,7 +312,7 @@ const MainContent = () => {
                   size='lg'
                   className={currentLanguage === 'en' ? 'text-primary-600' : ''}
                 >
-                  English
+                  {t('profile:english')}
                 </Text>
               </Pressable>
               <Pressable
@@ -328,7 +325,7 @@ const MainContent = () => {
                   size='lg'
                   className={currentLanguage === 'vi' ? 'text-primary-600' : ''}
                 >
-                  Tiếng Việt
+                  {t('profile:vietnamese')}
                 </Text>
               </Pressable>
             </VStack>
@@ -340,9 +337,10 @@ const MainContent = () => {
 };
 
 export const Profile = () => {
+  const { t } = useTranslation();
   return (
     <SafeAreaView className='h-full w-full'>
-      <DashboardLayout title='Profile'>
+      <DashboardLayout title={t('profile:title')}>
         <MainContent />
       </DashboardLayout>
     </SafeAreaView>

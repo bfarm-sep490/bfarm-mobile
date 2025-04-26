@@ -13,5 +13,52 @@
     "title": "Oops! Something went wrong.",
     "description": "We are sorry for the inconvenience. Please try again later.",
     "cta": "Reload the screen"
+  },
+  "greeting": "Hello",
+  "noPlans": {
+    "title": "No Plans",
+    "description": "You haven't been assigned any plans yet. Please contact the administrator to start your farming activities.",
+    "contactAdmin": "Contact Administrator"
+  },
+  "currentPlan": {
+    "title": "Current Plan",
+    "plant": "Plant",
+    "startDate": "Start Date",
+    "estimatedProduct": "Estimated Product",
+    "soil": "Soil",
+    "progress": "Progress",
+    "daysRemaining": {
+      "positive": "{{count}} days remaining",
+      "zero": "Ends today",
+      "negative": "Ended"
+    }
+  },
+  "todayTasks": {
+    "title": "Today's Tasks",
+    "noTasks": "No tasks for today",
+    "error": "An error occurred while loading data",
+    "tryAgain": "Try Again",
+    "time": "{{time}}"
+  },
+  "status": {
+    "complete": "Complete",
+    "inProgress": "In Progress",
+    "pending": "Pending",
+    "ongoing": "Ongoing"
+  },
+  "planSelector": {
+    "currentPlan": "Current Plan",
+    "selectPlan": "Select Plan",
+    "noPlans": {
+      "title": "No Plans",
+      "description": "You haven't been assigned any plans yet. Please contact the administrator to start.",
+      "contactAdmin": "Contact Administrator"
+    },
+    "error": {
+      "title": "Cannot load plans",
+      "noPlans": "You haven't been assigned any plans yet."
+    },
+    "loading": "Loading plans...",
+    "availablePlans": "Available Plans ({{count}})"
   }
 }

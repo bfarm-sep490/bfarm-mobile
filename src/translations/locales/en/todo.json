@@ -1,3 +1,46 @@
 {
-  "title": "Todo"
+  "title": "Today's Tasks",
+  "noTasks": "No tasks for {{date}}",
+  "loading": "Loading tasks...",
+  "error": {
+    "title": "Error loading data",
+    "tryAgain": "Try Again"
+  },
+  "task": {
+    "details": "Details",
+    "quickReport": "Quick Report",
+    "quickReportDescription": "Please enter the task result for \"{{taskName}}\"",
+    "noDescription": "No description",
+    "time": "Time",
+    "executionTime": "Execution time",
+    "requiredTools": "{{count}} required tools",
+    "harvestingTools": "{{count}} harvesting tools",
+    "packagingMaterials": "{{count}} packaging materials",
+    "status": {
+      "complete": "Complete",
+      "incomplete": "Incomplete",
+      "ongoing": "Ongoing",
+      "pending": "Pending"
+    }
+  },
+  "calendar": {
+    "selectDate": "Select date",
+    "days": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    }
+  },
+  "report": {
+    "updating": "Updating report",
+    "updatingDescription": "Please wait, this process may take about 30 seconds...",
+    "success": "Success",
+    "successMessage": "Task updated successfully",
+    "error": "Error",
+    "errorMessage": "An error occurred while updating the task. Please try again."
+  }
 }

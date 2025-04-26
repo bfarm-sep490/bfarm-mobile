@@ -11,6 +11,7 @@ import {
   Clock,
   MoreHorizontal,
 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { isWeb } from '@gluestack-ui/nativewind-utils/IsWeb';
 
@@ -50,6 +51,7 @@ const NotificationCard = ({
   image,
   onPress,
 }: NotificationCardProps) => {
+  const { t } = useTranslation();
   const [showFullMessage, setShowFullMessage] = useState(false);
 
   return (
@@ -92,7 +94,9 @@ const NotificationCard = ({
               </Text>
               {message.length > 100 && (
                 <Text className='mt-1 text-xs text-primary-600'>
-                  {showFullMessage ? 'Thu gọn' : 'Xem thêm'}
+                  {showFullMessage
+                    ? t('notification:notification:showLess')
+                    : t('notification:notification:showMore')}
                 </Text>
               )}
             </Pressable>
@@ -113,6 +117,7 @@ const NotificationCard = ({
 };
 
 const Notification = () => {
+  const { t } = useTranslation();
   const { user } = useSession();
   const {
     useFetchAllByUserIdQuery,
@@ -162,8 +167,8 @@ const Notification = () => {
       </Box>
       <Text className='text-center text-typography-500'>
         {activeTab === 'all'
-          ? 'Không có thông báo nào'
-          : 'Không có thông báo chưa đọc'}
+          ? t('notification:emptyState:all')
+          : t('notification:emptyState:unread')}
       </Text>
     </VStack>
   );
@@ -174,10 +179,10 @@ const Notification = () => {
         <Icon as={AlertCircle} size='xl' className='text-danger-600' />
       </Box>
       <Text className='mb-4 text-center text-typography-500'>
-        Có lỗi xảy ra khi tải dữ liệu
+        {t('notification:error:title')}
       </Text>
       <Button onPress={handleRefresh}>
-        <ButtonText>Thử lại</ButtonText>
+        <ButtonText>{t('notification:error:tryAgain')}</ButtonText>
       </Button>
     </VStack>
   );
@@ -188,7 +193,7 @@ const Notification = () => {
         <Spinner size='large' color='$primary600' />
       </Box>
       <Text className='text-center text-typography-500'>
-        Đang tải dữ liệu...
+        {t('notification:loading')}
       </Text>
     </VStack>
   );
@@ -198,7 +203,7 @@ const Notification = () => {
       <Box className='px-4 py-4'>
         <HStack className='items-center justify-between'>
           <HStack className='items-center space-x-4'>
-            <Heading size='lg'>Thông báo</Heading>
+            <Heading size='lg'>{t('notification:title')}</Heading>
           </HStack>
         </HStack>
       </Box>
@@ -206,8 +211,8 @@ const Notification = () => {
       <Box className='px-4 py-2'>
         <Tabs
           items={[
-            { label: 'Tất cả', value: 'all' },
-            { label: 'Chưa đọc', value: 'unread' },
+            { label: t('notification:tabs:all'), value: 'all' },
+            { label: t('notification:tabs:unread'), value: 'unread' },
           ]}
           value={activeTab}
           onChange={setActiveTab}
@@ -224,7 +229,7 @@ const Notification = () => {
           >
             <Icon as={Check} size='sm' className='text-primary-600' />
             <ButtonText className='text-primary-600'>
-              Đánh dấu đã đọc tất cả
+              {t('notification:markAllAsRead')}
             </ButtonText>
           </Button>
         </Box>

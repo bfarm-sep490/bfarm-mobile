@@ -1,4 +1,60 @@
 {
-  "title": "Anmeldebildschirm",
-  "goToDashboard": "Gehen Sie zum Dashboard"
+  "title": "Đăng nhập",
+  "subtitle": "BfarmX",
+  "form": {
+    "email": {
+      "label": "Email",
+      "placeholder": "Nhập email",
+      "required": "Email là bắt buộc",
+      "invalid": "Email không hợp lệ"
+    },
+    "password": {
+      "label": "Mật khẩu",
+      "placeholder": "Nhập mật khẩu",
+      "required": "Mật khẩu là bắt buộc"
+    },
+    "rememberMe": {
+      "label": "Ghi nhớ đăng nhập"
+    },
+    "forgotPassword": "Quên mật khẩu?"
+  },
+  "button": {
+    "login": "Đăng nhập",
+    "loggingIn": "Đang đăng nhập..."
+  },
+  "toast": {
+    "success": {
+      "title": "Đăng nhập thành công!"
+    },
+    "error": {
+      "title": "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập."
+    }
+  },
+  "goToDashboard": "Đi đến trang chủ",
+  "forgotPassword": {
+    "title": "Quên mật khẩu",
+    "subtitle": "BfarmX",
+    "form": {
+      "email": {
+        "label": "Email",
+        "placeholder": "Nhập email của bạn",
+        "required": "Email không được để trống",
+        "invalid": "Email không hợp lệ",
+        "helper": "Chúng tôi sẽ gửi liên kết đặt lại mật khẩu đến email của bạn"
+      }
+    },
+    "button": {
+      "sendLink": "Gửi liên kết",
+      "sending": "Đang gửi..."
+    },
+    "modal": {
+      "title": "Thông báo",
+      "message": "Vui lòng kiểm tra email của bạn và làm theo hướng dẫn để đặt lại mật khẩu.",
+      "close": "Đóng",
+      "login": "Đăng nhập"
+    },
+    "error": {
+      "title": "Có lỗi xảy ra. Vui lòng thử lại sau."
+    }
+  }
 }

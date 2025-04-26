@@ -1,3 +1,46 @@
 {
-  "title": "Cần làm"
+  "title": "Nhiệm vụ hôm nay",
+  "noTasks": "Không có nhiệm vụ nào vào ngày {{date}}",
+  "loading": "Đang tải nhiệm vụ...",
+  "error": {
+    "title": "Có lỗi xảy ra khi tải dữ liệu",
+    "tryAgain": "Thử lại"
+  },
+  "task": {
+    "details": "Chi tiết",
+    "quickReport": "Báo cáo nhanh",
+    "quickReportDescription": "Vui lòng nhập kết quả thực hiện nhiệm vụ \"{{taskName}}\"",
+    "noDescription": "Không có mô tả",
+    "time": "Thời gian",
+    "executionTime": "Giờ thực hiện",
+    "requiredTools": "{{count}} công cụ cần thiết",
+    "harvestingTools": "{{count}} dụng cụ thu hoạch",
+    "packagingMaterials": "{{count}} vật liệu đóng gói",
+    "status": {
+      "complete": "Hoàn thành",
+      "incomplete": "Chưa hoàn thành",
+      "ongoing": "Đang thực hiện",
+      "pending": "Đang chờ"
+    }
+  },
+  "calendar": {
+    "selectDate": "Chọn ngày",
+    "days": {
+      "sun": "CN",
+      "mon": "T2",
+      "tue": "T3",
+      "wed": "T4",
+      "thu": "T5",
+      "fri": "T6",
+      "sat": "T7"
+    }
+  },
+  "report": {
+    "updating": "Đang cập nhật báo cáo",
+    "updatingDescription": "Vui lòng đợi trong giây lát, quá trình này có thể mất khoảng 30 giây...",
+    "success": "Thành công",
+    "successMessage": "Nhiệm vụ đã được cập nhật thành công",
+    "error": "Lỗi",
+    "errorMessage": "Đã có lỗi xảy ra khi cập nhật nhiệm vụ. Vui lòng thử lại."
+  }
 }

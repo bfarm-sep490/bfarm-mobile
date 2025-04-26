@@ -1,8 +1,11 @@
 import { Tabs } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
 import TabBar from '@/components/tab-bar';
 
 export default function TabLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       tabBar={props => <TabBar {...props} />}
@@ -16,7 +19,7 @@ export default function TabLayout() {
         name='home/index'
         options={{
           headerShown: false,
-          title: 'Trang chủ',
+          title: t('layout:tabs:home'),
           tabBarStyle: {
             display: 'flex',
           },
@@ -26,7 +29,7 @@ export default function TabLayout() {
         name='todo/index'
         options={{
           headerShown: false,
-          title: 'Lịch trình',
+          title: t('layout:tabs:todo'),
           tabBarStyle: {
             display: 'flex',
           },
@@ -37,7 +40,7 @@ export default function TabLayout() {
         name='farmer-tasks/index'
         options={{
           headerShown: false,
-          title: 'Công việc',
+          title: t('layout:tabs:farmerTasks'),
           tabBarStyle: {
             display: 'flex',
           },
@@ -57,7 +60,7 @@ export default function TabLayout() {
         name='problem/index'
         options={{
           headerShown: false,
-          title: 'Vấn đề',
+          title: t('layout:tabs:problem'),
           tabBarStyle: {
             display: 'flex',
           },
@@ -88,7 +91,7 @@ export default function TabLayout() {
         name='notification/index'
         options={{
           headerShown: false,
-          title: 'Thông báo',
+          title: t('layout:tabs:notification'),
           tabBarStyle: {
             display: 'flex',
           },

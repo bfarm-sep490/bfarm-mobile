@@ -1,3 +1,73 @@
 {
-  "title": "Nhiệm vụ"
+  "title": "Quản lý nhiệm vụ",
+  "search": {
+    "placeholder": "Tìm kiếm nhiệm vụ..."
+  },
+  "filters": {
+    "clear": "Xóa bộ lọc",
+    "noResults": "Không tìm thấy nhiệm vụ phù hợp",
+    "noResultsHint": "Thử thay đổi bộ lọc hoặc tìm kiếm"
+  },
+  "tabs": {
+    "all": "Tất cả",
+    "ongoing": "Đang thực hiện",
+    "completed": "Hoàn thành",
+    "incomplete": "Chưa hoàn thành"
+  },
+  "categories": {
+    "all": "Tất cả",
+    "caring": "Chăm sóc",
+    "harvesting": "Thu hoạch",
+    "packaging": "Đóng gói"
+  },
+  "task": {
+    "details": "Chi tiết",
+    "quickReport": "Báo cáo nhanh",
+    "noDescription": "Không có mô tả",
+    "noAssigned": "Chưa có ai được giao nhiệm vụ này",
+    "yourStatus": "Trạng thái của bạn",
+    "requiredTools": "{{count}} công cụ cần thiết",
+    "harvestingTools": "{{count}} dụng cụ thu hoạch",
+    "packagingMaterials": "{{count}} vật liệu đóng gói",
+    "harvestedQuantity": "Số lượng thu hoạch",
+    "result": "Kết quả",
+    "description": "Mô tả",
+    "time": "Thời gian",
+    "executionTime": "Giờ thực hiện",
+    "creator": "Người tạo",
+    "images": "Hình ảnh",
+    "viewAll": "Xem tất cả",
+    "requiredItems": "Công cụ, phân bón hoặc thuốc cần thiết",
+    "updateStatus": "Cập nhật trạng thái",
+    "updating": "Đang cập nhật...",
+    "complete": "Hoàn thành",
+    "processing": "Đang xử lý...",
+    "confirmComplete": "Xác nhận hoàn thành nhiệm vụ",
+    "confirmCompleteDescription": "Vui lòng nhập kết quả thực hiện nhiệm vụ \"{{taskName}}\"",
+    "noContent": "Không có nội dung",
+    "packagingType": "Loại bao bì",
+    "quantity": "Số lượng: {{count}} {{unit}}"
+  },
+  "status": {
+    "active": "Đang hoạt động",
+    "inactive": "Không hoạt động"
+  },
+  "error": {
+    "title": "Có lỗi xảy ra khi tải dữ liệu",
+    "tryAgain": "Thử lại",
+    "loadingError": "Không thể tải thông tin nhiệm vụ",
+    "loading": "Đang tải thông tin..."
+  },
+  "loading": "Đang tải dữ liệu...",
+  "noMoreData": "Đã hết dữ liệu",
+  "report": {
+    "title": "Báo cáo nhanh",
+    "description": "Vui lòng nhập kết quả thực hiện nhiệm vụ \"{{taskName}}\"",
+    "updating": "Đang cập nhật báo cáo",
+    "updatingDescription": "Vui lòng đợi trong giây lát, quá trình này có thể mất khoảng 30 giây...",
+    "success": "Thành công",
+    "successMessage": "Nhiệm vụ đã được cập nhật thành công",
+    "error": "Lỗi",
+    "errorMessage": "Đã có lỗi xảy ra khi cập nhật nhiệm vụ. Vui lòng thử lại."
+  }
 }

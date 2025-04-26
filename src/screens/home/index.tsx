@@ -1,8 +1,7 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 
-import { RefreshControl, Alert } from 'react-native';
+import { RefreshControl } from 'react-native';
 
-import { Calendar } from '@marceloterreiro/flash-calendar';
 import { FlashList } from '@shopify/flash-list';
 import dayjs from 'dayjs';
 import { router, useRouter } from 'expo-router';
@@ -14,15 +13,11 @@ import {
   CheckCircle2,
   Clock,
   BarChart3,
-  Bell,
   ChevronRight,
   ClipboardList,
-  Droplets,
-  Bug,
   Shovel,
-  Search,
-  XCircle,
 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
@@ -31,14 +26,12 @@ import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Input, InputField, InputIcon } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { Progress, ProgressFilledTrack } from '@/components/ui/progress';
 import { SafeAreaView } from '@/components/ui/safe-area-view';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { useSession } from '@/context/ctx';
-import { queryClient } from '@/context/providers';
 import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
 import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
 import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
@@ -46,7 +39,6 @@ import { Plan } from '@/services/api/plans/planSchema';
 import { usePlan } from '@/services/api/plans/usePlan';
 import { useProblem } from '@/services/api/problems/useProblem';
 
-import { CalendarSheet } from './calendar-sheet';
 import { PlanSelector } from './plan-selector';
 
 type MobileHeaderProps = {
@@ -75,6 +67,7 @@ const DashboardLayout = (props: any) => {
 
 function MobileHeader(props: MobileHeaderProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   return (
     <VStack>
       <HStack
@@ -82,7 +75,9 @@ function MobileHeader(props: MobileHeaderProps) {
         space='md'
       >
         <VStack>
-          <Text className='text-sm text-background-0'>Xin chào</Text>
+          <Text className='text-sm text-background-0'>
+            {t('home:greeting')}
+          </Text>
           <Heading size='xl' className='font-roboto text-background-0'>
             {props.title}
           </Heading>
@@ -103,6 +98,7 @@ function MobileHeader(props: MobileHeaderProps) {
 }
 
 const NoPlansView = () => {
+  const { t } = useTranslation();
   return (
     <Card className='my-4 overflow-hidden rounded-xl'>
       <VStack space='lg' className='items-center p-6'>
@@ -111,16 +107,15 @@ const NoPlansView = () => {
         </Box>
         <VStack space='sm' className='items-center'>
           <Heading size='md' className='text-center'>
-            Chưa có kế hoạch
+            {t('home:noPlans:title')}
           </Heading>
           <Text className='text-center text-typography-500'>
-            Bạn chưa được gán kế hoạch nào. Vui lòng liên hệ với quản trị viên
-            để bắt đầu các hoạt động canh tác của bạn.
+            {t('home:noPlans:description')}
           </Text>
         </VStack>
         <Button className='mt-2 w-full' variant='solid' size='md'>
           <ButtonIcon as={ChevronRight} />
-          <ButtonText>Liên hệ quản trị viên</ButtonText>
+          <ButtonText>{t('home:noPlans:contactAdmin')}</ButtonText>
         </Button>
       </VStack>
     </Card>
@@ -128,6 +123,7 @@ const NoPlansView = () => {
 };
 
 const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
+  const { t } = useTranslation();
   const startDate = dayjs(currentPlan.start_date);
   const endDate = dayjs(currentPlan.end_date);
   const today = dayjs();
@@ -148,7 +144,7 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
           <HStack space='sm' className='items-center'>
             <Icon as={Leaf} color='white' />
             <Text className='font-bold text-background-0'>
-              Kế hoạch hiện tại
+              {t('home:currentPlan:title')}
             </Text>
           </HStack>
           <Pressable className='rounded-full bg-primary-700 p-1.5'>
@@ -170,7 +166,7 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
               <Text
                 className={`text-xs ${currentPlan.status === 'Complete' ? 'text-success-700' : 'text-warning-700'}`}
               >
-                {currentPlan.status}
+                {t(`home:status:${currentPlan.status.toLowerCase()}`)}
               </Text>
             </Box>
           </HStack>
@@ -199,13 +195,15 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
           <HStack space='xs' className='items-center'>
             <Icon as={Shovel} size='sm' className='text-amber-600' />
             <Text className='text-sm text-typography-600'>
-              Đất: {currentPlan.yield_name || 'N/A'}
+              {t('home:currentPlan:soil')}: {currentPlan.yield_name || 'N/A'}
             </Text>
           </HStack>
 
           <VStack space='xs'>
             <HStack className='justify-between'>
-              <Text className='text-sm text-typography-500'>Tiến độ</Text>
+              <Text className='text-sm text-typography-500'>
+                {t('home:currentPlan:progress')}
+              </Text>
               <Text className='text-sm font-medium'>
                 {Math.round(progressPercent)}%
               </Text>
@@ -231,10 +229,12 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
             <Icon as={Clock} className='text-primary-600' />
             <Text className='font-medium text-primary-700'>
               {daysRemaining > 0
-                ? `Còn ${daysRemaining} ngày`
+                ? t('home:currentPlan:daysRemaining:positive', {
+                    count: daysRemaining,
+                  })
                 : daysRemaining === 0
-                  ? 'Kết thúc hôm nay'
-                  : 'Đã kết thúc'}
+                  ? t('home:currentPlan:daysRemaining:zero')
+                  : t('home:currentPlan:daysRemaining:negative')}
             </Text>
           </HStack>
         </VStack>
@@ -244,6 +244,7 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
 };
 
 const TasksList = () => {
+  const { t } = useTranslation();
   const { currentPlan, user } = useSession();
   const currentFarmerId = user?.id;
   const currentPlanId = currentPlan?.id;
@@ -421,7 +422,9 @@ const TasksList = () => {
   return (
     <VStack space='md' className='mb-6'>
       <HStack className='items-center justify-between'>
-        <Text className='font-bold text-typography-900'>Nhiệm vụ hôm nay</Text>
+        <Text className='font-bold text-typography-900'>
+          {t('home:todayTasks:title')}
+        </Text>
       </HStack>
 
       <Card className='overflow-hidden rounded-xl px-0'>
@@ -431,10 +434,10 @@ const TasksList = () => {
               <Icon as={AlertCircle} size='xl' className='text-danger-600' />
             </Box>
             <Text className='text-center text-typography-500'>
-              Có lỗi xảy ra khi tải dữ liệu
+              {t('home:todayTasks:error')}
             </Text>
             <Button className='mt-4' onPress={onRefresh}>
-              <ButtonText>Thử lại</ButtonText>
+              <ButtonText>{t('home:todayTasks:tryAgain')}</ButtonText>
             </Button>
           </VStack>
         )}
@@ -459,7 +462,7 @@ const TasksList = () => {
                     />
                   </Box>
                   <Text className='text-center text-typography-500'>
-                    Không có nhiệm vụ nào hôm nay
+                    {t('home:todayTasks:noTasks')}
                   </Text>
                 </VStack>
               ) : null

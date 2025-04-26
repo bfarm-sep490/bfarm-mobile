@@ -1,3 +1,21 @@
 {
-  "title": "Thông báo"
+  "title": "Thông báo",
+  "tabs": {
+    "all": "Tất cả",
+    "unread": "Chưa đọc"
+  },
+  "markAllAsRead": "Đánh dấu đã đọc tất cả",
+  "emptyState": {
+    "all": "Không có thông báo nào",
+    "unread": "Không có thông báo chưa đọc"
+  },
+  "error": {
+    "title": "Có lỗi xảy ra khi tải dữ liệu",
+    "tryAgain": "Thử lại"
+  },
+  "loading": "Đang tải dữ liệu...",
+  "notification": {
+    "showMore": "Xem thêm",
+    "showLess": "Thu gọn"
+  }
 }

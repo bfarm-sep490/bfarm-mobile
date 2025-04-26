@@ -3,6 +3,7 @@ import React from 'react';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Mail } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 import {
   Box,
@@ -43,6 +44,7 @@ type ForgotPasswordForm = {
 
 const ForgotPassword = () => {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = React.useState(false);
   const [showSuccessModal, setShowSuccessModal] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState('');
@@ -74,7 +76,7 @@ const ForgotPassword = () => {
         render: () => (
           <Box className='mb-5 rounded-sm bg-error-500 px-4 py-3'>
             <Text className='text-white'>
-              Có lỗi xảy ra. Vui lòng thử lại sau.
+              {t('signIn:forgotPassword:error:title')}
             </Text>
           </Box>
         ),
@@ -96,15 +98,17 @@ const ForgotPassword = () => {
           <Icon as={ArrowLeft} className='text-background-800' size='xl' />
         </Pressable>
         <VStack>
-          <Heading size='3xl'>Quên mật khẩu</Heading>
-          <Text>BfarmX</Text>
+          <Heading size='3xl'>{t('signIn:forgotPassword:title')}</Heading>
+          <Text>{t('signIn:forgotPassword:subtitle')}</Text>
         </VStack>
       </VStack>
 
       <VStack className='w-full' space='xl'>
         <FormControl isInvalid={!!errors.email}>
           <FormControlLabel>
-            <FormControlLabelText>Email</FormControlLabelText>
+            <FormControlLabelText>
+              {t('signIn:forgotPassword:form:email:label')}
+            </FormControlLabelText>
           </FormControlLabel>
           <Controller
             control={control}
@@ -114,7 +118,9 @@ const ForgotPassword = () => {
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
-                  placeholder='Nhập email của bạn'
+                  placeholder={t(
+                    'signIn:forgotPassword:form:email:placeholder',
+                  )}
                   keyboardType='email-address'
                   autoCapitalize='none'
                 />
@@ -122,10 +128,10 @@ const ForgotPassword = () => {
             )}
             name='email'
             rules={{
-              required: 'Email không được để trống',
+              required: t('signIn:forgotPassword:form:email:required'),
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: 'Email không hợp lệ',
+                message: t('signIn:forgotPassword:form:email:invalid'),
               },
             }}
           />
@@ -138,7 +144,7 @@ const ForgotPassword = () => {
           )}
           <FormControlHelper>
             <FormControlHelperText>
-              Chúng tôi sẽ gửi liên kết đặt lại mật khẩu đến email của bạn
+              {t('signIn:forgotPassword:form:email:helper')}
             </FormControlHelperText>
           </FormControlHelper>
         </FormControl>
@@ -150,7 +156,9 @@ const ForgotPassword = () => {
             isDisabled={isLoading}
           >
             <ButtonText className='font-medium'>
-              {isLoading ? 'Đang gửi...' : 'Gửi liên kết'}
+              {isLoading
+                ? t('signIn:forgotPassword:button:sending')
+                : t('signIn:forgotPassword:button:sendLink')}
             </ButtonText>
           </Button>
         </VStack>
@@ -160,15 +168,16 @@ const ForgotPassword = () => {
         <ModalBackdrop />
         <ModalContent>
           <ModalHeader>
-            <Heading size='lg'>Thông báo</Heading>
+            <Heading size='lg'>
+              {t('signIn:forgotPassword:modal:title')}
+            </Heading>
             <ModalCloseButton />
           </ModalHeader>
           <ModalBody>
             <VStack space='md'>
               <Text className='text-center'>{successMessage}</Text>
               <Text className='text-center text-gray-500'>
-                Vui lòng kiểm tra email của bạn và làm theo hướng dẫn để đặt lại
-                mật khẩu.
+                {t('signIn:forgotPassword:modal:message')}
               </Text>
             </VStack>
           </ModalBody>
@@ -180,10 +189,10 @@ const ForgotPassword = () => {
               action='secondary'
               onPress={handleModalClose}
             >
-              <ButtonText>Đóng</ButtonText>
+              <ButtonText>{t('signIn:forgotPassword:modal:close')}</ButtonText>
             </Button>
             <Button size='sm' action='positive' onPress={handleModalClose}>
-              <ButtonText>Đăng nhập</ButtonText>
+              <ButtonText>{t('signIn:forgotPassword:modal:login')}</ButtonText>
             </Button>
           </ModalFooter>
         </ModalContent>

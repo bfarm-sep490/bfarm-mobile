@@ -1,3 +1,21 @@
 {
-  "title": "Thông báo"
+  "title": "Notifications",
+  "tabs": {
+    "all": "All",
+    "unread": "Unread"
+  },
+  "markAllAsRead": "Mark all as read",
+  "emptyState": {
+    "all": "No notifications",
+    "unread": "No unread notifications"
+  },
+  "error": {
+    "title": "Error loading data",
+    "tryAgain": "Try Again"
+  },
+  "loading": "Loading data...",
+  "notification": {
+    "showMore": "Show more",
+    "showLess": "Show less"
+  }
 }

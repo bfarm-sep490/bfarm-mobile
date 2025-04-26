@@ -1,0 +1,9 @@
+{
+  "tabs": {
+    "home": "Home",
+    "todo": "Schedule",
+    "farmerTasks": "Tasks",
+    "problem": "Problems",
+    "notification": "Notifications"
+  }
+} 

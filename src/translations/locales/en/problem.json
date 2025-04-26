@@ -1,3 +1,96 @@
 {
-  "title": "Problem"
+  "title": "Problem Management",
+  "search": {
+    "placeholder": "Search problems...",
+    "clear": "Clear search"
+  },
+  "filter": {
+    "title": "Filter",
+    "clear": "Clear filters",
+    "tabs": {
+      "all": "All",
+      "resolve": "Resolved",
+      "pending": "Pending"
+    }
+  },
+  "create": {
+    "title": "Create Problem",
+    "button": "Create New",
+    "noPlan": "Please select a plan before creating a problem"
+  },
+  "problem": {
+    "details": "Details",
+    "noDescription": "No description",
+    "reporter": "Reporter",
+    "createdAt": "Created at",
+    "status": {
+      "resolve": "Resolved",
+      "pending": "Pending"
+    }
+  },
+  "empty": {
+    "title": "No problems found",
+    "description": "Create a new problem or try changing filters or search",
+    "clearFilters": "Clear filters"
+  },
+  "error": {
+    "title": "Error loading data",
+    "tryAgain": "Try Again"
+  },
+  "loading": "Loading problems...",
+  "createForm": {
+    "title": "Problem Information",
+    "currentPlan": "Current Plan",
+    "noPlanSelected": "No plan selected",
+    "selectPlan": "Please select a plan before creating a problem",
+    "images": {
+      "title": "Images",
+      "description": "Maximum 3 images (required)",
+      "takePhoto": "Take Photo",
+      "gallery": "Gallery",
+      "maxImages": "Maximum 3 images allowed",
+      "uploadError": "Failed to upload image. Please try again!"
+    },
+    "fields": {
+      "problemName": {
+        "label": "Problem Name",
+        "placeholder": "Enter problem name",
+        "required": "Problem name is required"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Enter problem description",
+        "helper": "Detailed description of the problem you encountered"
+      }
+    },
+    "submit": {
+      "uploading": "Uploading...",
+      "noPlan": "Please select a plan",
+      "create": "Create Problem"
+    },
+    "success": {
+      "title": "Success",
+      "message": "Problem created successfully"
+    },
+    "error": {
+      "title": "Error",
+      "message": "An error occurred. Please try again!"
+    }
+  },
+  "detail": {
+    "title": "Problem Details",
+    "status": {
+      "resolve": "Resolved",
+      "pending": "Pending"
+    },
+    "reporter": "Reporter",
+    "createdAt": "Created at",
+    "description": "Problem Description",
+    "noDescription": "No description",
+    "images": "Images",
+    "result": {
+      "title": "Resolution Result",
+      "noResult": "No resolution result yet"
+    }
+  }
 }

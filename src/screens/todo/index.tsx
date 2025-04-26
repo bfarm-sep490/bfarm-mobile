@@ -24,6 +24,7 @@ import {
   ChevronRight,
   Hourglass,
 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import CompleteTaskModal from '@/components/modal/CompleteTaskModal';
 import { SubmitReportProgressModal } from '@/components/modal/SubmitReportProgressModal';
@@ -47,6 +48,7 @@ import { useSession } from '@/context/ctx';
 import { queryClient } from '@/context/providers';
 import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
 import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
+import { useHarvestingProduct } from '@/services/api/harvesting_products/useHarvestingProduct';
 import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 
 // Add dayjs plugins
@@ -110,6 +112,7 @@ const TaskCard = ({
   taskType?: string;
   onQuickReport?: (task: any, taskType: string) => void;
 }) => {
+  const { t } = useTranslation();
   const router = useRouter();
   const statusStyle = getStatusColor(task.status);
   const TaskIcon = getTaskTypeIcon(task.task_type || '');
@@ -163,7 +166,9 @@ const TaskCard = ({
                 </Text>
                 <Text className='text-xs text-typography-500'>
                   {task.task_type ||
-                    (taskType === 'harvesting' ? 'Thu hoạch' : 'Đóng gói')}
+                    (taskType === 'harvesting'
+                      ? t('todo:task:harvesting')
+                      : t('todo:task:packaging'))}
                 </Text>
               </VStack>
             </HStack>
@@ -176,7 +181,7 @@ const TaskCard = ({
                   className={statusStyle.text}
                 />
                 <Text className={`text-xs font-medium ${statusStyle.text}`}>
-                  {task.status}
+                  {t(`todo:task:status:${task.status.toLowerCase()}`)}
                 </Text>
               </HStack>
             </BoxUI>
@@ -184,7 +189,7 @@ const TaskCard = ({
 
           {/* Task description */}
           <Text className='text-sm text-typography-700'>
-            {task.description || 'Không có mô tả'}
+            {task.description || t('todo:task:noDescription')}
           </Text>
 
           {/* Task details */}
@@ -213,10 +218,16 @@ const TaskCard = ({
                 <Icon as={Box} size='xs' className='text-typography-500' />
                 <Text className='text-xs text-typography-500'>
                   {task.care_items?.length > 0
-                    ? `${task.care_items.length} công cụ cần thiết`
+                    ? t('todo:task:requiredTools', {
+                        count: task.care_items.length,
+                      })
                     : task.harvesting_items?.length > 0
-                      ? `${task.harvesting_items.length} dụng cụ thu hoạch`
-                      : `${task.packaging_items.length} vật liệu đóng gói`}
+                      ? t('todo:task:harvestingTools', {
+                          count: task.harvesting_items.length,
+                        })
+                      : t('todo:task:packagingMaterials', {
+                          count: task.packaging_items.length,
+                        })}
                 </Text>
               </HStack>
             )}
@@ -232,7 +243,7 @@ const TaskCard = ({
                 router.push(`/farmer-tasks/${task.id}?type=${taskType}`)
               }
             >
-              <ButtonText>Chi tiết</ButtonText>
+              <ButtonText>{t('todo:task:details')}</ButtonText>
             </Button>
             <Button
               className='flex-1'
@@ -241,7 +252,7 @@ const TaskCard = ({
               onPress={() => onQuickReport?.(task, taskType)}
               isDisabled={!canQuickReport}
             >
-              <ButtonText>Báo cáo nhanh</ButtonText>
+              <ButtonText>{t('todo:task:quickReport')}</ButtonText>
             </Button>
           </HStack>
         </VStack>
@@ -251,6 +262,7 @@ const TaskCard = ({
 };
 
 const TodoScreen = () => {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [showCalendar, setShowCalendar] = useState(false);
   const [pageSize, setPageSize] = useState(10);
@@ -273,6 +285,8 @@ const TodoScreen = () => {
   const { useFetchByParamsQuery: useFetchHarvestingTasks } =
     useHarvestingTask();
   const { useFetchByParamsQuery: useFetchPackagingTasks } = usePackagingTask();
+  const { useFetchByParamsQuery: useFetchHarvestingProducts } =
+    useHarvestingProduct();
 
   // Add mutation hooks
   const { mutateAsync: updateCaringTask } =
@@ -330,6 +344,10 @@ const TodoScreen = () => {
   );
   const allPackagingQuery = useFetchPackagingTasks(
     allTasksParams,
+    !!currentPlanId,
+  );
+  const harvestingProductsQuery = useFetchHarvestingProducts(
+    { plan_id: currentPlanId },
     !!currentPlanId,
   );
 
@@ -421,11 +439,12 @@ const TodoScreen = () => {
         caringQuery.refetch(),
         harvestingQuery.refetch(),
         packagingQuery.refetch(),
+        harvestingProductsQuery.refetch(),
       ]);
     } finally {
       setRefreshing(false);
     }
-  }, [caringQuery, harvestingQuery, packagingQuery]);
+  }, [caringQuery, harvestingQuery, packagingQuery, harvestingProductsQuery]);
 
   // Handle load more
   const onEndReached = useCallback(() => {
@@ -731,7 +750,7 @@ const TodoScreen = () => {
         <ActionsheetContent>
           <VStack space='md' className='p-4'>
             <HStack className='mb-4 items-center justify-between'>
-              <Heading size='md'>Chọn ngày</Heading>
+              <Heading size='md'>{t('todo:calendar:selectDate')}</Heading>
             </HStack>
 
             <HStack className='mb-4 items-center justify-between'>
@@ -761,7 +780,9 @@ const TodoScreen = () => {
             </HStack>
 
             <HStack className='mb-2 justify-between'>
-              {['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'].map(day => (
+              {Object.values(
+                t('todo:calendar:days', { returnObjects: true }),
+              ).map(day => (
                 <BoxUI
                   key={day}
                   className='h-10 w-10 items-center justify-center'
@@ -788,13 +809,13 @@ const TodoScreen = () => {
               <Icon as={AlertCircle} size='xl' className='text-danger-600' />
             </BoxUI>
             <Text className='text-center text-typography-500'>
-              Có lỗi xảy ra khi tải dữ liệu
+              {t('todo:error:title')}
             </Text>
             <Button
               className='mt-4'
               onPress={() => queryClient.invalidateQueries()}
             >
-              <ButtonText>Thử lại</ButtonText>
+              <ButtonText>{t('todo:error:tryAgain')}</ButtonText>
             </Button>
           </VStack>
         )}
@@ -821,8 +842,9 @@ const TodoScreen = () => {
                     />
                   </BoxUI>
                   <Text className='text-center text-typography-500'>
-                    Không có nhiệm vụ nào vào ngày{' '}
-                    {selectedDate.format('DD/MM/YYYY')}
+                    {t('todo:noTasks', {
+                      date: selectedDate.format('DD/MM/YYYY'),
+                    })}
                   </Text>
                 </VStack>
               ) : null
@@ -838,8 +860,8 @@ const TodoScreen = () => {
           setSubmitProgress(0);
         }}
         progress={submitProgress}
-        title='Đang cập nhật báo cáo'
-        description='Vui lòng đợi trong giây lát, quá trình này có thể mất khoảng 30 giây...'
+        title={t('todo:report:updating')}
+        description={t('todo:report:updatingDescription')}
       />
       <CompleteTaskModal
         isOpen={showCompleteModal}
@@ -849,11 +871,14 @@ const TodoScreen = () => {
           setSelectedTaskType('');
         }}
         taskType={selectedTaskType as 'caring' | 'harvesting' | 'packaging'}
-        title='Báo cáo nhanh'
-        description={`Vui lòng nhập kết quả thực hiện nhiệm vụ "${selectedTask?.task_name}"`}
+        title={t('todo:task:quickReport')}
+        description={t('todo:task:quickReportDescription', {
+          taskName: selectedTask?.task_name,
+        })}
         allowMultipleImages={true}
         maxImages={3}
         onConfirm={handleCompleteTask}
+        idPlan={currentPlan?.id}
       />
     </SafeAreaView>
   );

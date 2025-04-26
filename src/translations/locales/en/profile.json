@@ -25,5 +25,9 @@
   "uploadSuccess": "Success",
   "imageUpdated": "Profile image updated successfully",
   "uploadError": "Error",
-  "tryAgain": "Failed to upload image. Please try again"
+  "tryAgain": "Failed to upload image. Please try again",
+  "loading": "Loading...",
+  "userNotFound": "User not found",
+  "english": "English",
+  "vietnamese": "Vietnamese"
 }

@@ -1,3 +1,96 @@
 {
-  "title": "Vấn đề"
+  "title": "Quản lý Vấn đề",
+  "search": {
+    "placeholder": "Tìm kiếm vấn đề...",
+    "clear": "Xóa tìm kiếm"
+  },
+  "filter": {
+    "title": "Bộ lọc",
+    "clear": "Xóa bộ lọc",
+    "tabs": {
+      "all": "Tất cả",
+      "resolve": "Đã giải quyết",
+      "pending": "Đang chờ xử lý"
+    }
+  },
+  "create": {
+    "title": "Tạo Vấn đề",
+    "button": "Tạo Mới",
+    "noPlan": "Vui lòng chọn một kế hoạch trước khi tạo vấn đề"
+  },
+  "problem": {
+    "details": "Chi tiết",
+    "noDescription": "Không có mô tả",
+    "reporter": "Người báo cáo",
+    "createdAt": "Được tạo vào",
+    "status": {
+      "resolve": "Đã giải quyết",
+      "pending": "Đang chờ xử lý"
+    }
+  },
+  "empty": {
+    "title": "Không tìm thấy vấn đề",
+    "description": "Tạo một vấn đề mới hoặc thử thay đổi bộ lọc hoặc tìm kiếm",
+    "clearFilters": "Xóa bộ lọc"
+  },
+  "error": {
+    "title": "Lỗi tải dữ liệu",
+    "tryAgain": "Thử lại"
+  },
+  "loading": "Đang tải vấn đề...",
+  "createForm": {
+    "title": "Thông tin Vấn đề",
+    "currentPlan": "Kế hoạch Hiện tại",
+    "noPlanSelected": "Chưa chọn kế hoạch",
+    "selectPlan": "Vui lòng chọn một kế hoạch trước khi tạo vấn đề",
+    "images": {
+      "title": "Hình ảnh",
+      "description": "Tối đa 3 hình ảnh (bắt buộc)",
+      "takePhoto": "Chụp Ảnh",
+      "gallery": "Thư viện",
+      "maxImages": "Chỉ được phép tối đa 3 hình ảnh",
+      "uploadError": "Tải hình ảnh thất bại. Vui lòng thử lại!"
+    },
+    "fields": {
+      "problemName": {
+        "label": "Tên Vấn đề",
+        "placeholder": "Nhập tên vấn đề",
+        "required": "Tên vấn đề là bắt buộc"
+      },
+      "description": {
+        "label": "Mô tả",
+        "placeholder": "Nhập mô tả vấn đề",
+        "helper": "Mô tả chi tiết về vấn đề bạn gặp phải"
+      }
+    },
+    "submit": {
+      "uploading": "Đang tải lên...",
+      "noPlan": "Vui lòng chọn một kế hoạch",
+      "create": "Tạo Vấn đề"
+    },
+    "success": {
+      "title": "Thành công",
+      "message": "Vấn đề đã được tạo thành công"
+    },
+    "error": {
+      "title": "Lỗi",
+      "message": "Đã xảy ra lỗi. Vui lòng thử lại!"
+    }
+  },
+  "detail": {
+    "title": "Chi tiết Vấn đề",
+    "status": {
+      "resolve": "Đã giải quyết",
+      "pending": "Đang chờ xử lý"
+    },
+    "reporter": "Người báo cáo",
+    "createdAt": "Được tạo vào",
+    "description": "Mô tả Vấn đề",
+    "noDescription": "Không có mô tả",
+    "images": "Hình ảnh",
+    "result": {
+      "title": "Kết quả Giải quyết",
+      "noResult": "Chưa có kết quả giải quyết"
+    }
+  }
 }

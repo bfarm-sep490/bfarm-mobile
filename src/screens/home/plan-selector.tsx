@@ -13,6 +13,7 @@ import {
   BarChart3,
   Shovel,
 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import {
   Actionsheet,
@@ -38,6 +39,7 @@ type PlanSelectorProps = {
 };
 
 export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
+  const { t } = useTranslation();
   const { currentPlan, setCurrentPlan } = useSession();
   const [showActionsheet, setShowActionsheet] = React.useState(false);
 
@@ -76,14 +78,13 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
         <Icon as={AlertCircle} size='xl' color='#f59e0b' />
       </Box>
       <Text className='mb-2 text-center text-lg font-semibold'>
-        Chưa có kế hoạch
+        {t('home:planSelector:noPlans:title')}
       </Text>
       <Text className='mb-4 text-center text-typography-500'>
-        Bạn chưa được gán kế hoạch nào. Vui lòng liên hệ với quản trị viên để
-        bắt đầu.
+        {t('home:planSelector:noPlans:description')}
       </Text>
       <Button className='mt-4 w-full' variant='solid' onPress={handleClose}>
-        <ButtonText>Liên hệ quản trị viên</ButtonText>
+        <ButtonText>{t('home:planSelector:noPlans:contactAdmin')}</ButtonText>
       </Button>
     </Box>
   );
@@ -179,7 +180,7 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
           <HStack className='w-full items-center justify-between'>
             <VStack space='xs' className='flex-1'>
               <Text className='text-sm text-typography-500'>
-                Kế hoạch hiện tại
+                {t('home:planSelector:currentPlan')}
               </Text>
               <HStack space='sm' className='items-center'>
                 {isLoading ? (
@@ -187,7 +188,9 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
                 ) : (
                   <>
                     <Text className='font-medium text-typography-900'>
-                      {currentPlan ? currentPlan.plan_name : 'Chọn kế hoạch'}
+                      {currentPlan
+                        ? currentPlan.plan_name
+                        : t('home:planSelector:selectPlan')}
                     </Text>
                     {currentPlan && (
                       <Box className='rounded-full bg-primary-100 px-2 py-0.5'>
@@ -210,7 +213,7 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
           <HStack space='sm' className='items-center'>
             <Icon as={AlertCircle} size='sm' color='#f59e0b' />
             <Text className='text-warning-800'>
-              Bạn chưa được gán kế hoạch nào.
+              {t('home:planSelector:error:noPlans')}
             </Text>
           </HStack>
         </Box>
@@ -230,20 +233,24 @@ export const PlanSelector: React.FC<PlanSelectorProps> = ({ farmerId }) => {
           {isLoading ? (
             <Box className='items-center p-6'>
               <Spinner size='large' />
-              <Text className='mt-4 text-lg'>Đang tải kế hoạch...</Text>
+              <Text className='mt-4 text-lg'>
+                {t('home:planSelector:loading')}
+              </Text>
             </Box>
           ) : isNoPlansError ? (
             renderNoPlansUI()
           ) : error ? (
             <Box className='p-6'>
               <Text className='text-danger-600 text-center text-lg'>
-                Không thể tải kế hoạch
+                {t('home:planSelector:error:title')}
               </Text>
             </Box>
           ) : (
             <VStack className='mb-20 w-full flex-1'>
               <Text className='px-4 py-2 text-lg font-semibold'>
-                Kế hoạch hiện có ({plansResponse?.data?.length ?? 0})
+                {t('home:planSelector:availablePlans', {
+                  count: plansResponse?.data?.length ?? 0,
+                })}
               </Text>
               <FlashList
                 data={plansResponse?.data ?? []}

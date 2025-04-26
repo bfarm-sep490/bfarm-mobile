@@ -13,7 +13,7 @@ export const harvestingProductSchema = z.object({
   harvesting_unit: z.string(),
   available_harvesting_quantity: z.number(),
   status: z.string(),
-  evaluated_result: z.string(),
+  evaluated_result: z.string().nullable().optional(),
 });
 
 export const harvestingProductListResponseSchema = z.object({

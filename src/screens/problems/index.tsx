@@ -29,6 +29,7 @@ import {
   X,
 } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { ICreateProblem } from 'src/interfaces';
 
 import { StatusProblem } from '@/components/status-tag/problem-tag';
@@ -87,6 +88,7 @@ const getStatusColor = (status: string) => {
 
 const ProblemCard = ({ problem }: { problem: any }) => {
   const router = useRouter();
+  const { t } = useTranslation();
   const statusStyle = getStatusColor(problem.status);
 
   return (
@@ -122,8 +124,8 @@ const ProblemCard = ({ problem }: { problem: any }) => {
                 />
                 <Text className={`text-xs font-medium ${statusStyle.text}`}>
                   {problem.status === 'Resolve'
-                    ? 'Đã giải quyết'
-                    : 'Chưa giải quyết'}
+                    ? t('problem:problem:status:resolve')
+                    : t('problem:problem:status:pending')}
                 </Text>
               </HStack>
             </BoxUI>
@@ -149,7 +151,7 @@ const ProblemCard = ({ problem }: { problem: any }) => {
 
           {/* Problem description */}
           <Text className='text-sm text-typography-700'>
-            {problem.description || 'Không có mô tả'}
+            {problem.description || t('problem:problem:noDescription')}
           </Text>
 
           {/* Problem details */}
@@ -179,7 +181,7 @@ const ProblemCard = ({ problem }: { problem: any }) => {
               size='sm'
               onPress={() => router.push(`/problem/${problem.id}`)}
             >
-              <ButtonText>Chi tiết</ButtonText>
+              <ButtonText>{t('problem:problem:details')}</ButtonText>
             </Button>
           </HStack>
         </VStack>
@@ -237,6 +239,7 @@ const FilterTabs = ({
 };
 
 export const ProblemsScreen = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'All' | 'Resolve' | 'Pending'>(
     'All',
   );
@@ -318,7 +321,7 @@ export const ProblemsScreen = () => {
       <BoxUI className='px-4 py-4'>
         <HStack className='items-center justify-between'>
           <HStack space='md' className='items-center'>
-            <Heading size='lg'>Quản lý vấn đề</Heading>
+            <Heading size='lg'>{t('problem:title')}</Heading>
           </HStack>
         </HStack>
       </BoxUI>
@@ -332,7 +335,7 @@ export const ProblemsScreen = () => {
         >
           <InputIcon as={Search} className='text-typography-400' />
           <InputField
-            placeholder='Tìm kiếm vấn đề...'
+            placeholder={t('problem:search:placeholder')}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
@@ -356,7 +359,9 @@ export const ProblemsScreen = () => {
           onPress={() => router.push('/problem/create')}
           className='bg-primary-600'
         >
-          <ButtonText className='text-white'>Tạo mới</ButtonText>
+          <ButtonText className='text-white'>
+            {t('problem:create:button')}
+          </ButtonText>
         </Button>
       </BoxUI>
 
@@ -368,10 +373,10 @@ export const ProblemsScreen = () => {
               <Icon as={AlertCircle} size='xl' className='text-danger-600' />
             </BoxUI>
             <Text className='text-center text-typography-500'>
-              Có lỗi xảy ra khi tải dữ liệu
+              {t('problem:error:title')}
             </Text>
             <Button className='mt-4' onPress={handleRefresh}>
-              <ButtonText>Thử lại</ButtonText>
+              <ButtonText>{t('problem:error:tryAgain')}</ButtonText>
             </Button>
           </VStack>
         )}
@@ -406,10 +411,10 @@ export const ProblemsScreen = () => {
                     />
                   </BoxUI>
                   <Text className='text-center text-typography-500'>
-                    Không tìm thấy vấn đề
+                    {t('problem:empty:title')}
                   </Text>
                   <Text className='mt-1 text-center text-xs text-typography-400'>
-                    Tạo vấn đề mới hoặc thử thay đổi bộ lọc hoặc tìm kiếm
+                    {t('problem:empty:description')}
                   </Text>
                   <Button
                     className='mt-4'
@@ -419,7 +424,7 @@ export const ProblemsScreen = () => {
                       setSearchQuery('');
                     }}
                   >
-                    <ButtonText>Xóa bộ lọc</ButtonText>
+                    <ButtonText>{t('problem:empty:clearFilters')}</ButtonText>
                   </Button>
                 </VStack>
               ) : null
@@ -432,6 +437,7 @@ export const ProblemsScreen = () => {
 };
 
 export const CreateScreen = () => {
+  const { t } = useTranslation();
   const { user, currentPlan } = useSession();
   const { useCreateProblemMutation, useUploadImagesMutation } = useProblem();
   const createProblemMutation = useCreateProblemMutation({
@@ -555,7 +561,7 @@ export const CreateScreen = () => {
       <VStack className='items-center justify-center py-10'>
         <Spinner size='large' color='$primary600' />
         <Text className='mt-4 text-center text-typography-500'>
-          Đang tải dữ liệu...
+          {t('problem:loading')}
         </Text>
       </VStack>
     );
@@ -566,7 +572,7 @@ export const CreateScreen = () => {
       // Ensure we're using the current plan
       const currentPlanId = currentPlan?.id;
       if (!currentPlanId) {
-        Alert.alert('Lỗi', 'Vui lòng chọn kế hoạch trước khi tạo vấn đề');
+        Alert.alert(t('problem:error:title'), t('problem:create:noPlan'));
         return;
       }
 
@@ -580,7 +586,10 @@ export const CreateScreen = () => {
       });
 
       if (result.data) {
-        Alert.alert('Thành công', 'Báo cáo thành công');
+        Alert.alert(
+          t('problem:createForm:success:title'),
+          t('problem:createForm:success:message'),
+        );
         reset({
           farmer_id: user?.id ?? 0,
           problem_name: '',
@@ -594,7 +603,10 @@ export const CreateScreen = () => {
         });
       }
     } catch (error) {
-      Alert.alert('Lỗi', 'Có lỗi xảy ra. Vui lòng thử lại!');
+      Alert.alert(
+        t('problem:createForm:error:title'),
+        t('problem:createForm:error:message'),
+      );
     }
   };
 
@@ -610,7 +622,7 @@ export const CreateScreen = () => {
             <Pressable onPress={() => router.push('/problem')}>
               <Icon as={ArrowLeft} />
             </Pressable>
-            <Heading size='md'>{'Tạo vấn đề'}</Heading>
+            <Heading size='md'>{t('problem:create:title')}</Heading>
             <Pressable onPress={() => {}}></Pressable>
           </HStack>
         </HStack>
@@ -621,14 +633,15 @@ export const CreateScreen = () => {
           {/* Current Plan Info */}
           <Card className='w-full p-4'>
             <VStack space='sm'>
-              <Heading size='sm'>Kế hoạch hiện tại</Heading>
+              <Heading size='sm'>{t('problem:createForm:currentPlan')}</Heading>
               <Box className='rounded-lg border border-primary-200 bg-primary-50 p-3'>
                 <Text className='text-sm font-medium text-primary-800'>
-                  {currentPlan?.plan_name || 'Chưa chọn kế hoạch'}
+                  {currentPlan?.plan_name ||
+                    t('problem:createForm:noPlanSelected')}
                 </Text>
                 {!currentPlan && (
                   <Text className='mt-1 text-xs text-typography-500'>
-                    Vui lòng chọn kế hoạch trước khi tạo vấn đề
+                    {t('problem:createForm:selectPlan')}
                   </Text>
                 )}
               </Box>
@@ -638,9 +651,11 @@ export const CreateScreen = () => {
           {/* Image Section */}
           <Card className='w-full p-4'>
             <VStack space='md'>
-              <Heading size='sm'>Hình ảnh</Heading>
-              <Text className='text-xs text-typography-500'>
-                Tối đa 3 ảnh (bắt buộc)
+              <Heading size='sm'>
+                {t('problem:createForm:images:title')}
+              </Heading>
+              <Text className='text-sm text-typography-500'>
+                {t('problem:createForm:images:description')}
               </Text>
 
               {/* Selected images */}
@@ -702,11 +717,13 @@ export const CreateScreen = () => {
           {/* Form Section */}
           <Card className='w-full p-4'>
             <VStack space='lg'>
-              <Heading size='sm'>Thông tin vấn đề</Heading>
+              <Heading size='sm'>{t('problem:createForm:title')}</Heading>
 
               <FormControl isInvalid={!!errors.problem_name}>
                 <FormControlLabel>
-                  <FormControlLabelText>Tên vấn đề</FormControlLabelText>
+                  <FormControlLabelText>
+                    {t('problem:createForm:fields:problemName:label')}
+                  </FormControlLabelText>
                 </FormControlLabel>
                 <Controller
                   control={control}
@@ -716,12 +733,18 @@ export const CreateScreen = () => {
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value ?? ''}
-                        placeholder='Nhập tên vấn đề'
+                        placeholder={t(
+                          'problem:createForm:fields:problemName:placeholder',
+                        )}
                       />
                     </Input>
                   )}
                   name='problem_name'
-                  rules={{ required: 'Tên vấn đề không được để trống' }}
+                  rules={{
+                    required: t(
+                      'problem:createForm:fields:problemName:required',
+                    ),
+                  }}
                 />
                 {errors.problem_name && (
                   <FormControlError>
@@ -734,7 +757,9 @@ export const CreateScreen = () => {
 
               <FormControl>
                 <FormControlLabel>
-                  <FormControlLabelText>Mô tả</FormControlLabelText>
+                  <FormControlLabelText>
+                    {t('problem:createForm:fields:description:label')}
+                  </FormControlLabelText>
                 </FormControlLabel>
                 <Controller
                   control={control}
@@ -742,11 +767,13 @@ export const CreateScreen = () => {
                     <Input>
                       <InputField
                         onBlur={onBlur}
-                        multiline
-                        numberOfLines={4}
                         onChangeText={onChange}
                         value={value ?? ''}
-                        placeholder='Nhập mô tả vấn đề'
+                        placeholder={t(
+                          'problem:createForm:fields:description:placeholder',
+                        )}
+                        multiline
+                        numberOfLines={4}
                       />
                     </Input>
                   )}
@@ -754,27 +781,21 @@ export const CreateScreen = () => {
                 />
                 <FormControlHelper>
                   <FormControlHelperText>
-                    Mô tả chi tiết về vấn đề bạn gặp phải
+                    {t('problem:createForm:fields:description:helper')}
                   </FormControlHelperText>
                 </FormControlHelper>
               </FormControl>
 
               <Button
-                size='lg'
-                variant='solid'
                 onPress={handleSubmit(onSubmit)}
-                isDisabled={isUploading || images.length === 0 || !currentPlan}
+                className='bg-primary-600'
+                isDisabled={isUploading}
               >
-                {isUploading ? (
-                  <HStack space='sm'>
-                    <Spinner size='small' color='white' />
-                    <ButtonText>Đang tải lên...</ButtonText>
-                  </HStack>
-                ) : !currentPlan ? (
-                  <ButtonText>Vui lòng chọn kế hoạch</ButtonText>
-                ) : (
-                  <ButtonText>Tạo vấn đề</ButtonText>
-                )}
+                <ButtonText className='text-white'>
+                  {isUploading
+                    ? t('problem:createForm:submit:uploading')
+                    : t('problem:createForm:submit:create')}
+                </ButtonText>
               </Button>
             </VStack>
           </Card>
@@ -824,6 +845,7 @@ const FarmerCard = ({ farmer }: { farmer: any }) => {
 };
 
 export const ProblemDetailScreen = () => {
+  const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [images, setImages] = useState<string[]>([]);
@@ -846,7 +868,7 @@ export const ProblemDetailScreen = () => {
             <Pressable onPress={() => router.push('/problem')}>
               <Icon as={ArrowLeft} />
             </Pressable>
-            <Heading size='md'>Chi tiết vấn đề</Heading>
+            <Heading size='md'>{t('problem:detail:title')}</Heading>
             <Pressable onPress={() => {}}></Pressable>
           </HStack>
         </HStack>
@@ -856,7 +878,7 @@ export const ProblemDetailScreen = () => {
         <VStack className='items-center justify-center py-10'>
           <Spinner size='large' color='$primary600' />
           <Text className='mt-4 text-center text-typography-500'>
-            Đang tải dữ liệu...
+            {t('problem:loading')}
           </Text>
         </VStack>
       )}
@@ -867,10 +889,10 @@ export const ProblemDetailScreen = () => {
             <Icon as={AlertCircle} size='xl' className='text-danger-600' />
           </BoxUI>
           <Text className='text-center text-typography-500'>
-            Có lỗi xảy ra khi tải dữ liệu
+            {t('problem:error:title')}
           </Text>
           <Button className='mt-4' onPress={handleRefresh}>
-            <ButtonText>Thử lại</ButtonText>
+            <ButtonText>{t('problem:error:tryAgain')}</ButtonText>
           </Button>
         </VStack>
       )}
@@ -904,7 +926,9 @@ export const ProblemDetailScreen = () => {
                       className='text-primary-600'
                     />
                     <VStack space='xs'>
-                      <Text className='font-medium'>Người báo cáo</Text>
+                      <Text className='font-medium'>
+                        {t('problem:detail:reporter')}
+                      </Text>
                       <Text className='text-sm text-typography-600'>
                         {problem.farmer_name ||
                           `Nông dân #${problem.farmer_id}`}
@@ -927,9 +951,12 @@ export const ProblemDetailScreen = () => {
                   </HStack>
 
                   <VStack space='xs'>
-                    <Text className='font-medium'>Mô tả vấn đề</Text>
+                    <Text className='font-medium'>
+                      {t('problem:detail:description')}
+                    </Text>
                     <Text className='text-sm text-typography-600'>
-                      {problem.description || 'Không có mô tả'}
+                      {problem.description ||
+                        t('problem:problem:noDescription')}
                     </Text>
                   </VStack>
                 </VStack>
@@ -940,7 +967,7 @@ export const ProblemDetailScreen = () => {
             {problem.problem_images && problem.problem_images.length > 0 && (
               <Card className='w-full p-4'>
                 <VStack space='md'>
-                  <Heading size='sm'>Hình ảnh</Heading>
+                  <Heading size='sm'>{t('problem:detail:images')}</Heading>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <HStack space='sm'>
                       {problem.problem_images.map((image, index) => (
@@ -970,7 +997,9 @@ export const ProblemDetailScreen = () => {
                       size='sm'
                       className='text-success-600'
                     />
-                    <Heading size='sm'>Kết quả xử lý</Heading>
+                    <Heading size='sm'>
+                      {t('problem:detail:result:title')}
+                    </Heading>
                   </HStack>
                   <Box className='rounded-lg border border-success-200 bg-success-50 p-3'>
                     <Text className='text-sm text-success-800'>

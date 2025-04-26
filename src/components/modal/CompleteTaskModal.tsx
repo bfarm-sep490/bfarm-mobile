@@ -9,10 +9,16 @@ import RNPickerSelect from 'react-native-picker-select';
 
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
+import {
+  FormControl,
+  FormControlError,
+  FormControlErrorText,
+  FormControlLabel,
+  FormControlLabelText,
+} from '@/components/ui/form-control';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
-import { Input, InputField } from '@/components/ui/input';
 import {
   Modal,
   ModalBackdrop,
@@ -27,11 +33,10 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { useCaringTask } from '@/services/api/caring-tasks/useCaringTask';
-import { useHarvestingTask } from '@/services/api/harvesting-tasks/useHarvestingTask';
 import { useHarvestingProduct } from '@/services/api/harvesting_products/useHarvestingProduct';
-import { usePackagingTask } from '@/services/api/packaging-tasks/usePackagingTask';
 import { usePackagingType } from '@/services/api/packaging-types/usePackagingType';
+
+import { Input, InputField } from '../ui';
 
 interface ApiError extends Error {
   name: string;
@@ -162,15 +167,12 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   );
   const [images, setImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { useFetchByParamsQuery } = useHarvestingProduct();
   const { data: harvestingProducts } = useFetchByParamsQuery(
     { plan_id: idPlan },
     !!idPlan,
   );
-  const { useUploadImagesMutation: caringUpload } = useCaringTask();
-  const { useUploadImagesMutation: harvestingUpload } = useHarvestingTask();
-  const { useUploadImagesMutation: packagingUpload } = usePackagingTask();
-
   const { useFetchAllQuery: usePackagingTypeAll } = usePackagingType();
   const { data: packagingTypes } = usePackagingTypeAll({
     enabled: true,
@@ -234,21 +236,61 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
     onClose();
   };
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!resultContent.trim()) {
+      newErrors.resultContent = 'Vui lòng nhập mô tả';
+    }
+
+    if (taskType === 'harvesting' && harvestingQuantity <= 0) {
+      newErrors.harvestingQuantity = 'Số lượng phải lớn hơn 0';
+    }
+
+    if (taskType === 'packaging') {
+      if (!harvestingProductId) {
+        newErrors.harvestingProductId = 'Vui lòng chọn sản lượng đã thu hoạch';
+      }
+      if (unpackagingQuantity <= 0) {
+        newErrors.unpackagingQuantity = 'Số lượng sản phẩm phải lớn hơn 0';
+      }
+      if (packagingQuantity <= 0) {
+        newErrors.packagingQuantity = 'Sản lượng đóng gói phải lớn hơn 0';
+      }
+    }
+
+    if (images.length === 0) {
+      newErrors.images = 'Vui lòng tải lên ít nhất một ảnh';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleConfirm = async () => {
     if (isUploading) {
       Alert.alert('Lỗi', 'Vui lòng đợi quá trình tải ảnh hoàn tất');
       return;
     }
 
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       setIsUploading(true);
-
       onConfirm({
         resultContent,
         images,
-        harvesting_quantity: harvestingQuantity,
-        unpackaging_quantity: unpackagingQuantity,
-        packaging_quantity: packagingQuantity,
+        ...(taskType === 'packaging' &&
+          harvestingProductId && {
+            harvesting_task_id: harvestingProductId,
+            packaged_item_count: unpackagingQuantity,
+            total_packaged_weight: packagingQuantity,
+          }),
+        ...(taskType === 'harvesting' && {
+          harvesting_quantity: harvestingQuantity,
+        }),
       });
     } catch (error: unknown) {
       const apiError = error as ApiError;
@@ -373,10 +415,12 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
           <VStack space='md'>
             <Text>{description}</Text>
             {taskType === 'harvesting' && (
-              <>
-                <Text className='text-sm font-medium'>
-                  Số lượng thu hoạch (kg)
-                </Text>
+              <FormControl isInvalid={!!errors.harvestingQuantity}>
+                <FormControlLabel>
+                  <FormControlLabelText>
+                    Số lượng thu hoạch (kg)
+                  </FormControlLabelText>
+                </FormControlLabel>
                 <Input variant='underlined'>
                   <InputField
                     keyboardType='numeric'
@@ -388,7 +432,14 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
                     }
                   />
                 </Input>
-              </>
+                {errors.harvestingQuantity && (
+                  <FormControlError>
+                    <FormControlErrorText>
+                      {errors.harvestingQuantity}
+                    </FormControlErrorText>
+                  </FormControlError>
+                )}
+              </FormControl>
             )}
             {taskType === 'packaging' && (
               <>
@@ -399,90 +450,143 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
                       ?.name
                   }
                 </Text>
-                <Text className='text-sm font-medium'>
-                  Chọn sản lượng đã thu hoạch
-                </Text>
-                <RNPickerSelect
-                  textInputProps={{
-                    textAlign: 'center',
-                    textAlignVertical: 'center',
-                  }}
-                  onValueChange={value => setHarvestingProductId(value)}
-                  items={(harvestingProducts?.data || [])?.map(item => ({
-                    label: `Thu hoạch #${item?.harvesting_task_id} - ${item?.available_harvesting_quantity} ${item?.harvesting_unit} chưa đóng gói`,
-                    value: item?.harvesting_task_id,
-                  }))}
-                />
-                <Text className='text-sm font-medium'>
-                  Số lượng sản phẩm đóng gói
-                </Text>
-                <Input variant='underlined'>
-                  <InputField
-                    keyboardType='numeric'
-                    placeholder={'Nhập số lượng sản phẩm đóng gói...'}
-                    textAlignVertical='center'
-                    value={unpackagingQuantity.toString()}
-                    onChange={e =>
-                      setUnpackagingQuantity(Number(e.nativeEvent.text))
-                    }
+                <FormControl isInvalid={!!errors.harvestingProductId}>
+                  <FormControlLabel>
+                    <FormControlLabelText>
+                      Chọn sản lượng đã thu hoạch
+                    </FormControlLabelText>
+                  </FormControlLabel>
+                  <RNPickerSelect
+                    textInputProps={{
+                      textAlign: 'center',
+                      textAlignVertical: 'center',
+                    }}
+                    onValueChange={value => setHarvestingProductId(value)}
+                    items={(harvestingProducts?.data || [])?.map(item => ({
+                      label: `Thu hoạch #${item?.harvesting_task_id} - ${item?.available_harvesting_quantity} ${item?.harvesting_unit} chưa đóng gói`,
+                      value: item?.harvesting_task_id,
+                    }))}
                   />
-                </Input>
-                <Text className='text-sm font-medium'>Sản lượng đóng gói</Text>
-                <Input variant='underlined'>
-                  <InputField
-                    keyboardType='numeric'
-                    placeholder={'Nhập sản lượng đóng gói'}
-                    textAlignVertical='center'
-                    value={packagingQuantity.toString()}
-                    onChange={e =>
-                      setPackagingQuantity(Number(e.nativeEvent.text))
-                    }
-                  />
-                </Input>
+                  {errors.harvestingProductId && (
+                    <FormControlError>
+                      <FormControlErrorText>
+                        {errors.harvestingProductId}
+                      </FormControlErrorText>
+                    </FormControlError>
+                  )}
+                </FormControl>
+                <FormControl isInvalid={!!errors.unpackagingQuantity}>
+                  <FormControlLabel>
+                    <FormControlLabelText>
+                      Số lượng sản phẩm đóng gói
+                    </FormControlLabelText>
+                  </FormControlLabel>
+                  <Input variant='underlined'>
+                    <InputField
+                      keyboardType='numeric'
+                      placeholder={'Nhập số lượng sản phẩm đóng gói...'}
+                      textAlignVertical='center'
+                      value={unpackagingQuantity.toString()}
+                      onChange={e =>
+                        setUnpackagingQuantity(Number(e.nativeEvent.text))
+                      }
+                    />
+                  </Input>
+                  {errors.unpackagingQuantity && (
+                    <FormControlError>
+                      <FormControlErrorText>
+                        {errors.unpackagingQuantity}
+                      </FormControlErrorText>
+                    </FormControlError>
+                  )}
+                </FormControl>
+                <FormControl isInvalid={!!errors.packagingQuantity}>
+                  <FormControlLabel>
+                    <FormControlLabelText>
+                      Sản lượng đóng gói
+                    </FormControlLabelText>
+                  </FormControlLabel>
+                  <Input variant='underlined'>
+                    <InputField
+                      keyboardType='numeric'
+                      placeholder={'Nhập sản lượng đóng gói'}
+                      textAlignVertical='center'
+                      value={packagingQuantity.toString()}
+                      onChange={e =>
+                        setPackagingQuantity(Number(e.nativeEvent.text))
+                      }
+                    />
+                  </Input>
+                  {errors.packagingQuantity && (
+                    <FormControlError>
+                      <FormControlErrorText>
+                        {errors.packagingQuantity}
+                      </FormControlErrorText>
+                    </FormControlError>
+                  )}
+                </FormControl>
               </>
             )}
-            <Text className='text-sm font-medium'>Mô tả</Text>
-            <Input variant='underlined'>
-              <InputField
-                placeholder={placeholder}
-                multiline
-                numberOfLines={4}
-                textAlignVertical='center'
-                value={resultContent}
-                onChangeText={setResultContent}
-              />
-            </Input>
+            <FormControl isInvalid={!!errors.resultContent}>
+              <FormControlLabel>
+                <FormControlLabelText>Mô tả</FormControlLabelText>
+              </FormControlLabel>
+              <Input variant='underlined'>
+                <InputField
+                  placeholder={placeholder}
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical='center'
+                  value={resultContent}
+                  onChangeText={setResultContent}
+                />
+              </Input>
+              {errors.resultContent && (
+                <FormControlError>
+                  <FormControlErrorText>
+                    {errors.resultContent}
+                  </FormControlErrorText>
+                </FormControlError>
+              )}
+            </FormControl>
 
             {/* Image picker buttons */}
-            <HStack className='mt-2 flex-wrap items-center'>
-              {showCameraButton && (
-                <Pressable
-                  className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
-                  onPress={takePhoto}
-                >
-                  <VStack className='items-center'>
-                    <Icon as={Camera} className='text-typography-500' />
-                    <Text className='text-xs text-typography-500'>
-                      Chụp ảnh
-                    </Text>
-                  </VStack>
-                </Pressable>
-              )}
+            <FormControl isInvalid={!!errors.images}>
+              <HStack className='mt-2 flex-wrap items-center'>
+                {showCameraButton && (
+                  <Pressable
+                    className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
+                    onPress={takePhoto}
+                  >
+                    <VStack className='items-center'>
+                      <Icon as={Camera} className='text-typography-500' />
+                      <Text className='text-xs text-typography-500'>
+                        Chụp ảnh
+                      </Text>
+                    </VStack>
+                  </Pressable>
+                )}
 
-              {showGalleryButton && (
-                <Pressable
-                  className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
-                  onPress={pickImageFromGallery}
-                >
-                  <VStack className='items-center'>
-                    <Icon as={ImageIcon} className='text-typography-500' />
-                    <Text className='text-xs text-typography-500'>
-                      Thư viện
-                    </Text>
-                  </VStack>
-                </Pressable>
+                {showGalleryButton && (
+                  <Pressable
+                    className='mb-2 mr-2 items-center justify-center rounded-lg border border-dashed border-typography-300 p-2'
+                    onPress={pickImageFromGallery}
+                  >
+                    <VStack className='items-center'>
+                      <Icon as={ImageIcon} className='text-typography-500' />
+                      <Text className='text-xs text-typography-500'>
+                        Thư viện
+                      </Text>
+                    </VStack>
+                  </Pressable>
+                )}
+              </HStack>
+              {errors.images && (
+                <FormControlError>
+                  <FormControlErrorText>{errors.images}</FormControlErrorText>
+                </FormControlError>
               )}
-            </HStack>
+            </FormControl>
 
             {/* Selected images */}
             {images.length > 0 && (

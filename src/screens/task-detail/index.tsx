@@ -26,6 +26,7 @@ import {
   UserIcon,
   Sprout,
 } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 import CompleteTaskModal from '@/components/modal/CompleteTaskModal';
 import { SubmitReportProgressModal } from '@/components/modal/SubmitReportProgressModal';
@@ -214,9 +215,10 @@ export const TaskDetailScreen = () => {
     enabled: true,
   });
   // Get session data
-  const { user } = useSession();
+  const { user, currentPlan } = useSession();
   const currentFarmerId = user?.id;
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const {
     useFetchOneQuery: useFetchCaringTask,
@@ -501,7 +503,7 @@ export const TaskDetailScreen = () => {
             <VStack space='md'>
               {/* Task header with status */}
               <HStack className='items-center justify-between'>
-                <HStack space='sm' className='items-center'>
+                <HStack space='sm' className='flex-1 items-center pr-2'>
                   <BoxUI
                     className={`rounded-lg p-2 ${task.task_type ? 'bg-primary-100' : 'bg-typography-100'}`}
                   >
@@ -511,16 +513,21 @@ export const TaskDetailScreen = () => {
                       className='text-primary-700'
                     />
                   </BoxUI>
-                  <VStack>
-                    <Heading size='sm' className='text-typography-500'>
-                      {task.task_type
-                        ? TASK_TYPES[task.task_type as TaskType]
-                        : taskType === 'harvesting'
-                          ? 'Thu hoạch'
-                          : 'Đóng gói'}
-                    </Heading>
+                  <VStack className='flex-1'>
+                    <Text
+                      className='text-base font-semibold'
+                      numberOfLines={1}
+                      ellipsizeMode='tail'
+                    >
+                      {task.task_name}
+                    </Text>
+                    <Text className='text-xs text-typography-500'>
+                      {task.task_type ||
+                        (taskType === 'harvesting' ? 'Thu hoạch' : 'Đóng gói')}
+                    </Text>
                   </VStack>
                 </HStack>
+
                 <BoxUI className={`rounded-full px-3 py-1 ${statusStyle.bg}`}>
                   <HStack space='xs' className='items-center'>
                     <Icon
@@ -535,53 +542,12 @@ export const TaskDetailScreen = () => {
                 </BoxUI>
               </HStack>
 
-              <Divider />
-              {taskType === 'packaging' && (
-                <VStack space='sm'>
-                  <Text className='font-semibold'>Loại bao bì</Text>
-                  <Text className='text-sm text-typography-700'>
-                    {
-                      packagingTypes?.data?.find(
-                        x => x.id === task.packaging_type_id,
-                      )?.name
-                    }
-                  </Text>
-                </VStack>
-              )}
+              {/* Task description */}
+              <Text className='text-sm text-typography-700'>
+                {task.description || t('farmerTask:task:noDescription')}
+              </Text>
+
               {/* Task details */}
-              <VStack space='sm'>
-                <Text className='font-semibold'>Mô tả</Text>
-                <Text className='text-sm text-typography-700'>
-                  {task.description}
-                </Text>
-
-                {task?.status === 'Complete' && (
-                  <>
-                    <Text className='mt-2 font-semibold'>Kết quả</Text>
-                    <BoxUI className='rounded-lg border border-success-200 bg-success-50 p-3'>
-                      <Text className='text-sm text-success-800'>
-                        {task?.result_content
-                          ? task?.result_content
-                          : 'Không có nội dung'}
-                      </Text>
-                    </BoxUI>
-                  </>
-                )}
-                {task?.status === 'Complete' && taskType === 'harvesting' && (
-                  <>
-                    <Text className='mt-2 font-semibold'>
-                      Số lượng thu hoạch:
-                    </Text>
-                    <BoxUI className='rounded-lg border border-success-200 bg-success-50 p-3'>
-                      <Text className='text-sm text-success-800'>
-                        {task.harvested_quantity} {task.harvested_unit || 'kg'}
-                      </Text>
-                    </BoxUI>
-                  </>
-                )}
-              </VStack>
-
-              {/* Time information */}
               <Card className='rounded-lg bg-typography-50 p-3'>
                 <VStack space='sm'>
                   <HStack className='items-center justify-between'>
@@ -592,7 +558,7 @@ export const TaskDetailScreen = () => {
                         className='text-typography-500'
                       />
                       <Text className='text-sm text-typography-700'>
-                        Thời gian
+                        {t('farmerTask:task:time')}
                       </Text>
                     </HStack>
                     <Text className='text-sm font-medium'>
@@ -609,7 +575,7 @@ export const TaskDetailScreen = () => {
                         className='text-typography-500'
                       />
                       <Text className='text-sm text-typography-700'>
-                        Giờ thực hiện
+                        {t('farmerTask:task:executionTime')}
                       </Text>
                     </HStack>
                     <Text className='text-sm font-medium'>
@@ -628,7 +594,7 @@ export const TaskDetailScreen = () => {
                           className='text-typography-500'
                         />
                         <Text className='text-sm text-typography-700'>
-                          Trạng thái của bạn
+                          {t('farmerTask:task:yourStatus')}
                         </Text>
                       </HStack>
                       <Text
@@ -651,7 +617,7 @@ export const TaskDetailScreen = () => {
                         className='text-typography-500'
                       />
                       <Text className='text-sm text-typography-700'>
-                        Người tạo
+                        {t('farmerTask:task:creator')}
                       </Text>
                     </HStack>
                     <Text className='text-sm font-medium'>
@@ -673,90 +639,142 @@ export const TaskDetailScreen = () => {
 
         {/* Images section */}
         {images.length > 0 && (
-          <BoxUI className='mx-4 mb-4'>
-            <HStack className='mb-2 items-center justify-between'>
-              <Text className='font-semibold'>Hình ảnh</Text>
-              {images.length > 1 && (
-                <Pressable>
-                  <Text className='text-xs text-primary-600'>Xem tất cả</Text>
+          <Card className='mt-4 overflow-hidden rounded-xl'>
+            <BoxUI>
+              <HStack className='mb-2 items-center justify-between'>
+                <HStack space='sm' className='items-center'>
+                  <Icon as={Box} size='sm' className='text-primary-600' />
+                  <Text className='font-semibold'>
+                    {t('farmerTask:task:images')}
+                  </Text>
+                </HStack>
+                <Pressable onPress={() => {}}>
+                  <Text className='text-sm text-primary-600'>
+                    {t('farmerTask:task:viewAll')}
+                  </Text>
                 </Pressable>
-              )}
-            </HStack>
+              </HStack>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <HStack space='sm'>
-                {images.map((image, index) => (
-                  <BoxUI
-                    key={`image-${index}-${image.url}`}
-                    className='h-48 w-48 overflow-hidden rounded-xl'
-                  >
-                    <Image
-                      source={{ uri: image.url }}
-                      style={{ width: '100%', height: '100%' }}
-                      resizeMode='cover'
-                    />
-                  </BoxUI>
-                ))}
-              </HStack>
-            </ScrollView>
-          </BoxUI>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <HStack space='sm'>
+                  {images.map((image, index) => (
+                    <BoxUI
+                      key={index}
+                      className='h-32 w-32 overflow-hidden rounded-lg'
+                    >
+                      <Image
+                        source={{ uri: image.url }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode='cover'
+                      />
+                    </BoxUI>
+                  ))}
+                </HStack>
+              </ScrollView>
+            </BoxUI>
+          </Card>
         )}
+
+        {/* Required items section */}
         {items.length > 0 && (
-          <BoxUI className='mx-4 mb-4'>
-            <Text className='mb-2 font-semibold'>
-              Công cụ, phân bón hoặc thuốc cần thiết
-            </Text>
-            {items.map(item => (
-              <ItemCard
-                key={`item-${item.id || item.item_id}-${item.item_name}`}
-                item={item}
-                type={
-                  taskType === 'caring' &&
-                  task.care_pesticides?.some(
-                    (p: { item_id: any }) => p.item_id === item.item_id,
-                  )
-                    ? 'pesticide'
-                    : taskType === 'caring' &&
-                        task.care_fertilizers?.some(
-                          (f: { item_id: any }) => f.item_id === item.item_id,
-                        )
-                      ? 'fertilizer'
-                      : 'tool'
-                }
-              />
-            ))}
-          </BoxUI>
-        )}
-        {/* Actions section */}
-        <Card className='m-4 rounded-xl'>
-          <BoxUI className='p-4'>
-            <VStack space='md'>
-              <Text className='font-semibold'>Cập nhật trạng thái</Text>
-              <HStack space='md'>
-                <Button
-                  variant='solid'
-                  className='flex-1 bg-success-600'
-                  onPress={() => setShowCompleteModal(true)}
-                  isDisabled={!canCompleteTask || isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <HStack space='sm' className='items-center'>
-                      <Spinner size='small' color='white' />
-                      <ButtonText>Đang xử lý...</ButtonText>
-                    </HStack>
-                  ) : (
-                    <>
-                      <ButtonIcon as={Check} />
-                      <ButtonText>Hoàn thành</ButtonText>
-                    </>
-                  )}
-                </Button>
+          <Card className='mt-4 overflow-hidden rounded-xl'>
+            <BoxUI>
+              <HStack className='mb-2 items-center'>
+                <Icon as={Box} size='sm' className='text-primary-600' />
+                <Text className='font-semibold'>
+                  {t('farmerTask:task:requiredItems')}
+                </Text>
               </HStack>
-            </VStack>
-          </BoxUI>
-        </Card>
-        <BoxUI className='h-10' />
+
+              <VStack space='sm'>
+                {items.map((item, index) => (
+                  <HStack
+                    key={index}
+                    className='items-center rounded-lg bg-typography-50 p-2'
+                  >
+                    <Icon
+                      as={Box}
+                      size='sm'
+                      className='mr-2 text-typography-500'
+                    />
+                    <VStack className='flex-1'>
+                      <Text className='text-sm'>
+                        {item.item_name || item.name || `Item #${item.item_id}`}
+                      </Text>
+                      <Text className='text-xs text-typography-500'>
+                        {t('farmerTask:task:quantity', {
+                          count: item.quantity,
+                          unit: item.unit || '',
+                        })}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                ))}
+              </VStack>
+            </BoxUI>
+          </Card>
+        )}
+
+        {/* Task result section */}
+        {task.result_content && (
+          <Card className='mt-4 overflow-hidden rounded-xl'>
+            <BoxUI>
+              <HStack className='mb-2 items-center'>
+                <Icon
+                  as={CheckCircle2}
+                  size='sm'
+                  className='text-primary-600'
+                />
+                <Text className='font-semibold'>
+                  {t('farmerTask:task:result')}
+                </Text>
+              </HStack>
+
+              <BoxUI className='rounded-lg bg-typography-50 p-2'>
+                <Text className='text-sm text-typography-700'>
+                  {task.result_content}
+                </Text>
+              </BoxUI>
+            </BoxUI>
+          </Card>
+        )}
+
+        {/* Action buttons */}
+        <BoxUI className='mt-4 p-4'>
+          <Button
+            className='w-full'
+            variant='solid'
+            onPress={() => setShowCompleteModal(true)}
+            isDisabled={!canCompleteTask || isSubmitting}
+          >
+            {isSubmitting ? (
+              <HStack space='sm' className='items-center'>
+                <Spinner size='small' />
+                <ButtonText>{t('farmerTask:task:updating')}</ButtonText>
+              </HStack>
+            ) : (
+              <ButtonText>{t('farmerTask:task:updateStatus')}</ButtonText>
+            )}
+          </Button>
+        </BoxUI>
       </ScrollView>
+
+      {/* Complete task modal */}
+      <CompleteTaskModal
+        isOpen={showCompleteModal}
+        onClose={() => setShowCompleteModal(false)}
+        taskType={taskType as 'caring' | 'harvesting' | 'packaging'}
+        title={t('farmerTask:task:confirmComplete')}
+        description={t('farmerTask:task:confirmCompleteDescription', {
+          taskName: task?.task_name,
+        })}
+        allowMultipleImages={true}
+        maxImages={3}
+        onConfirm={handleCompleteTask}
+        idPlan={currentPlan?.id}
+      />
+
+      {/* Progress modal */}
       <SubmitReportProgressModal
         isOpen={showProgressModal}
         onClose={() => {
@@ -764,18 +782,8 @@ export const TaskDetailScreen = () => {
           setSubmitProgress(0);
         }}
         progress={submitProgress}
-        title='Đang cập nhật báo cáo'
-        description='Vui lòng đợi trong giây lát, quá trình này có thể mất khoảng 30 giây...'
-      />
-      <CompleteTaskModal
-        isOpen={showCompleteModal}
-        onClose={() => setShowCompleteModal(false)}
-        taskType={taskType as 'caring' | 'harvesting' | 'packaging'}
-        title='Xác nhận hoàn thành nhiệm vụ'
-        description={`Vui lòng nhập kết quả thực hiện nhiệm vụ "${task?.task_name}"`}
-        allowMultipleImages={true}
-        maxImages={3}
-        onConfirm={handleCompleteTask}
+        title={t('farmerTask:report:updating')}
+        description={t('farmerTask:report:updatingDescription')}
       />
     </SafeAreaView>
   );

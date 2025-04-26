@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { HarvestingProductServices } from './harvestingProductService';
-import { HarvestingTaskParams } from '../harvesting-tasks/harvestingTaskService';
+import {
+  HarvestingProductServices,
+  HarvestingProductParams,
+} from './harvestingProductService';
 
 const enum HarvestingProductQueryKey {
   fetchAll = 'fetchAllHarvestingProducts',
@@ -20,7 +22,7 @@ export const useHarvestingProduct = () => {
    * Hook để lấy danh sách công việc thu hoạch theo các tham số
    */
   const useFetchByParamsQuery = (
-    params: HarvestingTaskParams,
+    params: HarvestingProductParams,
     enabled = true,
   ) =>
     useQuery({

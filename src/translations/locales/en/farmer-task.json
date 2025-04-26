@@ -1,3 +1,73 @@
 {
-  "title": "Tasks"
+  "title": "Task Management",
+  "search": {
+    "placeholder": "Search tasks..."
+  },
+  "filters": {
+    "clear": "Clear filters",
+    "noResults": "No matching tasks found",
+    "noResultsHint": "Try changing filters or search"
+  },
+  "tabs": {
+    "all": "All",
+    "ongoing": "Ongoing",
+    "completed": "Completed",
+    "incomplete": "Incomplete"
+  },
+  "categories": {
+    "all": "All",
+    "caring": "Caring",
+    "harvesting": "Harvesting",
+    "packaging": "Packaging"
+  },
+  "task": {
+    "details": "Details",
+    "quickReport": "Quick Report",
+    "noDescription": "No description",
+    "noAssigned": "No one assigned to this task",
+    "yourStatus": "Your status",
+    "requiredTools": "{{count}} required tools",
+    "harvestingTools": "{{count}} harvesting tools",
+    "packagingMaterials": "{{count}} packaging materials",
+    "harvestedQuantity": "Harvested quantity",
+    "result": "Result",
+    "description": "Description",
+    "time": "Time",
+    "executionTime": "Execution time",
+    "creator": "Creator",
+    "images": "Images",
+    "viewAll": "View all",
+    "requiredItems": "Required tools, fertilizers or pesticides",
+    "updateStatus": "Update status",
+    "updating": "Updating...",
+    "complete": "Complete",
+    "processing": "Processing...",
+    "confirmComplete": "Confirm task completion",
+    "confirmCompleteDescription": "Please enter the task result for \"{{taskName}}\"",
+    "noContent": "No content",
+    "packagingType": "Packaging type",
+    "quantity": "Quantity: {{count}} {{unit}}"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "error": {
+    "title": "Error loading data",
+    "tryAgain": "Try Again",
+    "loadingError": "Could not load task information",
+    "loading": "Loading information..."
+  },
+  "loading": "Loading data...",
+  "noMoreData": "No more data",
+  "report": {
+    "title": "Quick Report",
+    "description": "Please enter the task result for \"{{taskName}}\"",
+    "updating": "Updating report",
+    "updatingDescription": "Please wait, this process may take about 30 seconds...",
+    "success": "Success",
+    "successMessage": "Task updated successfully",
+    "error": "Error",
+    "errorMessage": "An error occurred while updating the task. Please try again."
+  }
 }

@@ -7,6 +7,7 @@ import { reduxStorage } from '../store/storage';
 import enError from './locales/en/error.json';
 import enFarmerTask from './locales/en/farmer-task.json';
 import enHome from './locales/en/home.json';
+import enLayout from './locales/en/layout.json';
 import enNotification from './locales/en/notification.json';
 import enProblem from './locales/en/problem.json';
 import enProfile from './locales/en/profile.json';
@@ -16,6 +17,7 @@ import enTodo from './locales/en/todo.json';
 import viError from './locales/vi/error.json';
 import viFarmerTask from './locales/vi/farmer-task.json';
 import viHome from './locales/vi/home.json';
+import viLayout from './locales/vi/layout.json';
 import viNotification from './locales/vi/notification.json';
 import viProblem from './locales/vi/problem.json';
 import viProfile from './locales/vi/profile.json';
@@ -35,6 +37,7 @@ const resources: any = {
     problem: enProblem,
     todo: enTodo,
     splash: enSplash,
+    layout: enLayout,
   },
   vi: {
     home: viHome,
@@ -46,6 +49,7 @@ const resources: any = {
     problem: viProblem,
     todo: viTodo,
     splash: viSplash,
+    layout: viLayout,
   },
 } as const;
 

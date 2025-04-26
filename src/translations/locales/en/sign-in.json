@@ -1,4 +1,60 @@
 {
-  "title": "Sign in screen",
-  "goToDashboard": "Go to dashboard"
+  "title": "Log in",
+  "subtitle": "BfarmX",
+  "form": {
+    "email": {
+      "label": "Email",
+      "placeholder": "Enter email",
+      "required": "Email is required",
+      "invalid": "Invalid email format"
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Enter password",
+      "required": "Password is required"
+    },
+    "rememberMe": {
+      "label": "Remember me"
+    },
+    "forgotPassword": "Forgot password?"
+  },
+  "button": {
+    "login": "Log in",
+    "loggingIn": "Logging in..."
+  },
+  "toast": {
+    "success": {
+      "title": "Logged in successfully!"
+    },
+    "error": {
+      "title": "Login failed. Check your credentials."
+    }
+  },
+  "goToDashboard": "Go to dashboard",
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "subtitle": "BfarmX",
+    "form": {
+      "email": {
+        "label": "Email",
+        "placeholder": "Enter your email",
+        "required": "Email is required",
+        "invalid": "Invalid email format",
+        "helper": "We will send a password reset link to your email"
+      }
+    },
+    "button": {
+      "sendLink": "Send link",
+      "sending": "Sending..."
+    },
+    "modal": {
+      "title": "Notification",
+      "message": "Please check your email and follow the instructions to reset your password.",
+      "close": "Close",
+      "login": "Log in"
+    },
+    "error": {
+      "title": "An error occurred. Please try again later."
+    }
+  }
 }

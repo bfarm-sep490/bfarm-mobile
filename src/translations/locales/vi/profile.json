@@ -25,5 +25,9 @@
   "uploadSuccess": "Thành công",
   "imageUpdated": "Cập nhật ảnh đại diện thành công",
   "uploadError": "Lỗi",
-  "tryAgain": "Tải lên ảnh thất bại. Vui lòng thử lại"
+  "tryAgain": "Tải lên ảnh thất bại. Vui lòng thử lại",
+  "loading": "Đang tải...",
+  "userNotFound": "Không tìm thấy người dùng",
+  "english": "Tiếng Anh",
+  "vietnamese": "Tiếng Việt"
 }
