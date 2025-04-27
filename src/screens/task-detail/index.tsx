@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
-  Check,
   Leaf,
   Droplets,
   Scissors,
@@ -31,9 +30,8 @@ import { useTranslation } from 'react-i18next';
 import CompleteTaskModal from '@/components/modal/CompleteTaskModal';
 import { SubmitReportProgressModal } from '@/components/modal/SubmitReportProgressModal';
 import { Box as BoxUI } from '@/components/ui/box';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { Button, ButtonText } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Divider } from '@/components/ui/divider';
 import { Heading } from '@/components/ui/heading';
 import { HStack } from '@/components/ui/hstack';
 import { Icon } from '@/components/ui/icon';
@@ -761,6 +759,7 @@ export const TaskDetailScreen = () => {
 
       {/* Complete task modal */}
       <CompleteTaskModal
+        packaging_type_id={task?.packaging_type_id}
         isOpen={showCompleteModal}
         onClose={() => setShowCompleteModal(false)}
         taskType={taskType as 'caring' | 'harvesting' | 'packaging'}

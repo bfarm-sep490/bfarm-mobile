@@ -937,6 +937,7 @@ export const FarmerTasksScreen = () => {
         description={t('farmerTask:report:updatingDescription')}
       />
       <CompleteTaskModal
+        packaging_type_id={selectedTask?.packaging_type_id}
         isOpen={showCompleteModal}
         onClose={() => {
           setShowCompleteModal(false);
