@@ -594,7 +594,19 @@ export const FarmerTasksScreen = () => {
       const caringTasks = caringQuery.data?.data || [];
       filteredTasks = [
         ...filteredTasks,
-        ...caringTasks.map(t => ({ ...t, taskType: 'caring' })),
+        ...caringTasks.map(t => ({
+          ...t,
+          taskType: 'caring',
+          // Ensure required fields exist
+          status: t.status || 'Pending',
+          task_name: t.task_name || 'Unnamed Task',
+          start_date: t.start_date || new Date().toISOString(),
+          end_date: t.end_date || new Date().toISOString(),
+          description: t.description || '',
+          farmer_information: t.farmer_information || [],
+          care_images: t.care_images || [],
+          care_items: t.care_items || [],
+        })),
       ];
     }
 
@@ -602,7 +614,19 @@ export const FarmerTasksScreen = () => {
       const harvestingTasks = harvestingQuery.data?.data || [];
       filteredTasks = [
         ...filteredTasks,
-        ...harvestingTasks.map(t => ({ ...t, taskType: 'harvesting' })),
+        ...harvestingTasks.map(t => ({
+          ...t,
+          taskType: 'harvesting',
+          // Ensure required fields exist
+          status: t.status || 'Pending',
+          task_name: t.task_name || 'Unnamed Task',
+          start_date: t.start_date || new Date().toISOString(),
+          end_date: t.end_date || new Date().toISOString(),
+          description: t.description || '',
+          farmer_information: t.farmer_information || [],
+          harvest_images: t.harvest_images || [],
+          harvesting_items: t.harvesting_items || [],
+        })),
       ];
     }
 
@@ -610,7 +634,19 @@ export const FarmerTasksScreen = () => {
       const packagingTasks = packagingQuery.data?.data || [];
       filteredTasks = [
         ...filteredTasks,
-        ...packagingTasks.map(t => ({ ...t, taskType: 'packaging' })),
+        ...packagingTasks.map(t => ({
+          ...t,
+          taskType: 'packaging',
+          // Ensure required fields exist
+          status: t.status || 'Pending',
+          task_name: t.task_name || 'Unnamed Task',
+          start_date: t.start_date || new Date().toISOString(),
+          end_date: t.end_date || new Date().toISOString(),
+          description: t.description || '',
+          farmer_information: t.farmer_information || [],
+          packaging_images: t.packaging_images || [],
+          packaging_items: t.packaging_items || [],
+        })),
       ];
     }
 
@@ -792,15 +828,22 @@ export const FarmerTasksScreen = () => {
 
   // Render task item
   const renderItem = useCallback(
-    ({ item }: { item: any }) => (
-      <TaskCard
-        key={`${item.taskType}-${item.id}`}
-        task={item}
-        taskType={item.taskType || 'caring'}
-        currentFarmerId={currentFarmerId}
-        onQuickReport={handleQuickReport}
-      />
-    ),
+    ({ item }: { item: any }) => {
+      // Validate item data before rendering
+      if (!item || typeof item !== 'object') {
+        return null;
+      }
+
+      return (
+        <TaskCard
+          key={`${item.taskType}-${item.id}`}
+          task={item}
+          taskType={item.taskType || 'caring'}
+          currentFarmerId={currentFarmerId}
+          onQuickReport={handleQuickReport}
+        />
+      );
+    },
     [currentFarmerId],
   );
 

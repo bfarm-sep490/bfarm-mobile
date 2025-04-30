@@ -263,7 +263,7 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
 
 const TasksList = () => {
   const { t } = useTranslation();
-  const { currentPlan, user } = useSession();
+  const { currentPlan, user, isLoading: isSessionLoading } = useSession();
   const currentFarmerId = user?.id;
   const currentPlanId = currentPlan?.id;
   const [refreshing, setRefreshing] = useState(false);
@@ -303,19 +303,23 @@ const TasksList = () => {
     end_date: today.endOf('day').format('YYYY-MM-DD HH:mm:ss'),
   };
 
-  // Fetch tasks using React Query
-  const caringQuery = useFetchCaringTasks(caringParams, !!currentPlanId);
+  // Fetch tasks using React Query with proper loading state
+  const caringQuery = useFetchCaringTasks(
+    caringParams,
+    !!currentPlanId && !isSessionLoading,
+  );
   const harvestingQuery = useFetchHarvestingTasks(
     harvestingParams,
-    !!currentPlanId,
+    !!currentPlanId && !isSessionLoading,
   );
   const packagingQuery = useFetchPackagingTasks(
     packagingParams,
-    !!currentPlanId,
+    !!currentPlanId && !isSessionLoading,
   );
 
   // Check if any query is loading
   const isLoading =
+    isSessionLoading ||
     caringQuery.isLoading ||
     harvestingQuery.isLoading ||
     packagingQuery.isLoading;
@@ -538,8 +542,6 @@ const MainContent = () => {
 
       // Refresh problems/tasks
       await problemsQuery.refetch();
-
-      // Add any additional data refreshes here
     } finally {
       setIsRefreshing(false);
     }
