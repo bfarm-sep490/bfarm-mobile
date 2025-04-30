@@ -11,6 +11,7 @@
     "contactAdmin": "Liên hệ quản trị viên"
   },
   "currentPlan": {
+    "evaluatedResult": "Kết quả đánh giá",
     "title": "Kế hoạch hiện tại",
     "plant": "Cây trồng",
     "startDate": "Ngày bắt đầu",

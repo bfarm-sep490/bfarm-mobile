@@ -20,6 +20,20 @@
     "harvesting": "Harvesting",
     "packaging": "Packaging"
   },
+  "taskTypes": {
+    "Planting": "Planting",
+    "Nurturing": "Nurturing",
+    "Watering": "Watering",
+    "Fertilizing": "Fertilizing",
+    "Setup": "Setup",
+    "Pesticide": "Pesticide",
+    "Weeding": "Weeding",
+    "Pruning": "Pruning",
+    "Spraying": "Spraying",
+    "Harvesting": "Harvesting",
+    "Packaging": "Packaging",
+    "Inspecting": "Inspecting"
+  },
   "task": {
     "details": "Details",
     "quickReport": "Quick Report",

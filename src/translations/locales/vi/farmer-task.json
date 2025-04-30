@@ -1,17 +1,17 @@
 {
-  "title": "Quản lý nhiệm vụ",
+  "title": "Quản lý công việc",
   "search": {
-    "placeholder": "Tìm kiếm nhiệm vụ..."
+    "placeholder": "Tìm kiếm công việc..."
   },
   "filters": {
     "clear": "Xóa bộ lọc",
-    "noResults": "Không tìm thấy nhiệm vụ phù hợp",
-    "noResultsHint": "Thử thay đổi bộ lọc hoặc tìm kiếm"
+    "noResults": "Không tìm thấy công việc phù hợp",
+    "noResultsHint": "Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"
   },
   "tabs": {
     "all": "Tất cả",
     "ongoing": "Đang thực hiện",
-    "completed": "Hoàn thành",
+    "completed": "Đã hoàn thành",
     "incomplete": "Chưa hoàn thành"
   },
   "categories": {
@@ -20,32 +20,46 @@
     "harvesting": "Thu hoạch",
     "packaging": "Đóng gói"
   },
+  "taskTypes": {
+    "Planting": "Gieo hạt",
+    "Nurturing": "Chăm sóc",
+    "Watering": "Tưới nước",
+    "Fertilizing": "Bón phân",
+    "Setup": "Lắp đặt",
+    "Pesticide": "Phun thuốc",
+    "Weeding": "Làm cỏ",
+    "Pruning": "Cắt tỉa",
+    "Spraying": "Phun thuốc",
+    "Harvesting": "Thu hoạch",
+    "Packaging": "Đóng gói",
+    "Inspecting": "Kiểm tra"
+  },
   "task": {
     "details": "Chi tiết",
     "quickReport": "Báo cáo nhanh",
     "noDescription": "Không có mô tả",
-    "noAssigned": "Chưa có ai được giao nhiệm vụ này",
+    "noAssigned": "Chưa có người được phân công",
     "yourStatus": "Trạng thái của bạn",
-    "requiredTools": "{{count}} công cụ cần thiết",
+    "requiredTools": "{{count}} dụng cụ cần thiết",
     "harvestingTools": "{{count}} dụng cụ thu hoạch",
     "packagingMaterials": "{{count}} vật liệu đóng gói",
-    "harvestedQuantity": "Số lượng thu hoạch",
+    "harvestedQuantity": "Sản lượng thu hoạch",
     "result": "Kết quả",
     "description": "Mô tả",
     "time": "Thời gian",
-    "executionTime": "Giờ thực hiện",
+    "executionTime": "Thời gian thực hiện",
     "creator": "Người tạo",
     "images": "Hình ảnh",
     "viewAll": "Xem tất cả",
-    "requiredItems": "Công cụ, phân bón hoặc thuốc cần thiết",
+    "requiredItems": "Dụng cụ, phân bón hoặc thuốc trừ sâu cần thiết",
     "updateStatus": "Cập nhật trạng thái",
     "updating": "Đang cập nhật...",
     "complete": "Hoàn thành",
     "processing": "Đang xử lý...",
-    "confirmComplete": "Xác nhận hoàn thành nhiệm vụ",
-    "confirmCompleteDescription": "Vui lòng nhập kết quả thực hiện nhiệm vụ \"{{taskName}}\"",
+    "confirmComplete": "Xác nhận hoàn thành",
+    "confirmCompleteDescription": "Vui lòng nhập kết quả thực hiện cho \"{{taskName}}\"",
     "noContent": "Không có nội dung",
-    "packagingType": "Loại bao bì",
+    "packagingType": "Loại đóng gói",
     "quantity": "Số lượng: {{count}} {{unit}}"
   },
   "status": {
@@ -53,21 +67,21 @@
     "inactive": "Không hoạt động"
   },
   "error": {
-    "title": "Có lỗi xảy ra khi tải dữ liệu",
+    "title": "Lỗi tải dữ liệu",
     "tryAgain": "Thử lại",
-    "loadingError": "Không thể tải thông tin nhiệm vụ",
+    "loadingError": "Không thể tải thông tin công việc",
     "loading": "Đang tải thông tin..."
   },
   "loading": "Đang tải dữ liệu...",
-  "noMoreData": "Đã hết dữ liệu",
+  "noMoreData": "Hết dữ liệu",
   "report": {
     "title": "Báo cáo nhanh",
-    "description": "Vui lòng nhập kết quả thực hiện nhiệm vụ \"{{taskName}}\"",
+    "description": "Vui lòng nhập kết quả thực hiện cho \"{{taskName}}\"",
     "updating": "Đang cập nhật báo cáo",
-    "updatingDescription": "Vui lòng đợi trong giây lát, quá trình này có thể mất khoảng 30 giây...",
+    "updatingDescription": "Vui lòng đợi, quá trình này có thể mất khoảng 30 giây...",
     "success": "Thành công",
-    "successMessage": "Nhiệm vụ đã được cập nhật thành công",
+    "successMessage": "Cập nhật công việc thành công",
     "error": "Lỗi",
-    "errorMessage": "Đã có lỗi xảy ra khi cập nhật nhiệm vụ. Vui lòng thử lại."
+    "errorMessage": "Đã xảy ra lỗi khi cập nhật công việc. Vui lòng thử lại."
   }
 }

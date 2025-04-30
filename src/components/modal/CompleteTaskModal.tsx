@@ -4,7 +4,13 @@ import { Image, StyleSheet, Alert } from 'react-native';
 
 import { useMutation } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
-import { XCircle, Camera, ImageIcon, X } from 'lucide-react-native';
+import {
+  XCircle,
+  Camera,
+  ImageIcon,
+  X,
+  AlertCircle,
+} from 'lucide-react-native';
 import RNPickerSelect from 'react-native-picker-select';
 
 import { Box } from '@/components/ui/box';
@@ -33,8 +39,10 @@ import { ScrollView } from '@/components/ui/scroll-view';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
+import { useSession } from '@/context/ctx';
 import { useHarvestingProduct } from '@/services/api/harvesting_products/useHarvestingProduct';
 import { usePackagingType } from '@/services/api/packaging-types/usePackagingType';
+import { instance } from '@/services/instance';
 
 import { Input, InputField } from '../ui';
 
@@ -46,6 +54,12 @@ interface ApiError extends Error {
       message?: string;
     };
   };
+}
+
+interface UploadResponse {
+  status: number;
+  message: string;
+  data: string[];
 }
 
 export interface CompleteTaskModalProps {
@@ -158,6 +172,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   maxImages = 5,
   onConfirm,
 }) => {
+  const { currentPlan } = useSession();
   const [resultContent, setResultContent] = useState('');
   const [harvestingQuantity, setHarvestingQuantity] = useState(0);
   const [packagingQuantity, setPackagingQuantity] = useState(0);
@@ -191,24 +206,22 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       try {
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}/api/${endpoint}`,
-          {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-            signal: controller.signal,
+        const response = await instance.post(endpoint, {
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
           },
-        );
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
+          const errorData = (await response.json().catch(() => ({}))) as {
+            message?: string;
+          };
           throw new Error(errorData.message || 'Upload failed');
         }
 
-        const result = await response.json();
+        const result = await response.json<UploadResponse>();
         return result;
       } catch (error: unknown) {
         const apiError = error as ApiError;
@@ -335,7 +348,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
         } as any);
       });
 
-      const uploadResult = await uploadImages(formData);
+      const uploadResult = (await uploadImages(formData)) as UploadResponse;
 
       if (uploadResult.data && uploadResult.data.length > 0) {
         setImages(prev => [...prev, ...uploadResult.data]);
@@ -380,7 +393,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
         } as any);
       });
 
-      const uploadResult = await uploadImages(formData);
+      const uploadResult = (await uploadImages(formData)) as UploadResponse;
 
       if (uploadResult.data && uploadResult.data.length > 0) {
         setImages(prev => [...prev, ...uploadResult.data]);
@@ -415,34 +428,69 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
           <VStack space='md'>
             <Text>{description}</Text>
             {taskType === 'harvesting' && (
-              <FormControl isInvalid={!!errors.harvestingQuantity}>
-                <FormControlLabel>
-                  <FormControlLabelText>
-                    Số lượng thu hoạch (kg)
-                  </FormControlLabelText>
-                </FormControlLabel>
-                <Input variant='underlined'>
-                  <InputField
-                    keyboardType='numeric'
-                    placeholder={'Nhập sản lượng thu hoạch'}
-                    textAlignVertical='center'
-                    value={harvestingQuantity.toString()}
-                    onChange={e =>
-                      setHarvestingQuantity(Number(e.nativeEvent.text))
-                    }
-                  />
-                </Input>
-                {errors.harvestingQuantity && (
-                  <FormControlError>
-                    <FormControlErrorText>
-                      {errors.harvestingQuantity}
-                    </FormControlErrorText>
-                  </FormControlError>
-                )}
-              </FormControl>
+              <>
+                {/* Hiển thị thông tin kiểm định */}
+                <Box className='rounded-lg bg-primary-50/50 p-3'>
+                  <HStack space='xs' className='items-center'>
+                    <Icon
+                      as={AlertCircle}
+                      size='sm'
+                      className='text-primary-600'
+                    />
+                    <Text className='text-sm font-medium text-primary-700'>
+                      Thông tin kiểm định:
+                    </Text>
+                  </HStack>
+                  <Text className='mt-1 text-sm text-typography-600'>
+                    {currentPlan?.evaluated_result}
+                  </Text>
+                </Box>
+
+                <FormControl isInvalid={!!errors.harvestingQuantity}>
+                  <FormControlLabel>
+                    <FormControlLabelText>
+                      Số lượng thu hoạch (kg)
+                    </FormControlLabelText>
+                  </FormControlLabel>
+                  <Input variant='underlined'>
+                    <InputField
+                      keyboardType='numeric'
+                      placeholder={'Nhập sản lượng thu hoạch'}
+                      textAlignVertical='center'
+                      value={harvestingQuantity.toString()}
+                      onChange={e =>
+                        setHarvestingQuantity(Number(e.nativeEvent.text))
+                      }
+                    />
+                  </Input>
+                  {errors.harvestingQuantity && (
+                    <FormControlError>
+                      <FormControlErrorText>
+                        {errors.harvestingQuantity}
+                      </FormControlErrorText>
+                    </FormControlError>
+                  )}
+                </FormControl>
+              </>
             )}
             {taskType === 'packaging' && (
               <>
+                <Box className='rounded-lg bg-primary-50/50 p-3'>
+                  <HStack space='xs' className='items-center'>
+                    <Icon
+                      as={AlertCircle}
+                      size='sm'
+                      className='text-primary-600'
+                    />
+                    <Text className='text-sm font-medium text-primary-700'>
+                      Thông tin kiểm định:
+                    </Text>
+                  </HStack>
+                  <Text className='mt-1 text-sm text-typography-600'>
+                    {currentPlan?.evaluated_result}
+                  </Text>
+                </Box>
+
                 <Text className='text-sm font-normal italic text-red-600'>
                   *Lưu ý đóng gói theo{' '}
                   {

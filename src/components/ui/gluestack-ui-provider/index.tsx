@@ -3,6 +3,7 @@ import React from 'react';
 import { ColorSchemeName, useColorScheme, View, ViewProps } from 'react-native';
 
 import { colorScheme as colorSchemeNW } from 'nativewind';
+import ToastManager from 'toastify-react-native/components/ToastManager';
 
 import { OverlayProvider } from '@gluestack-ui/overlay';
 import { ToastProvider } from '@gluestack-ui/toast';
@@ -43,9 +44,8 @@ export function GluestackUIProvider({
         props.style,
       ]}
     >
-      <OverlayProvider>
-        <ToastProvider>{props.children}</ToastProvider>
-      </OverlayProvider>
+      <ToastManager />
+      <OverlayProvider>{props.children}</OverlayProvider>
     </View>
   );
 }

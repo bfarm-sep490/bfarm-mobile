@@ -25,6 +25,7 @@
     "plant": "Plant",
     "startDate": "Start Date",
     "estimatedProduct": "Estimated Product",
+    "evaluatedResult": "Evaluated Result",
     "soil": "Soil",
     "progress": "Progress",
     "daysRemaining": {

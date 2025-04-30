@@ -1,9 +1,10 @@
 import React from 'react';
 
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Mail } from 'lucide-react-native';
+import { ArrowLeft } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import ToastManager, { Toast } from 'toastify-react-native';
 
 import {
   Box,
@@ -17,15 +18,12 @@ import {
   FormControlLabel,
   FormControlLabelText,
   Heading,
-  HStack,
   Icon,
   Input,
   InputField,
   Pressable,
-  Spinner,
   Text,
   VStack,
-  useToast,
   Modal,
   ModalBackdrop,
   ModalContent,
@@ -48,7 +46,6 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showSuccessModal, setShowSuccessModal] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState('');
-  const toast = useToast();
 
   const {
     control,
@@ -60,6 +57,19 @@ const ForgotPassword = () => {
     },
   });
 
+  const showToast = (
+    type: 'success' | 'error',
+    title: string,
+    description?: string,
+  ) => {
+    const message = description ? `${title}\n${description}` : title;
+    if (type === 'success') {
+      Toast.success(message);
+    } else {
+      Toast.error(message);
+    }
+  };
+
   const onSubmit = async (data: ForgotPasswordForm) => {
     try {
       setIsLoading(true);
@@ -68,19 +78,16 @@ const ForgotPassword = () => {
       if (response.status === 200) {
         setSuccessMessage(response.message);
         setShowSuccessModal(true);
+      } else {
+        showToast(
+          'error',
+          t('signIn:forgotPassword:error:title'),
+          response.message,
+        );
       }
     } catch (error) {
       console.error('Forgot password error:', error);
-      toast.show({
-        placement: 'top',
-        render: () => (
-          <Box className='mb-5 rounded-sm bg-error-500 px-4 py-3'>
-            <Text className='text-white'>
-              {t('signIn:forgotPassword:error:title')}
-            </Text>
-          </Box>
-        ),
-      });
+      showToast('error', t('signIn:forgotPassword:error:title'));
     } finally {
       setIsLoading(false);
     }

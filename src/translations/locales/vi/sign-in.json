@@ -27,7 +27,9 @@
       "title": "Đăng nhập thành công!"
     },
     "error": {
-      "title": "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập."
+      "title": "Đăng nhập thất bại",
+      "incorrectCredentials": "Email hoặc mật khẩu không chính xác",
+      "notFarmer": "Chỉ nông dân mới có thể truy cập ứng dụng này"
     }
   },
   "goToDashboard": "Đi đến trang chủ",

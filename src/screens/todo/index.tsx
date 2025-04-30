@@ -165,10 +165,11 @@ const TaskCard = ({
                   {task.task_name}
                 </Text>
                 <Text className='text-xs text-typography-500'>
-                  {task.task_type ||
-                    (taskType === 'harvesting'
-                      ? t('todo:task:harvesting')
-                      : t('todo:task:packaging'))}
+                  {task.task_type
+                    ? t(`farmerTask:taskTypes:${task.task_type}`)
+                    : taskType === 'harvesting'
+                      ? t('farmerTask:taskTypes:Harvesting')
+                      : t('farmerTask:taskTypes:Packaging')}
                 </Text>
               </VStack>
             </HStack>

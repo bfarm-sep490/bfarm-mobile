@@ -199,6 +199,24 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
             </Text>
           </HStack>
 
+          {currentPlan.evaluated_result && (
+            <Box className='rounded-lg bg-primary-50 p-3'>
+              <HStack space='xs' className='items-center'>
+                <Icon
+                  as={ClipboardList}
+                  size='sm'
+                  className='text-primary-600'
+                />
+                <Text className='text-sm font-medium text-primary-700'>
+                  {t('home:currentPlan:evaluatedResult')}:
+                </Text>
+              </HStack>
+              <Text className='mt-1 text-sm text-typography-600'>
+                {currentPlan.evaluated_result}
+              </Text>
+            </Box>
+          )}
+
           <VStack space='xs'>
             <HStack className='justify-between'>
               <Text className='text-sm text-typography-500'>
@@ -475,7 +493,7 @@ const TasksList = () => {
 };
 
 const MainContent = () => {
-  const { currentPlan, user } = useSession();
+  const { currentPlan, user, setCurrentPlan } = useSession();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Get query hooks
@@ -494,7 +512,29 @@ const MainContent = () => {
     setIsRefreshing(true);
     try {
       // Refresh plans
-      await plansQuery.refetch();
+      const plansResult = await plansQuery.refetch();
+
+      // Update current plan with latest data
+      if (plansResult.data?.data && plansResult.data.data.length > 0) {
+        // If we have a current plan, find it in the new data
+        if (currentPlan) {
+          const updatedPlan = plansResult.data.data.find(
+            plan => plan.id === currentPlan.id,
+          );
+          if (updatedPlan) {
+            setCurrentPlan(updatedPlan);
+          } else {
+            // If current plan no longer exists, set the first plan as current
+            setCurrentPlan(plansResult.data.data[0]);
+          }
+        } else {
+          // If no current plan, set the first plan as current
+          setCurrentPlan(plansResult.data.data[0]);
+        }
+      } else {
+        // If no plans data, clear current plan
+        setCurrentPlan(null);
+      }
 
       // Refresh problems/tasks
       await problemsQuery.refetch();
@@ -503,7 +543,7 @@ const MainContent = () => {
     } finally {
       setIsRefreshing(false);
     }
-  }, [plansQuery, problemsQuery]);
+  }, [plansQuery, problemsQuery, currentPlan, setCurrentPlan]);
 
   return (
     <Box className='mb-28 flex-1'>

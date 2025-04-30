@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const planSchema = z.object({
   id: z.number(),
   plant_id: z.number(),
+  evaluated_result: z.string(),
   plant_name: z.string().nullable(),
   yield_id: z.number(),
   yield_name: z.string().nullable(),

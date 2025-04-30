@@ -27,7 +27,9 @@
       "title": "Logged in successfully!"
     },
     "error": {
-      "title": "Login failed. Check your credentials."
+      "title": "Login failed",
+      "incorrectCredentials": "Email or password is incorrect",
+      "notFarmer": "Only farmers can access this application"
     }
   },
   "goToDashboard": "Go to dashboard",

@@ -1,6 +1,7 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 
 import { Plan } from '@/services/api/plans/planSchema';
+import { setTokenGetter } from '@/services/instance';
 
 import { useStorageState } from '../hooks/useStorageState';
 
@@ -34,6 +35,15 @@ export function SessionProvider(props: any) {
   const [[isLoadingUser, user], setUser] = useStorageState('user');
   const [[isLoadingPlan, currentPlan], setCurrentPlan] =
     useStorageState('currentPlan');
+
+  useEffect(() => {
+    setTokenGetter(() => {
+      if (session) {
+        return JSON.parse(session);
+      }
+      return null;
+    });
+  }, [session]);
 
   return (
     <AuthContext.Provider

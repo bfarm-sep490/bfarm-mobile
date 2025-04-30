@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { AlertTriangle } from 'lucide-react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import ToastManager, { Toast } from 'toastify-react-native';
 import * as z from 'zod';
 
 import { Button, ButtonText } from '@/components/ui/button';
@@ -36,7 +37,6 @@ import {
 import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
 import { Pressable } from '@/components/ui/pressable';
 import { Text } from '@/components/ui/text';
-import { Toast, ToastTitle, useToast } from '@/components/ui/toast';
 import { VStack } from '@/components/ui/vstack';
 import { Session, useSession } from '@/context/ctx';
 import { AuthService, safelyDecodeJwt } from '@/services/api/auth/authService';
@@ -44,11 +44,8 @@ import { AuthService, safelyDecodeJwt } from '@/services/api/auth/authService';
 import { AuthLayout } from '../layout';
 
 const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'signIn:form:email:required')
-    .email('signIn:form:email:invalid'),
-  password: z.string().min(1, 'signIn:form:password:required'),
+  email: z.string().min(1, 'Bạn cần nhập email').email('Email không hợp lệ'),
+  password: z.string().min(1, 'Bạn cần nhập mật khẩu'),
   rememberme: z.boolean().optional(),
 });
 
@@ -65,10 +62,22 @@ const Login = () => {
   } = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
   });
-  const toast = useToast();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const showToast = (
+    type: 'success' | 'error',
+    title: string,
+    description?: string,
+  ) => {
+    const message = description ? `${title}\n${description}` : title;
+    if (type === 'success') {
+      Toast.success(message);
+    } else {
+      Toast.error(message);
+    }
+  };
 
   const onSubmit = async (data: LoginSchemaType) => {
     setIsLoading(true);
@@ -78,9 +87,24 @@ const Login = () => {
         password: data.password,
       });
 
-      if (response.status === 200) {
+      if (response.status === 200 && response.data) {
         const { accessToken } = response.data;
         const decodedToken = safelyDecodeJwt(accessToken);
+
+        // Check if user has Farmer role
+        const userRole =
+          decodedToken?.[
+            'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+          ];
+
+        if (userRole !== 'Farmer') {
+          showToast(
+            'error',
+            t('signIn:toast:error:title'),
+            t('signIn:toast:error:notFarmer'),
+          );
+          return;
+        }
 
         const userData = {
           name:
@@ -95,35 +119,26 @@ const Login = () => {
             decodedToken?.[
               'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
             ] || '0',
-          role: decodedToken?.[
-            'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
-          ],
+          role: userRole,
         };
 
         signIn(accessToken, userData);
 
-        toast.show({
-          placement: 'bottom right',
-          render: ({ id }) => (
-            <Toast nativeID={id} variant='outline' action='success'>
-              <ToastTitle>{t('signIn:toast:success:title')}</ToastTitle>
-            </Toast>
-          ),
-        });
+        showToast('success', t('signIn:toast:success:title'));
 
         reset();
         router.replace('(dashboard)/(tabs)/home');
+      } else {
+        // Handle incorrect email/password
+        showToast(
+          'error',
+          t('signIn:toast:error:title'),
+          t('signIn:toast:error:incorrectCredentials'),
+        );
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.show({
-        placement: 'bottom right',
-        render: ({ id }) => (
-          <Toast nativeID={id} variant='outline' action='error'>
-            <ToastTitle>{t('signIn:toast:error:title')}</ToastTitle>
-          </Toast>
-        ),
-      });
+      showToast('error', t('signIn:toast:error:title'));
     } finally {
       setIsLoading(false);
     }
