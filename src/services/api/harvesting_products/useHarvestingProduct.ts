@@ -33,7 +33,6 @@ export const useHarvestingProduct = () => {
 
   return {
     invalidateQuery,
-
     useFetchByParamsQuery,
   };
 };

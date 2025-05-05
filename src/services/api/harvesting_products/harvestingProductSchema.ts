@@ -9,7 +9,7 @@ export const harvestingProductSchema = z.object({
   plant_name: z.string(),
   harvesting_date: z.string().nullable().optional(),
   expired_date: z.string().nullable().optional(),
-  harvesting_quantity: z.number(),
+  harvesting_quantity: z.number().nullable().optional(),
   harvesting_unit: z.string(),
   available_harvesting_quantity: z.number(),
   status: z.string(),

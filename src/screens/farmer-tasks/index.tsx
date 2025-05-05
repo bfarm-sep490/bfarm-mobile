@@ -568,7 +568,7 @@ export const FarmerTasksScreen = () => {
   );
 
   const harvestingProductsQuery = useFetchHarvestingProducts(
-    { plan_id: currentPlanId },
+    { plan_id: currentPlanId, status: 'active' },
     !!currentPlanId,
   );
 
@@ -984,6 +984,8 @@ export const FarmerTasksScreen = () => {
       />
       <CompleteTaskModal
         packaging_type_id={selectedTask?.packaging_type_id}
+        order_id={selectedTask?.order_id}
+        total_packaged_weight={selectedTask?.total_packaged_weight}
         isOpen={showCompleteModal}
         onClose={() => {
           setShowCompleteModal(false);

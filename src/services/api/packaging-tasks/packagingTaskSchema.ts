@@ -11,6 +11,7 @@ export const packagingItemSchema = z.object({
   task_id: z.number(),
   quantity: z.number(),
   unit: z.string(),
+  item_name: z.string(),
 });
 
 export const farmerInformationSchema = z.object({
@@ -25,6 +26,7 @@ export const packagingTaskSchema = z.object({
   packaging_type_id: z.number().nullable().optional(),
   farmer_information: z.array(farmerInformationSchema),
   task_name: z.string(),
+  order_id: z.number().nullable().optional(),
   packed_quantity: z.number(),
   description: z.string(),
   result_content: z.string().nullable().optional(),
@@ -36,6 +38,7 @@ export const packagingTaskSchema = z.object({
   created_by: z.string(),
   updated_at: z.string().nullable().optional(),
   updated_by: z.string().nullable().optional(),
+  total_packaged_weight: z.number().nullable().optional(),
   packaging_images: z.array(packagingImageSchema).optional(),
   packaging_items: z.array(packagingItemSchema).optional(),
 });

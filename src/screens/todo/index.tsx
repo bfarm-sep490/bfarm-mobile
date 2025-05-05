@@ -348,7 +348,7 @@ const TodoScreen = () => {
     !!currentPlanId,
   );
   const harvestingProductsQuery = useFetchHarvestingProducts(
-    { plan_id: currentPlanId },
+    { plan_id: currentPlanId, status: 'active' },
     !!currentPlanId,
   );
 
@@ -866,6 +866,7 @@ const TodoScreen = () => {
       />
       <CompleteTaskModal
         packaging_type_id={selectedTask?.packaging_type_id}
+        total_packaged_weight={selectedTask?.total_packaged_weight}
         isOpen={showCompleteModal}
         onClose={() => {
           setShowCompleteModal(false);

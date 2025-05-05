@@ -1,7 +1,7 @@
 import { ExpoConfig } from 'expo/config';
 
 const config: ExpoConfig = {
-  name: 'bfarm-mobile',
+  name: 'BFarmX Work',
   slug: 'bfarm-mobile',
   owner: 'lee-inc',
   version: '1.0.0',

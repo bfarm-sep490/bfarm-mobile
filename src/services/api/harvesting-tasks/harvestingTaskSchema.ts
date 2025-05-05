@@ -13,6 +13,7 @@ export const harvestingItemSchema = z.object({
   task_id: z.number(),
   quantity: z.number(),
   unit: z.string(),
+  item_name: z.string(),
 });
 
 // Schema cho thông tin người làm nông và trạng thái công việc

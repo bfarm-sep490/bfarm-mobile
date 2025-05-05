@@ -764,6 +764,7 @@ export const TaskDetailScreen = () => {
       <CompleteTaskModal
         packaging_type_id={task?.packaging_type_id}
         isOpen={showCompleteModal}
+        total_packaged_weight={task?.total_packaged_weight}
         onClose={() => setShowCompleteModal(false)}
         taskType={taskType as 'caring' | 'harvesting' | 'packaging'}
         title={t('farmerTask:task:confirmComplete')}

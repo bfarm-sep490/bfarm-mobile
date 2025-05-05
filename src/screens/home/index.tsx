@@ -157,11 +157,15 @@ const PlanStatusCard = ({ currentPlan }: { currentPlan: Plan }) => {
       <Box className='bg-primary-100/30 p-4'>
         <VStack space='md'>
           <HStack className='items-center justify-between'>
-            <Text className='text-lg font-semibold'>
+            <Text
+              className='mr-2 flex-1 text-lg font-semibold'
+              numberOfLines={1}
+              ellipsizeMode='tail'
+            >
               {currentPlan.plan_name}
             </Text>
             <Box
-              className={`rounded-full px-2 py-0.5 ${currentPlan.status === 'Complete' ? 'bg-success-100' : 'bg-warning-100'}`}
+              className={`flex-shrink-0 rounded-full px-2 py-0.5 ${currentPlan.status === 'Complete' ? 'bg-success-100' : 'bg-warning-100'}`}
             >
               <Text
                 className={`text-xs ${currentPlan.status === 'Complete' ? 'text-success-700' : 'text-warning-700'}`}

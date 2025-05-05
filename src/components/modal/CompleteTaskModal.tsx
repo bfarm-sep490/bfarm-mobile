@@ -136,6 +136,15 @@ export interface CompleteTaskModalProps {
   maxImages?: number;
 
   /**
+   * The order id
+   */
+  order_id?: number;
+
+  /**
+   * The total packaged weight
+   */
+  total_packaged_weight?: number;
+  /**
    * Function to call when the confirm button is pressed
    */
   onConfirm: (data: {
@@ -158,6 +167,7 @@ export interface CompleteTaskModalProps {
 export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   packaging_type_id,
   idPlan,
+  total_packaged_weight,
   isOpen,
   onClose,
   title = 'Xác nhận hoàn thành',
@@ -185,7 +195,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { useFetchByParamsQuery } = useHarvestingProduct();
   const { data: harvestingProducts } = useFetchByParamsQuery(
-    { plan_id: idPlan },
+    { plan_id: idPlan, status: 'active' },
     !!idPlan,
   );
   const { useFetchAllQuery: usePackagingTypeAll } = usePackagingType();
@@ -265,7 +275,7 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
         newErrors.harvestingProductId = 'Vui lòng chọn sản lượng đã thu hoạch';
       }
       if (unpackagingQuantity <= 0) {
-        newErrors.unpackagingQuantity = 'Số lượng sản phẩm phải lớn hơn 0';
+        newErrors.unpackagingQuantity = 'Số lượng thành phẩm phải lớn hơn 0';
       }
       if (packagingQuantity <= 0) {
         newErrors.packagingQuantity = 'Sản lượng đóng gói phải lớn hơn 0';
@@ -475,21 +485,9 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
             )}
             {taskType === 'packaging' && (
               <>
-                <Box className='rounded-lg bg-primary-50/50 p-3'>
-                  <HStack space='xs' className='items-center'>
-                    <Icon
-                      as={AlertCircle}
-                      size='sm'
-                      className='text-primary-600'
-                    />
-                    <Text className='text-sm font-medium text-primary-700'>
-                      Thông tin kiểm định:
-                    </Text>
-                  </HStack>
-                  <Text className='mt-1 text-sm text-typography-600'>
-                    {currentPlan?.evaluated_result}
-                  </Text>
-                </Box>
+                <Text className='text-sm font-normal italic text-red-600'>
+                  *Thông tin kiểm định: {currentPlan?.evaluated_result}
+                </Text>
 
                 <Text className='text-sm font-normal italic text-red-600'>
                   *Lưu ý đóng gói theo{' '}
@@ -498,6 +496,11 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
                       ?.name
                   }
                 </Text>
+                {total_packaged_weight && (
+                  <Text className='text-sm font-normal italic text-red-600'>
+                    *Sản lượng đóng gói tối thiểu {total_packaged_weight} kg
+                  </Text>
+                )}
                 <FormControl isInvalid={!!errors.harvestingProductId}>
                   <FormControlLabel>
                     <FormControlLabelText>
@@ -505,6 +508,9 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
                     </FormControlLabelText>
                   </FormControlLabel>
                   <RNPickerSelect
+                    placeholder={{
+                      label: 'Chọn sản lượng đã thu hoạch',
+                    }}
                     textInputProps={{
                       textAlign: 'center',
                       textAlignVertical: 'center',
@@ -519,31 +525,6 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
                     <FormControlError>
                       <FormControlErrorText>
                         {errors.harvestingProductId}
-                      </FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-                <FormControl isInvalid={!!errors.unpackagingQuantity}>
-                  <FormControlLabel>
-                    <FormControlLabelText>
-                      Số lượng sản phẩm đóng gói
-                    </FormControlLabelText>
-                  </FormControlLabel>
-                  <Input variant='underlined'>
-                    <InputField
-                      keyboardType='numeric'
-                      placeholder={'Nhập số lượng sản phẩm đóng gói...'}
-                      textAlignVertical='center'
-                      value={unpackagingQuantity.toString()}
-                      onChange={e =>
-                        setUnpackagingQuantity(Number(e.nativeEvent.text))
-                      }
-                    />
-                  </Input>
-                  {errors.unpackagingQuantity && (
-                    <FormControlError>
-                      <FormControlErrorText>
-                        {errors.unpackagingQuantity}
                       </FormControlErrorText>
                     </FormControlError>
                   )}
@@ -569,6 +550,31 @@ export const CompleteTaskModal: React.FC<CompleteTaskModalProps> = ({
                     <FormControlError>
                       <FormControlErrorText>
                         {errors.packagingQuantity}
+                      </FormControlErrorText>
+                    </FormControlError>
+                  )}
+                </FormControl>
+                <FormControl isInvalid={!!errors.unpackagingQuantity}>
+                  <FormControlLabel>
+                    <FormControlLabelText>
+                      Thành phẩm đã đóng gói
+                    </FormControlLabelText>
+                  </FormControlLabel>
+                  <Input variant='underlined'>
+                    <InputField
+                      keyboardType='numeric'
+                      placeholder={'Nhập số lượng thành phẩm đã đóng gói...'}
+                      textAlignVertical='center'
+                      value={unpackagingQuantity.toString()}
+                      onChange={e =>
+                        setUnpackagingQuantity(Number(e.nativeEvent.text))
+                      }
+                    />
+                  </Input>
+                  {errors.unpackagingQuantity && (
+                    <FormControlError>
+                      <FormControlErrorText>
+                        {errors.unpackagingQuantity}
                       </FormControlErrorText>
                     </FormControlError>
                   )}
